@@ -3,8 +3,16 @@ export class Player {
     y: number;
     speed = 200; //pixels/second
     focusSpeed = 100; //slow when focus
-    hitboxRadius = 2;
+    
     isFocused = false;
+
+    hitboxRadius = 2;
+    hitboxColor = '#ffffff';
+
+    diamondWidth = 8;
+    diamondHeight = 12;          
+    diamondColor = '#419aff';  
+    focusTransparency = 0.2;  
 
 
     //conmstructor
@@ -27,11 +35,30 @@ export class Player {
         this.y = Math.max(0, Math.min(this.y, canvasHeight));
     }
 
-    //draw player as circle for now
+    //draw player
     draw(ctx: CanvasRenderingContext2D) {
-        ctx.fillStyle = this.isFocused ? '#ffff00' : '#00ff00';
+
+        //focus transparency
+        ctx.globalAlpha = this.isFocused ? this.focusTransparency : 1;
+
+        //diamond
+        ctx.fillStyle = this.diamondColor;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.isFocused ? 4 : 8, 0, Math.PI * 2);
+        ctx.moveTo(this.x, this.y - this.diamondHeight);
+        ctx.lineTo(this.x + this.diamondWidth, this.y);
+        ctx.lineTo(this.x, this.y + this.diamondHeight);
+        ctx.lineTo(this.x - this.diamondWidth, this.y);
+        ctx.closePath();
         ctx.fill();
+        
+        //circle hitbox
+        if (this.isFocused) {
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = this.hitboxColor;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.hitboxRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
     }
 }
