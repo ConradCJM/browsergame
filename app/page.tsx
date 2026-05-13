@@ -1,10 +1,11 @@
-import Image from "next/image";
+'use client';
+import { GameCanvas } from '@/app/components/gamecanvas';
 
+//vibe coded ts but it works and I dont like doing front end lol
 export default function Home() {
   return (
-    <div>
-      <h1>Welcome to my Browser Game</h1>
-      <p>Some content here</p>
-    </div>
+    <main style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#000' }}>
+      <GameCanvas />
+    </main>
   );
 }
