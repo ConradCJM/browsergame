@@ -1,19 +1,23 @@
 export class Player {
+    hp = 3;
+    maxHp = 3;
+
+    hitIframesDuration = 1.67; //duration of invulnerability in seconds
+
     x: number;
     y: number;
-    speed = 200; //pixels/second
+    speed = 225; //pixels per second
     focusSpeed = 100; //slow when focus
     
     isFocused = false;
 
-    hitboxRadius = 2;
-    hitboxColor = '#ffffff';
+    hitboxRadius = 4;
+    hitboxColor = '#cef8ff';
 
-    diamondWidth = 8;
-    diamondHeight = 12;          
+    diamondWidth = 10;
+    diamondHeight = 14;          
     diamondColor = '#419aff';  
     focusTransparency = 0.2;  
-
 
     //conmstructor
     constructor(startX: number, startY: number) {
@@ -31,8 +35,8 @@ export class Player {
         this.isFocused = keys['shift'];
 
         //keep player in map
-        this.x = Math.max(0, Math.min(this.x, canvasWidth));
-        this.y = Math.max(0, Math.min(this.y, canvasHeight));
+        this.x = Math.max((this.hitboxRadius/2), Math.min(this.x, canvasWidth-(this.hitboxRadius/2)));
+        this.y = Math.max((this.hitboxRadius/2), Math.min(this.y, canvasHeight-(this.hitboxRadius/2)));
     }
 
     //draw player
