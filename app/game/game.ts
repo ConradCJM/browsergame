@@ -1,5 +1,9 @@
 import { Player } from './entities/player';
 import { Input } from './systems/input';
+import { playerBullet } from './entities/playerBullet';
+import { enemy } from './entities/enemy';
+import { enemyBullet } from './entities/enemyBullets';
+import { EnemyType } from './constants';
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -9,11 +13,23 @@ export class Game {
     private input: Input;
     private player: Player;
 
+    private enemies: enemy[] = [];
+    private enemyBullets: enemyBullet[] = [];
+
+    private playerBullets: playerBullet[] = [];
+    private playerBulletSpread = 6; //disrtance between bullets
+    private playerBulletDesync = 0.05; //time between each bullet in a burst
+
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this.canvas.width / 2, this.canvas.height - 50);
+        this.enemies.push(new enemy(this.canvas.width / 2, 100, EnemyType.Fast,this));
+    }
+
+    addEnemyBullet(bullet: enemyBullet) {
+        this.enemyBullets.push(bullet);
     }
 
 
@@ -40,12 +56,43 @@ export class Game {
         }
     };
 
+    //list of pending player bullets
+    private pendingPlayerBullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number }[] = [];
+
     private update(dt: number) {
+
+        //enemy stuff
+        this.enemies.forEach(e => e.update(dt));
+        this.enemyBullets.forEach(b => b.update(dt));
+        this.enemyBullets = this.enemyBullets.filter(b => !b.isOffScreen(this.canvas.width, this.canvas.height));
+
+        //player stuff
         this.player.update(dt, this.input.keys, this.canvas.width, this.canvas.height);
-        //update game state here
-        //enemy AI
-        //bnullet positions
-        //collision checks
+
+        if (this.input.keys[' ']) {
+            const now = performance.now() / 1000;
+            if (now - this.input.lastShootTime >= this.input.shootCooldown) {
+                this.input.lastShootTime = now;
+                const bulletPattern = this.player.getBulletPattern(now, this.playerBulletDesync, this.playerBulletSpread);
+                this.pendingPlayerBullets.push(...bulletPattern);
+            }
+        }
+
+        //spawn pending player bullets when their time comes
+        const now = performance.now() / 1000;
+        this.pendingPlayerBullets = this.pendingPlayerBullets.filter(pending => {
+            if (now >= pending.spawnTime) {
+                this.playerBullets.push(new playerBullet(pending.x, pending.y, pending.dirX ?? 0, pending.dirY ?? -1));
+                return false; //remove from pending
+            }
+            return true;
+        });
+
+        //update player bullets
+        this.playerBullets.forEach(b => b.update(dt));
+
+        //remove offscreen player bullets
+        this.playerBullets = this.playerBullets.filter(b => !b.isOffScreen(this.canvas.width, this.canvas.height));
     }
 
 
@@ -58,5 +105,11 @@ export class Game {
         //player
         this.player.draw(this.ctx);
 
+        //enemies
+        this.enemies.forEach(e => e.draw(this.ctx));
+
+        //bullets
+        this.playerBullets.forEach(b => b.draw(this.ctx));
+        this.enemyBullets.forEach(b => b.draw(this.ctx));
     }
 }

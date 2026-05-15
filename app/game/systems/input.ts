@@ -1,5 +1,7 @@
 export class Input {
     keys: Record<string, boolean> = {};
+    lastShootTime = 0;
+    shootCooldown = 0.2;
 
     constructor() {
         window.addEventListener('keydown', (e) => {
