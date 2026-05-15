@@ -1,0 +1,1 @@
+export { aimedSpreadToDirection, aimedSpreadToPlayer} from './aimed';

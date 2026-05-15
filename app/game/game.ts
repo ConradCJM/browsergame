@@ -20,19 +20,36 @@ export class Game {
     private playerBulletSpread = 6; //disrtance between bullets
     private playerBulletDesync = 0.05; //time between each bullet in a burst
 
+    //list of pending player bullets
+    private pendingPlayerBullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number }[] = [];
+
+    //pending enemy bullets (patterns that spawn bullets over time instead of all at once)
+    private pendingEnemyBullets: any[] = [];
+
+    queueEnemyBullet(spec: any) {
+        this.pendingEnemyBullets.push(spec);
+    }
+
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this.canvas.width / 2, this.canvas.height - 50);
-        this.enemies.push(new enemy(this.canvas.width / 2, 100, EnemyType.Fast,this));
+        this.enemies.push(new enemy(this.canvas.width / 2, 100, EnemyType.Basic, this));
     }
+
+    getPlayer() {
+        return this.player;
+    }
+
 
     addEnemyBullet(bullet: enemyBullet) {
         this.enemyBullets.push(bullet);
     }
 
-
+    getEnemyBullets() {
+        return this.enemyBullets;
+    }
 
     start() {
         this.running = true;
@@ -56,8 +73,6 @@ export class Game {
         }
     };
 
-    //list of pending player bullets
-    private pendingPlayerBullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number }[] = [];
 
     private update(dt: number) {
 
@@ -84,6 +99,15 @@ export class Game {
             if (now >= pending.spawnTime) {
                 this.playerBullets.push(new playerBullet(pending.x, pending.y, pending.dirX ?? 0, pending.dirY ?? -1));
                 return false; //remove from pending
+            }
+            return true;
+        });
+
+        //spawn pending enemy bullets when their time comes
+        this.pendingEnemyBullets = this.pendingEnemyBullets.filter(pending => {
+            if (now >= pending.spawnTime) {
+                this.enemyBullets.push(new enemyBullet(pending.x, pending.y, pending.dirX, pending.dirY, pending.bulletSpeed, pending.bulletXRadius, pending.bulletYRadius, pending.bulletColor));
+                return false;
             }
             return true;
         });
