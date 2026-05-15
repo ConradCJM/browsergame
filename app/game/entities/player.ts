@@ -6,7 +6,8 @@ export class Player {
 
     private x: number;
     private y: number;
-    private speed = 175; //pixels per second
+    private Xspeed = 155; //pixels per second
+    private Yspeed = 175; //pixels per second
     private focusSpeed = 75; //slow when focus
 
     private isFocused = false;
@@ -39,9 +40,7 @@ export class Player {
         return this.y;
     }
 
-    getSpeed() {
-        return this.speed;
-    }
+    
 
 
 
@@ -56,11 +55,12 @@ export class Player {
 
     //movement updater
     update(dt: number, keys: Record<string, boolean>, canvasWidth: number, canvasHeight: number) {
-        const speed = this.isFocused ? this.focusSpeed : this.speed;
-        if (keys['arrowup'] || keys['w']) this.y -= speed * dt;
-        if (keys['arrowdown'] || keys['s']) this.y += speed * dt;
-        if (keys['arrowleft'] || keys['a']) this.x -= speed * dt;
-        if (keys['arrowright'] || keys['d']) this.x += speed * dt;
+        const Xspeed = this.isFocused ? this.focusSpeed : this.Xspeed;
+        const Yspeed = this.isFocused ? this.focusSpeed : this.Yspeed; 
+        if (keys['arrowup'] || keys['w']) this.y -= Yspeed * dt;
+        if (keys['arrowdown'] || keys['s']) this.y += Yspeed * dt;
+        if (keys['arrowleft'] || keys['a']) this.x -= Xspeed * dt;
+        if (keys['arrowright'] || keys['d']) this.x += Xspeed * dt;
         this.isFocused = keys['shift'];
 
         //keep player in map
