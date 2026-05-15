@@ -33,7 +33,7 @@ export class enemy {
 
     private currentAimAngle = 1.5; //for patterns that require continuous aiming
     private aimRotationSpeed = 2; //radians per second
-    private offsetPattern =[0, Math.PI / 60, -Math.PI / 60]; //for patterns that have a fixed offset from aiming direction (e.g. always aim slightly to the left or right of the player)
+    private offsetPattern = [0, Math.PI / 60, -Math.PI / 60]; //for patterns that have a fixed offset from aiming direction (e.g. always aim slightly to the left or right of the player)
     private aimOffset = 0; //for patterns that aim at player but have a fixed offset (e.g. always aim slightly to the left or right of the player)
 
 
@@ -113,16 +113,46 @@ export class enemy {
         } else if (this.type === EnemyType.Elite) {
             this.enemyColor = '#0e7900';
         }
-        ctx.beginPath();
-        ctx.fillStyle = this.enemyColor;
-        ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
-        ctx.fill();
 
+        if (this.type === EnemyType.Basic || this.type === EnemyType.Elite) {
+            ctx.beginPath();
+            ctx.fillStyle = this.enemyColor;
+            ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     update(dt: number) {
-        this.attackTimer += dt;
+        this.updatePosition(dt);
+        this.updateAim(dt);
+        this.updateAttack(dt);
+        this.updatePhase(dt);
+    }
 
+    updatePosition(dt: number) {
+
+    }
+
+    updateAim(dt: number) {
+
+        //gradually rotate aim towards player
+        const targetAngle = Math.atan2(this.game.getPlayer().getY() - this.y, this.game.getPlayer().getX() - this.x);
+        const angleDiff = targetAngle - this.currentAimAngle;
+
+        //shortest rotation path
+        const shortestAngle = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
+        this.currentAimAngle += shortestAngle * this.aimRotationSpeed * dt;
+    }
+
+    updateAttack(dt: number) {
+        this.attackTimer += dt;
+        if (this.attackTimer >= this.attackRate) {
+            this.attack();
+            this.attackTimer = 0;
+        }
+    }
+
+    updatePhase(dt: number) {
         //track phase timer
         this.phaseTimer += dt;
         if (this.phaseTimer >= this.maxPhaseTime) {
@@ -135,20 +165,8 @@ export class enemy {
             this.phaseTimer = 0;
             this.attackTimer = this.phaseCoolDown; //reset attack timer on phase change to give player a moment to react to new pattern
         }
-
-        //gradually rotate aim towards player
-        const targetAngle = Math.atan2(this.game.getPlayer().getY() - this.y, this.game.getPlayer().getX() - this.x);
-        const angleDiff = targetAngle - this.currentAimAngle;
-
-        //shortest rotation path
-        const shortestAngle = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
-        this.currentAimAngle += shortestAngle * this.aimRotationSpeed * dt;
-
-        if (this.attackTimer >= this.attackRate) {
-            this.attack();
-            this.attackTimer = 0;
-        }
     }
+
 
     attack() {
         const attackCount = Math.floor(this.phaseTimer / this.attackRate);
@@ -176,7 +194,7 @@ export class enemy {
 
                 const dirX = Math.cos(this.currentAimAngle);
                 const dirY = Math.sin(this.currentAimAngle);
-                specs = aimedSpreadToDirection(dirX, dirY, burstCount, burstInterval, bulletCount, Math.PI / 30,0);
+                specs = aimedSpreadToDirection(dirX, dirY, burstCount, burstInterval, bulletCount, Math.PI / 30, 0);
                 specs.forEach(spec => {
                     spec.bulletSpeed = 300;
                     spec.bulletXRadius = 5;
@@ -185,7 +203,7 @@ export class enemy {
                 })
             }
             else {
-                this.offsetPattern =[0, Math.PI / 60,Math.PI/90,Math.PI/180,-Math.PI/180, -Math.PI / 60,-Math.PI/90];
+                this.offsetPattern = [0, Math.PI / 60, Math.PI / 90, Math.PI / 180, -Math.PI / 180, -Math.PI / 60, -Math.PI / 90];
                 this.phaseCoolDown = 0.75;
                 this.attackRate = 0.15;
                 this.maxPhaseTime = 10;
@@ -193,7 +211,7 @@ export class enemy {
                 const burstInterval = 0.065;
                 const bulletCount = 3;
 
-                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12,this.aimOffset);
+                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
 
                 specs.forEach(spec => {
                     spec.bulletSpeed = 150;
@@ -213,10 +231,10 @@ export class enemy {
                 y: this.y,
                 dirX: spec.dirX,
                 dirY: spec.dirY,
-                bulletSpeed: spec.bulletSpeed?? this.bulletSpeed,
-                bulletXRadius: spec.bulletXRadius?? this.bulletXRadius,
-                bulletYRadius: spec.bulletYRadius?? this.bulletYRadius,
-                bulletColor: spec.bulletColor?? this.bulletColor
+                bulletSpeed: spec.bulletSpeed ?? this.bulletSpeed,
+                bulletXRadius: spec.bulletXRadius ?? this.bulletXRadius,
+                bulletYRadius: spec.bulletYRadius ?? this.bulletYRadius,
+                bulletColor: spec.bulletColor ?? this.bulletColor
             });
         });
     }
