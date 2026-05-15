@@ -29,9 +29,12 @@ export class enemy {
     private phaseTimer = 0;
     private maxPhaseTime: number; //time in seconds for each phase
     private phaseThresholds: number[]; //hp thresholds for changing phases (bosses only) (as percentage of max hp) 
+    private phaseCoolDown = 0; //time in seconds before enemy can change phases again after hp threshold is reached
 
     private currentAimAngle = 1.5; //for patterns that require continuous aiming
     private aimRotationSpeed = 2; //radians per second
+    private offsetPattern =[0, Math.PI / 60, -Math.PI / 60]; //for patterns that have a fixed offset from aiming direction (e.g. always aim slightly to the left or right of the player)
+    private aimOffset = 0; //for patterns that aim at player but have a fixed offset (e.g. always aim slightly to the left or right of the player)
 
 
     constructor(startX: number, startY: number, type: EnemyType, game: Game) {
@@ -130,7 +133,7 @@ export class enemy {
                 this.phase = 0;
             }
             this.phaseTimer = 0;
-            this.attackTimer = -3; //reset attack timer on phase change to give player a moment to react to new pattern
+            this.attackTimer = this.phaseCoolDown; //reset attack timer on phase change to give player a moment to react to new pattern
         }
 
         //gradually rotate aim towards player
@@ -148,6 +151,9 @@ export class enemy {
     }
 
     attack() {
+        const attackCount = Math.floor(this.phaseTimer / this.attackRate);
+        this.aimOffset = this.offsetPattern[attackCount % this.offsetPattern.length];
+
         const now = performance.now() / 1000;
         let specs: {
             dirX: number,
@@ -161,25 +167,39 @@ export class enemy {
         if (this.type === EnemyType.Basic) {
 
             if (this.phase === 0) {
-                const bulletCount = 30;
-                const burstCount = 1;
-                const burstInterval = 0;
+                this.phaseCoolDown = 0.5;
+                this.attackRate = 0.75;
+                this.maxPhaseTime = 7.5;
+                const bulletCount = 5;
+                const burstCount = 5;
+                const burstInterval = 0.075;
 
                 const dirX = Math.cos(this.currentAimAngle);
                 const dirY = Math.sin(this.currentAimAngle);
-                specs = aimedSpreadToDirection(dirX, dirY, burstCount, burstInterval, bulletCount, Math.PI / 15);
+                specs = aimedSpreadToDirection(dirX, dirY, burstCount, burstInterval, bulletCount, Math.PI / 30,0);
                 specs.forEach(spec => {
-                    spec.bulletSpeed = 50;
+                    spec.bulletSpeed = 300;
                     spec.bulletXRadius = 5;
-                    spec.bulletYRadius = 5;
+                    spec.bulletYRadius = 10;
                     spec.bulletColor = '#b30000a4';
                 })
             }
             else {
-                const phase1BurstCount = 15;
-                const phase1BurstInterval = 0.075;
-                const phase1BulletCount = 8;
-                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), phase1BurstCount, phase1BurstInterval, phase1BulletCount, Math.PI / 12);
+                this.phaseCoolDown = 0.75;
+                this.attackRate = 0.6;
+                this.maxPhaseTime = 10;
+                const burstCount = 15;
+                const burstInterval = 0.075;
+                const bulletCount = 3;
+
+                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12,this.aimOffset);
+
+                specs.forEach(spec => {
+                    spec.bulletSpeed = 150;
+                    spec.bulletXRadius = 3;
+                    spec.bulletYRadius = 10;
+                    spec.bulletColor = '#b30000a4';
+                })
             }
         }
         else if (this.type === EnemyType.Fast) {

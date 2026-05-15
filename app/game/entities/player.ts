@@ -105,13 +105,18 @@ export class Player {
             bullets.push({ spawnTime: now + playerBulletDesync, x: this.x - playerBulletSpread, y: this.y, dirX: 0, dirY: -1 });
             bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x + playerBulletSpread * 2, y: this.y, dirX: 0, dirY: -1 });
             bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x - playerBulletSpread * 2, y: this.y, dirX: 0, dirY: -1 });
+            bullets.push({ spawnTime: now + playerBulletDesync * 3, x: this.x + playerBulletSpread * 3, y: this.y, dirX: -Math.sin(Math.PI / 90), dirY: -Math.cos(Math.PI / 6) });
+            bullets.push({ spawnTime: now + playerBulletDesync * 3, x: this.x - playerBulletSpread * 3, y: this.y, dirX: Math.sin(Math.PI / 90), dirY: -Math.cos(Math.PI / 6) });
+
         } else {
             //spread firing
             bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1 });
-            bullets.push({ spawnTime: now + playerBulletDesync, x: this.x + playerBulletSpread, y: this.y, dirX: Math.sin(Math.PI / 9), dirY: -Math.cos(Math.PI / 6) });
-            bullets.push({ spawnTime: now + playerBulletDesync, x: this.x - playerBulletSpread, y: this.y, dirX: -Math.sin(Math.PI / 9), dirY: -Math.cos(Math.PI / 6) });
-            bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x + playerBulletSpread * 2, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 5) });
-            bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x - playerBulletSpread * 2, y: this.y, dirX: -Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 5) });
+            bullets.push({ spawnTime: now + playerBulletDesync, x: this.x + playerBulletSpread, y: this.y, dirX: Math.sin(Math.PI / 9), dirY: -Math.cos(Math.PI / 9) });
+            bullets.push({ spawnTime: now + playerBulletDesync, x: this.x - playerBulletSpread, y: this.y, dirX: -Math.sin(Math.PI / 9), dirY: -Math.cos(Math.PI / 9) });
+            bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x + playerBulletSpread * 2, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6) });
+            bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x - playerBulletSpread * 2, y: this.y, dirX: -Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6) });
+            bullets.push({ spawnTime: now + playerBulletDesync * 3, x: this.x + playerBulletSpread * 3, y: this.y, dirX: Math.sin(Math.PI / 18), dirY: -Math.cos(Math.PI / 6) });
+            bullets.push({ spawnTime: now + playerBulletDesync * 3, x: this.x - playerBulletSpread * 3, y: this.y, dirX: -Math.sin(Math.PI / 18), dirY: -Math.cos(Math.PI / 6) });
         }
 
         return bullets;

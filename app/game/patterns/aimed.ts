@@ -22,16 +22,18 @@ export function aimedSpreadToPlayer(
     burstCount: number = 1,
     burstInterval: number = 0.05,
     bulletCount: number = 6,
-    spreadAngle: number = Math.PI / 12
+    spreadAngle: number = Math.PI / 12,
+    aimOffset: number = 0,
 ): { dirX: number; dirY: number; delay: number }[] {
     const { dirX, dirY } = getDirectionToPlayer(enemyX, enemyY, player);
     const specs = [];
+    const baseAngle = Math.atan2(dirY, dirX) + aimOffset;
     const lowerBound = -Math.floor(bulletCount / 2);
     const upperBound = Math.floor(bulletCount / 2);
     
     for (let j = 0; j < burstCount; j++) {
         for (let i = lowerBound; i <= upperBound; i++) {
-            const angle = Math.atan2(dirY, dirX) + (i * spreadAngle);
+            const angle = baseAngle + (i * spreadAngle);
             specs.push({
                 dirX: Math.cos(angle),
                 dirY: Math.sin(angle),
@@ -50,15 +52,17 @@ export function aimedSpreadToDirection(
     burstCount: number = 1,
     burstInterval: number = 0.05,
     bulletCount: number = 6,
-    spreadAngle: number = Math.PI / 12
+    spreadAngle: number = Math.PI / 12,
+    aimOffset: number = 0,
 ): { dirX: number; dirY: number; delay: number }[] {
+    const baseAngle = Math.atan2(dirY, dirX) + aimOffset;
     const specs = [];
     const lowerBound = -Math.floor(bulletCount / 2);
     const upperBound = Math.floor(bulletCount / 2);
     
     for (let j = 0; j < burstCount; j++) {
         for (let i = lowerBound; i <= upperBound; i++) {
-            const angle = Math.atan2(dirY, dirX) + (i * spreadAngle);
+            const angle = baseAngle + (i * spreadAngle);
             specs.push({
                 dirX: Math.cos(angle),
                 dirY: Math.sin(angle),
