@@ -1,7 +1,6 @@
 import { EnemyType } from '@/app/game/constants';
 import { enemyBullet } from '@/app/game/entities/enemyBullets';
 import {Game} from '@/app/game/game';
-im
 export class enemy{
     hp: number;
     maxHp: number;
