@@ -6,7 +6,7 @@ export class Player {
 
     private x: number;
     private y: number;
-    private speed = 150; //pixels per second
+    private speed = 175; //pixels per second
     private focusSpeed = 75; //slow when focus
 
     private isFocused = false;
