@@ -185,11 +185,12 @@ export class enemy {
                 })
             }
             else {
+                this.offsetPattern =[0, Math.PI / 60,Math.PI/90,Math.PI/180,-Math.PI/180, -Math.PI / 60,-Math.PI/90];
                 this.phaseCoolDown = 0.75;
-                this.attackRate = 0.6;
+                this.attackRate = 0.15;
                 this.maxPhaseTime = 10;
-                const burstCount = 15;
-                const burstInterval = 0.075;
+                const burstCount = 5;
+                const burstInterval = 0.065;
                 const bulletCount = 3;
 
                 specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12,this.aimOffset);
