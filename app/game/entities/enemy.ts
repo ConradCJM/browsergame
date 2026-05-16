@@ -9,6 +9,7 @@ export class enemy {
     private x: number;
     private y: number;
     private enemyColor = '#ff0000';
+    private speed = 20; //pixels per second
 
     private XRadius = 10;
     private YRadius = 10;
@@ -54,7 +55,7 @@ export class enemy {
         this.bulletYRadius = 3;
         this.bulletColor = '#b30000a4';
 
-        this.maxPhase = 1;
+        this.maxPhase = 3;
         this.maxPhaseTime = 10;
         this.phaseThresholds = [];
 
@@ -131,7 +132,47 @@ export class enemy {
 
     updatePosition(dt: number) {
 
+        if (this.type === EnemyType.Basic) {
+            this.speed = 50;
+            this.y += Math.sin(performance.now() / 1000) * this.speed / 2 * dt;
+
+            let targetX:number;
+
+            if (this.phase === 0) {
+                targetX = 325;
+            }
+            else if (this.phase === 2){
+                targetX = 75;
+            }
+            else {
+                targetX = 200;
+            }
+
+
+            
+            this.moveTo(targetX, this.y, this.speed * dt);
+
+
+
+
+        }
+
+
     }
+    private moveTo(targetX: number, targetY: number, maxMovement: number) {
+        const move = (current: number, target: number, maxDelta: number) => {
+            const delta = target - current;
+            if (Math.abs(delta) <= maxDelta) {
+                return target;
+            }
+            return current + Math.sign(delta) * maxDelta;
+        };
+
+        this.x = move(this.x, targetX, maxMovement);
+        this.y = move(this.y, targetY, maxMovement);
+    }
+
+
 
     updateAim(dt: number) {
 
@@ -184,7 +225,7 @@ export class enemy {
         }[] = [];
         if (this.type === EnemyType.Basic) {
 
-            if (this.phase === 0) {
+            if (this.phase === 0 || this.phase === 2) {
                 this.phaseCoolDown = 0.5;
                 this.attackRate = 0.75;
                 this.maxPhaseTime = 7.5;

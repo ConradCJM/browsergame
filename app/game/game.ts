@@ -35,7 +35,7 @@ export class Game {
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this.canvas.width / 2, this.canvas.height - 50);
-        this.enemies.push(new enemy(this.canvas.width / 2, 100, EnemyType.Basic, this));
+        this.enemies.push(new enemy(this.canvas.width / 2, 70, EnemyType.Basic, this));
     }
 
     getPlayer() {
