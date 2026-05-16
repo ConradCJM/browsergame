@@ -73,6 +73,8 @@ export class enemy {
 
             this.maxPhase = 1;
             this.maxPhaseTime = 0.15;
+            this.XRadius = 7;
+            this.YRadius = 5;
         } else if (this.type === EnemyType.Tanky) {
             this.hp = 50;
             this.maxHp = 50;
@@ -228,11 +230,29 @@ export class enemy {
             this.enemyColor = '#0e7900';
         }
 
-        if (this.type === EnemyType.Basic || this.type === EnemyType.Tanky || this.type === EnemyType.Fast) {
+        if (this.type === EnemyType.Basic) {
             ctx.beginPath();
             ctx.fillStyle = this.enemyColor;
             ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
             ctx.fill();
+        }
+        else if (this.type === EnemyType.Tanky) {
+
+            ctx.beginPath();
+            ctx.fillStyle = this.enemyColor;
+            ctx.fillRect(this.x - this.XRadius, this.y - this.YRadius, this.XRadius * 2, this.YRadius * 2);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(this.x - this.XRadius, this.y - this.YRadius, this.XRadius * 2, this.YRadius * 2);
+
+        }
+        else if (this.type === EnemyType.Fast) {
+            ctx.beginPath();
+            ctx.fillStyle = this.enemyColor;
+            ctx.ellipse(this.x, this.y, this.XRadius, this.YRadius, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+
         }
         else if (this.type === EnemyType.SentryBoss) {
             //hexagon
