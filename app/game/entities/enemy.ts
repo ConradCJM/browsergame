@@ -32,7 +32,6 @@ export class enemy {
     private maxPhase: number; //0 for no phases, 1 means two phases (phase 0 and phase 1)
     private phaseTimer = 0;
     private maxPhaseTime: number; //time in seconds for each phase
-    private phaseThresholds: number[]; //hp thresholds for changing phases (bosses only) (as percentage of max hp) 
     private phaseCoolDown = 0; //time in seconds before enemy can change phases again after hp threshold is reached
 
     private currentAimAngle = Math.PI / 2; //for patterns that require continuous aiming
@@ -60,7 +59,6 @@ export class enemy {
 
         this.maxPhase = 3;
         this.maxPhaseTime = 10;
-        this.phaseThresholds = [];
 
         //type-based stat modifications
         if (this.type === EnemyType.Fast) {
@@ -75,7 +73,6 @@ export class enemy {
 
             this.maxPhase = 1;
             this.maxPhaseTime = 0.15;
-            this.phaseThresholds = [];
         } else if (this.type === EnemyType.Tanky) {
             this.hp = 50;
             this.maxHp = 50;
@@ -88,10 +85,11 @@ export class enemy {
 
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
-            this.phaseThresholds = [];
-        } else if (this.type === EnemyType.Elite) {
-            this.hp = 75;
-            this.maxHp = 75;
+        } else if (this.type === EnemyType.SentryBoss) {
+            this.XRadius = 40;
+            this.YRadius = 40;
+            this.hp = 300;
+            this.maxHp = 300;
             this.attackRate = 0.5;
 
             this.bulletSpeed = 65;
@@ -99,35 +97,10 @@ export class enemy {
             this.bulletYRadius = 3.5;
             this.bulletColor = '#0e7900a4';
 
-            this.maxPhase = 1;
+            this.maxPhase = 3;
             this.phaseTimer = 0;
             this.maxPhaseTime = 10;
         }
-    }
-    //draw enemy
-    draw(ctx: CanvasRenderingContext2D) {
-
-        //circle
-        if (this.type === EnemyType.Basic) {
-            this.enemyColor = '#ff0000';
-        } else if (this.type === EnemyType.Fast) {
-            this.enemyColor = '#fbff00';
-        } else if (this.type === EnemyType.Tanky) {
-            this.enemyColor = '#5900ff';
-        } else if (this.type === EnemyType.Elite) {
-            this.enemyColor = '#0e7900';
-        }
-
-        if (this.type === EnemyType.Basic || this.type === EnemyType.Tanky || this.type === EnemyType.Elite || this.type === EnemyType.Fast) {
-            ctx.beginPath();
-            ctx.fillStyle = this.enemyColor;
-            ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        //add outline
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
     }
 
     update(dt: number) {
@@ -138,53 +111,6 @@ export class enemy {
         this.updatePhase(dt);
     }
 
-    updatePosition(dt: number) {
-
-        if (this.type === EnemyType.Basic) {
-            this.speed = 50;
-            this.y += Math.sin(performance.now() / 1000) * this.speed / 2 * dt;
-
-            let targetX: number;
-
-            if (this.phase === 0) {
-                targetX = 325;
-            }
-            else if (this.phase === 2) {
-                targetX = 75;
-            }
-            else {
-                targetX = 200;
-            }
-
-            this.moveTo(targetX, this.y, this.speed * dt);
-
-        }
-        else if (this.type === EnemyType.Fast) {
-            //infinity symbol movement
-            const speed = 1.5; //radians per second
-            const angle = (performance.now() / 1000) * speed;
-            const amplitude = 150;
-            const centerX = 200;
-            const centerY = 150;
-
-            // Lemniscate parametric equations (thanks co-pilot for the formula :D)
-            const denominator = 1 + Math.sin(angle) ** 2;
-            this.x = centerX + amplitude * Math.cos(angle) / denominator;
-            this.y = centerY + amplitude * Math.sin(2 * angle) / (2 * denominator);
-        }
-        else if (this.type === EnemyType.Tanky) {
-            const minX = 50;
-            const maxX = 350;
-            const centerX = (minX + maxX) / 2;
-            const amplitude = (maxX - minX) / 2;
-            this.speed = 20;
-            const baseSpeed = 50; // reference speed
-
-            this.x = centerX + Math.sin((performance.now() / 1000) * (this.speed / baseSpeed)) * amplitude;
-        }
-
-
-    }
     private moveTo(targetX: number, targetY: number, maxMovement: number) {
         const move = (current: number, target: number, maxDelta: number) => {
             const delta = target - current;
@@ -233,6 +159,102 @@ export class enemy {
             this.phaseTimer = 0;
             this.attackTimer = this.phaseCoolDown; //reset attack timer on phase change to give player a moment to react to new pattern
         }
+    }
+
+    updatePosition(dt: number) {
+
+        if (this.type === EnemyType.Basic) {
+            this.speed = 50;
+            this.y += Math.sin(performance.now() / 1000) * this.speed / 2 * dt;
+
+            let targetX: number;
+
+            if (this.phase === 0) {
+                targetX = 325;
+            }
+            else if (this.phase === 2) {
+                targetX = 75;
+            }
+            else {
+                targetX = 200;
+            }
+
+            this.moveTo(targetX, this.y, this.speed * dt);
+
+        }
+        else if (this.type === EnemyType.Fast) {
+            //infinity symbol movement
+            const speed = 1.5; //radians per second
+            const angle = (performance.now() / 1000) * speed;
+            const amplitude = 150;
+            const centerX = 200;
+            const centerY = 150;
+
+            // Lemniscate parametric equations (thanks co-pilot for the formula :D)
+            const denominator = 1 + Math.sin(angle) ** 2;
+            this.x = centerX + amplitude * Math.cos(angle) / denominator;
+            this.y = centerY + amplitude * Math.sin(2 * angle) / (2 * denominator);
+        }
+        else if (this.type === EnemyType.Tanky) {
+            const minX = 50;
+            const maxX = 350;
+            const centerX = (minX + maxX) / 2;
+            const amplitude = (maxX - minX) / 2;
+            this.speed = 20;
+            const baseSpeed = 50; // reference speed
+
+            this.x = centerX + Math.sin((performance.now() / 1000) * (this.speed / baseSpeed)) * amplitude;
+        }
+        else if (this.type === EnemyType.SentryBoss) {
+            this.speed = 10;
+            this.y += Math.sin(performance.now() / 1000) * this.speed * dt;
+            this.x = 200;
+        }
+
+
+    }
+
+    //draw enemy
+    draw(ctx: CanvasRenderingContext2D) {
+
+        //circle
+        if (this.type === EnemyType.Basic) {
+            this.enemyColor = '#ff0000';
+        } else if (this.type === EnemyType.Fast) {
+            this.enemyColor = '#fbff00';
+        } else if (this.type === EnemyType.Tanky) {
+            this.enemyColor = '#5900ff';
+        } else if (this.type === EnemyType.SentryBoss) {
+            this.enemyColor = '#0e7900';
+        }
+
+        if (this.type === EnemyType.Basic || this.type === EnemyType.Tanky || this.type === EnemyType.Fast) {
+            ctx.beginPath();
+            ctx.fillStyle = this.enemyColor;
+            ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        else if (this.type === EnemyType.SentryBoss) {
+            //hexagon
+            ctx.beginPath();
+            ctx.fillStyle = this.enemyColor;
+            for (let i = 0; i < 6; i++) {
+                const angle = (i * Math.PI) / 3;
+                const x = this.x + this.XRadius * Math.cos(angle);
+                const y = this.y + this.XRadius * Math.sin(angle);
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+        //add outline
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
     }
 
 
@@ -289,7 +311,7 @@ export class enemy {
             specs = spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, this.aimOffset, this.currentAimAngle, clockwise[this.phase % 2]);
 
             specs.forEach(spec => {
-                spec.bulletSpeed = 325;
+                spec.bulletSpeed = 250;
                 spec.bulletXRadius = 3;
                 spec.bulletYRadius = 15;
                 spec.bulletColor = '#fbff00ff';
@@ -319,15 +341,15 @@ export class enemy {
                 spec.bulletYGrowth = 0.135;
             })
         }
-        else if (this.type === EnemyType.Elite) {
-            if (this.phase === 0) {
+        else if (this.type === EnemyType.SentryBoss) {
+            if (this.phase === 0 || this.phase === 2) {
                 this.offsetPattern = [0, Math.PI / 60, Math.PI / 90, Math.PI / 180, -Math.PI / 180, -Math.PI / 60, -Math.PI / 90];
                 this.phaseCoolDown = 0.75;
-                this.attackRate = 0.15;
+                this.attackRate = Math.max(0.20, this.hp / this.maxHp); //attack faster as hp drops
                 this.maxPhaseTime = 6.75;
                 const burstCount = 6;
                 const burstInterval = 0.065;
-                const bulletCount = 3;
+                const bulletCount = 1;
 
                 specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
 
@@ -335,23 +357,55 @@ export class enemy {
                     spec.bulletSpeed = 150;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 10;
-                    spec.bulletColor = '#0e7900ff';
+                    spec.bulletColor = 'rgba(30, 255, 0, 0.4)';
                 })
             }
             else if (this.phase === 1) {
                 this.offsetPattern = [0, Math.PI / 20];
                 this.phaseCoolDown = 0;
-                this.attackRate = 10;
+                this.attackRate = 0.1;
+                this.maxPhaseTime = 0.1;
                 const burstCount = 2;
                 const burstInterval = 0.5;
                 const spreadAngle = Math.PI / 10;
 
                 specs = ringPattern(burstCount, burstInterval, spreadAngle, this.offsetPattern, this.currentAimAngle);
                 specs.forEach(spec => {
-                    spec.bulletSpeed = 150;
+                    spec.bulletSpeed = 60;
+                    spec.bulletXRadius = 20;
+                    spec.bulletYRadius = 20;
+                    spec.bulletColor = 'rgba(30, 255, 0, 0.8)';
+                })
+            }
+            else if (this.phase === 3) {
+                this.phaseCoolDown = 0;
+                this.attackRate = 0.1;
+                this.maxPhaseTime = 0.1;
+                const burstCount = 1 + Math.floor((1 - (this.hp / this.maxHp)) * 10); //more bullet bursts as hp drops
+                const burstInterval = 0.5;
+                const bulletCount = 1 + Math.floor(this.timeAlive / 60); //more bullets per burst as time goes on
+
+                //CUSTOM SHOT PATTERN Bullet Rain (if im gonna use this later again il make it a function in another file)
+                for (let j = 0; j < burstCount; j++) {
+                    for (let i = 0; i < bulletCount; i++) {
+
+                        specs.push({
+                            dirY: 1,
+                            dirX: 0,
+                            delay: j * burstInterval
+
+                        });
+                    }
+                }
+                specs.forEach(spec => {
+                    spec.spawnY = -59; //spawn above screen
+                    spec.spawnX = Math.random() * 400; //spawn at random x position
+
+
+                    spec.bulletSpeed = 600;
                     spec.bulletXRadius = 3;
-                    spec.bulletYRadius = 10;
-                    spec.bulletColor = '#0e7900ff';
+                    spec.bulletYRadius = 60;
+                    spec.bulletColor = 'rgba(30, 255, 0, 1)';
                 })
             }
 

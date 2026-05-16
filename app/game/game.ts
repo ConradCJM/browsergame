@@ -38,6 +38,7 @@ export class Game {
         this.enemies.push(new enemy(this.canvas.width / 8, 70, EnemyType.Fast, this));
         this.enemies.push(new enemy(this.canvas.width / 4, 70, EnemyType.Basic, this));
         this.enemies.push(new enemy(this.canvas.width / 2, 70, EnemyType.Tanky, this));
+        this.enemies.push(new enemy((this.canvas.width / 4) * 3, 70, EnemyType.SentryBoss, this));
     }
     addEnemy(startx: number, starty: number, type: EnemyType) {
         this.enemies.push(new enemy(startx, starty, type, this));
@@ -130,6 +131,9 @@ export class Game {
         //clear canvas
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        //bullets
+        this.playerBullets.forEach(b => b.draw(this.ctx));
+        this.enemyBullets.forEach(b => b.draw(this.ctx));
 
         //player
         this.player.draw(this.ctx);
@@ -137,8 +141,6 @@ export class Game {
         //enemies
         this.enemies.forEach(e => e.draw(this.ctx));
 
-        //bullets
-        this.playerBullets.forEach(b => b.draw(this.ctx));
-        this.enemyBullets.forEach(b => b.draw(this.ctx));
+        
     }
 }
