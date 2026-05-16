@@ -35,7 +35,9 @@ export class Game {
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this.canvas.width / 2, this.canvas.height - 50);
-        this.enemies.push(new enemy(this.canvas.width / 2, 70, EnemyType.Basic, this));
+        this.enemies.push(new enemy(this.canvas.width / 8, 70, EnemyType.Fast, this));
+        this.enemies.push(new enemy(this.canvas.width / 4, 70, EnemyType.Basic, this));
+        this.enemies.push(new enemy(this.canvas.width / 2, 70, EnemyType.Tanky, this));
     }
 
     getPlayer() {
@@ -106,7 +108,7 @@ export class Game {
         //spawn pending enemy bullets when their time comes
         this.pendingEnemyBullets = this.pendingEnemyBullets.filter(pending => {
             if (now >= pending.spawnTime) {
-                this.enemyBullets.push(new enemyBullet(pending.x, pending.y, pending.dirX, pending.dirY, pending.bulletSpeed, pending.bulletXRadius, pending.bulletYRadius, pending.bulletColor));
+                this.enemyBullets.push(new enemyBullet(pending.x, pending.y, pending.dirX, pending.dirY, pending.bulletSpeed, pending.bulletXRadius, pending.bulletYRadius, pending.bulletColor, pending.bulletXGrowth, pending.bulletYGrowth));
                 return false;
             }
             return true;
