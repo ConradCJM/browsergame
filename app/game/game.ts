@@ -39,6 +39,9 @@ export class Game {
         this.enemies.push(new enemy(this.canvas.width / 4, 70, EnemyType.Basic, this));
         this.enemies.push(new enemy(this.canvas.width / 2, 70, EnemyType.Tanky, this));
     }
+    addEnemy(startx: number, starty: number, type: EnemyType) {
+        this.enemies.push(new enemy(startx, starty, type, this));
+    }
 
     getPlayer() {
         return this.player;

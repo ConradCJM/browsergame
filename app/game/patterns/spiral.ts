@@ -5,7 +5,7 @@ export function spiralPattern(
     bulletInterval: number = 0.1,
     spreadAngle: number = Math.PI / 12,
     angleOffset: number | number[] = 0,
-    startAngle: number = 0,
+    startAngle: number = Math.PI/2,
     clockwise: boolean = true
 ): { dirX: number; dirY: number; delay: number }[] {
     const specs = [];

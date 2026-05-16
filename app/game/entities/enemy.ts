@@ -1,6 +1,6 @@
 import { EnemyType } from '@/app/game/constants';
 import { Game } from '@/app/game/game';
-import { aimedSpreadToDirection, aimedSpreadToPlayer, spiralPattern } from '@/app/game/patterns';
+import { aimedSpreadToDirection, aimedSpreadToPlayer, spiralPattern, ringPattern } from '@/app/game/patterns';
 export class enemy {
     private hp: number;
     private maxHp: number;
@@ -124,7 +124,7 @@ export class enemy {
             ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
             ctx.fill();
         }
-        // Add outline
+        //add outline
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -272,24 +272,6 @@ export class enemy {
                 spec.bulletColor = '#b30000ff';
             })
 
-            //Save this for another enemy type
-            // this.offsetPattern = [0, Math.PI / 60, Math.PI / 90, Math.PI / 180, -Math.PI / 180, -Math.PI / 60, -Math.PI / 90];
-            // this.phaseCoolDown = 0.75;
-            // this.attackRate = 0.15;
-            // this.maxPhaseTime = 10;
-            // const burstCount = 5;
-            // const burstInterval = 0.065;
-            // const bulletCount = 3;
-
-            // specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
-
-            // specs.forEach(spec => {
-            //     spec.bulletSpeed = 150;
-            //     spec.bulletXRadius = 3;
-            //     spec.bulletYRadius = 10;
-            //     spec.bulletColor = '#b30000a4';
-            // })
-
         }
         else if (this.type === EnemyType.Fast) {
 
@@ -336,6 +318,43 @@ export class enemy {
                 spec.bulletXGrowth = 0.135;
                 spec.bulletYGrowth = 0.135;
             })
+        }
+        else if (this.type === EnemyType.Elite) {
+            if (this.phase === 0) {
+                this.offsetPattern = [0, Math.PI / 60, Math.PI / 90, Math.PI / 180, -Math.PI / 180, -Math.PI / 60, -Math.PI / 90];
+                this.phaseCoolDown = 0.75;
+                this.attackRate = 0.15;
+                this.maxPhaseTime = 6.75;
+                const burstCount = 6;
+                const burstInterval = 0.065;
+                const bulletCount = 3;
+
+                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
+
+                specs.forEach(spec => {
+                    spec.bulletSpeed = 150;
+                    spec.bulletXRadius = 3;
+                    spec.bulletYRadius = 10;
+                    spec.bulletColor = '#0e7900ff';
+                })
+            }
+            else if (this.phase === 1) {
+                this.offsetPattern = [0, Math.PI / 20];
+                this.phaseCoolDown = 0;
+                this.attackRate = 10;
+                const burstCount = 2;
+                const burstInterval = 0.5;
+                const spreadAngle = Math.PI / 10;
+
+                specs = ringPattern(burstCount, burstInterval, spreadAngle, this.offsetPattern, this.currentAimAngle);
+                specs.forEach(spec => {
+                    spec.bulletSpeed = 150;
+                    spec.bulletXRadius = 3;
+                    spec.bulletYRadius = 10;
+                    spec.bulletColor = '#0e7900ff';
+                })
+            }
+
         }
         specs.forEach(spec => {
             this.game.queueEnemyBullet({
