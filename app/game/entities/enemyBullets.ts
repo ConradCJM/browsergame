@@ -43,7 +43,10 @@ export class enemyBullet {
     }
 
     isOffScreen(canvasWidth: number, canvasHeight: number): boolean {
-        return this.x < 0 || this.x > canvasWidth || this.y < 0 || this.y > canvasHeight;
+        return (this.x + this.Xradius < 0) ||
+            (this.x - this.Xradius > canvasWidth) ||
+            (this.y + this.Yradius < 0) ||
+            (this.y - this.Yradius > canvasHeight);
     }
 
 }

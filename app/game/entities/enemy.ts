@@ -5,6 +5,7 @@ export class enemy {
     private hp: number;
     private maxHp: number;
     private type: EnemyType = EnemyType.Basic;
+    private timeAlive: number = 0; //for patterns that change over time
 
     private x: number;
     private y: number;
@@ -123,9 +124,14 @@ export class enemy {
             ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
             ctx.fill();
         }
+        // Add outline
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
     }
 
     update(dt: number) {
+        this.timeAlive += dt;
         this.updatePosition(dt);
         this.updateAim(dt);
         this.updateAttack(dt);
@@ -245,8 +251,8 @@ export class enemy {
             bulletXRadius?: number,
             bulletYRadius?: number,
             bulletColor?: String,
-            bulletXGrowth?:number,
-            bulletYGrowth?:number
+            bulletXGrowth?: number,
+            bulletYGrowth?: number
         }[] = [];
         if (this.type === EnemyType.Basic) {
             this.phaseCoolDown = 0.5;
@@ -289,11 +295,11 @@ export class enemy {
 
             this.aimOffset = 0;
             this.phaseCoolDown = 0;
-            this.attackRate = 0.5;
-            this.maxPhaseTime = 0.5;
+            this.attackRate = Math.max(0.1, 1 - (this.timeAlive / 60)); //attack faster over time, up to a limit
+            this.maxPhaseTime = Math.max(0.1, 1 - (this.timeAlive / 60));;
             const burstCount = 1;
             const burstInterval = 1;
-            const bulletCount = 3;
+            const bulletCount = Math.min(3, Math.ceil(this.timeAlive / 10));
             const spreadAngle = Math.PI / 40;
             const bulletInterval = 0.1;
             const clockwise = [true, false];
@@ -301,36 +307,34 @@ export class enemy {
             specs = spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, this.aimOffset, this.currentAimAngle, clockwise[this.phase % 2]);
 
             specs.forEach(spec => {
-                spec.bulletSpeed = 400;
+                spec.bulletSpeed = 325;
                 spec.bulletXRadius = 3;
-                spec.bulletYRadius = 20;
+                spec.bulletYRadius = 15;
                 spec.bulletColor = '#fbff00ff';
             })
 
 
         }
         else if (this.type === EnemyType.Tanky) {
-            this.aimOffset = 0;
+            this.offsetPattern = [0, Math.PI / 20];
             this.phaseCoolDown = 0;
             this.attackRate = 10;
             this.maxPhase = 0;
-            const burstCount = 1;
-            const burstInterval = 0.15;
+            const burstCount = 2;
+            const burstInterval = 0.5;
             const bulletInterval = 0.05;
-            const bulletCount = 80;
-            const spreadAngle = Math.PI / 20;
+            const bulletCount = 20;
+            const spreadAngle = Math.PI / 10;
 
-            specs = spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, this.aimOffset, this.currentAimAngle, true);
-
-            const clockwise = true;
+            specs = spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, this.offsetPattern, this.currentAimAngle, true);
 
             specs.forEach(spec => {
-                spec.bulletSpeed = 40;
+                spec.bulletSpeed = 50;
                 spec.bulletXRadius = 5;
                 spec.bulletYRadius = 5;
                 spec.bulletColor = '#5900ffb4';
-                spec.bulletXGrowth = 0.075;
-                spec.bulletYGrowth = 0.075;
+                spec.bulletXGrowth = 0.135;
+                spec.bulletYGrowth = 0.135;
             })
         }
         specs.forEach(spec => {

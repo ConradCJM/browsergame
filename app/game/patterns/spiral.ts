@@ -4,15 +4,18 @@ export function spiralPattern(
     bulletCount: number = 6,
     bulletInterval: number = 0.1,
     spreadAngle: number = Math.PI / 12,
-    angleOffset: number = 0,
+    angleOffset: number | number[] = 0,
     startAngle: number = 0,
     clockwise: boolean = true
 ): { dirX: number; dirY: number; delay: number }[] {
     const specs = [];
+    const isOffsetArray = Array.isArray(angleOffset);
 
     for (let j = 0; j < burstCount; j++) {
+        const offset = isOffsetArray ? angleOffset[j % angleOffset.length] : angleOffset;
+        
         for (let i = 0; i < bulletCount; i++) {
-            const angle = clockwise? startAngle+ (i * spreadAngle) + (j * spreadAngle / bulletCount) + angleOffset: startAngle - (i * spreadAngle) - (j * spreadAngle / bulletCount) + angleOffset;
+            const angle = clockwise? startAngle+ (i * spreadAngle) + (j * spreadAngle / bulletCount) + offset: startAngle - (i * spreadAngle) - (j * spreadAngle / bulletCount) + offset;
             specs.push({
                 dirX: Math.cos(angle),
                 dirY: Math.sin(angle),
@@ -21,5 +24,4 @@ export function spiralPattern(
         }
     }
     return specs
-
 }
