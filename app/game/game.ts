@@ -4,6 +4,8 @@ import { playerBullet } from './entities/playerBullet';
 import { enemy } from './entities/enemy';
 import { enemyBullet } from './entities/enemyBullets';
 import { EnemyType } from './constants';
+import { checkCollisions } from './systems/collision';
+import { Shockwave } from './entities/shockwave';
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -25,6 +27,9 @@ export class Game {
 
     //pending enemy bullets (patterns that spawn bullets over time instead of all at once)
     private pendingEnemyBullets: any[] = [];
+
+    //shockwave effects
+    private shockwaves: Shockwave[] = [];
 
     queueEnemyBullet(spec: any) {
         this.pendingEnemyBullets.push(spec);
@@ -123,6 +128,25 @@ export class Game {
 
         //remove offscreen player bullets
         this.playerBullets = this.playerBullets.filter(b => !b.isOffScreen(this.canvas.width, this.canvas.height));
+
+        checkCollisions(this.player, this.enemies, this.playerBullets, this.enemyBullets);
+
+        //remove dead enemies & create shockwave
+        this.enemies = this.enemies.filter(e => {
+            if (e.isDead()) {
+                this.shockwaves.push(new Shockwave(e.getX(), e.getY(),(e.getXRadius() + e.getYRadius())/2, 0.5, e.getColor()));
+                return false; // Remove enemy
+            }
+            return true;
+        });
+        //update shockwaves and remove finished ones
+        this.shockwaves = this.shockwaves.filter(sw => sw.update(dt));
+
+
+        if (this.player.getHp() <= 0) {
+            this.stop();
+            alert('You died! Refresh to play again.');
+        }
     }
 
 
@@ -131,6 +155,10 @@ export class Game {
         //clear canvas
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        //shockwaves
+        
+        this.shockwaves.forEach(sw => sw.draw(this.ctx));
         //bullets
         this.playerBullets.forEach(b => b.draw(this.ctx));
         this.enemyBullets.forEach(b => b.draw(this.ctx));
@@ -141,6 +169,6 @@ export class Game {
         //enemies
         this.enemies.forEach(e => e.draw(this.ctx));
 
-        
+
     }
 }

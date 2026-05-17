@@ -47,8 +47,8 @@ export class enemy {
         this.game = game;
 
         //basic stats
-        this.hp = 20;
-        this.maxHp = 20;
+        this.hp = 40;
+        this.maxHp = 40;
         this.attackTimer = 0;
         this.attackRate = 0.5;
 
@@ -62,8 +62,8 @@ export class enemy {
 
         //type-based stat modifications
         if (this.type === EnemyType.Fast) {
-            this.hp = 15;
-            this.maxHp = 15;
+            this.hp = 30;
+            this.maxHp = 30;
             this.attackRate = 0.15;
 
             this.bulletSpeed = 85;
@@ -73,11 +73,11 @@ export class enemy {
 
             this.maxPhase = 1;
             this.maxPhaseTime = 0.15;
-            this.XRadius = 7;
+            this.XRadius = 12;
             this.YRadius = 5;
         } else if (this.type === EnemyType.Tanky) {
-            this.hp = 50;
-            this.maxHp = 50;
+            this.hp = 100;
+            this.maxHp = 100;
             this.attackRate = 1.25;
 
             this.bulletSpeed = 35;
@@ -90,8 +90,8 @@ export class enemy {
         } else if (this.type === EnemyType.SentryBoss) {
             this.XRadius = 40;
             this.YRadius = 40;
-            this.hp = 300;
-            this.maxHp = 300;
+            this.hp = 750;
+            this.maxHp = 750;
             this.attackRate = 0.5;
 
             this.bulletSpeed = 65;
@@ -103,6 +103,38 @@ export class enemy {
             this.phaseTimer = 0;
             this.maxPhaseTime = 10;
         }
+    }
+    takeDamage(amount: number) {
+        this.hp -= amount;
+        if (this.hp < 0) this.hp = 0;
+    }
+    getX() {
+        return this.x;
+    }
+    getY() {
+        return this.y;
+    }
+    getXRadius() {
+        return this.XRadius;
+    }
+    getYRadius() {
+        return this.YRadius;
+    }
+
+    getColor() {
+        return this.enemyColor;
+    }
+
+    getHp() {
+        return this.hp;
+    }
+
+    isDead(): boolean {
+        return this.hp <= 0;
+    }
+
+    subFromAttackTimer(value: number) {
+        this.attackTimer = - value;
     }
 
     update(dt: number) {

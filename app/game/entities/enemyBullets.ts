@@ -25,6 +25,19 @@ export class enemyBullet {
         this.vx = (directionX / length) * this.speed;
         this.vy = (directionY / length) * this.speed;
     }
+
+    getX() {
+        return this.x;
+    }   
+    getY() {
+        return this.y;
+    }
+    getXRadius() {
+        return this.Xradius;
+    }
+    getYRadius() {
+        return this.Yradius;
+    }
     update(dt: number) {
         this.x += this.vx * dt;
         this.y += this.vy * dt;

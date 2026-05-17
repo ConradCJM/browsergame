@@ -4,8 +4,9 @@ export enum EnemyType {
     Basic,
     Fast,
     Tanky,
-    SentryBoss,
 
 
     //bosses
+    SentryBoss,
+
 }
