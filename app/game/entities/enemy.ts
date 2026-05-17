@@ -401,7 +401,7 @@ export class enemy {
                 this.maxPhaseTime = 6.75;
                 const burstCount = 6;
                 const burstInterval = 0.065;
-                const bulletCount = 1;
+                const bulletCount = this.hp >= this.maxHp/2 ? 1:3;
 
                 specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
 
