@@ -40,9 +40,6 @@ export class Game {
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this.canvas.width / 2, this.canvas.height - 50);
-        this.enemies.push(new enemy(this.canvas.width / 8, 70, EnemyType.Fast, this));
-        this.enemies.push(new enemy(this.canvas.width / 4, 70, EnemyType.Basic, this));
-        this.enemies.push(new enemy(this.canvas.width / 2, 70, EnemyType.Tanky, this));
         this.enemies.push(new enemy((this.canvas.width / 4) * 3, 70, EnemyType.SentryBoss, this));
     }
     addEnemy(startx: number, starty: number, type: EnemyType) {
