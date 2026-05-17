@@ -417,7 +417,7 @@ export class enemy {
                 this.phaseCoolDown = 0;
                 this.attackRate = 0.1;
                 this.maxPhaseTime = 0.1;
-                const burstCount = 2;
+                const burstCount = 2 + Math.floor((1 - (this.hp / this.maxHp)) * 8); //more bursts as hp drops
                 const burstInterval = 0.5;
                 const spreadAngle = Math.PI / 10;
 
@@ -427,6 +427,8 @@ export class enemy {
                     spec.bulletXRadius = 20;
                     spec.bulletYRadius = 20;
                     spec.bulletColor = 'rgba(30, 255, 0, 0.8)';
+                    spec.bulletXGrowth = 0.015;
+                    spec.bulletYGrowth = 0.015;
                 })
             }
             else if (this.phase === 3) {
