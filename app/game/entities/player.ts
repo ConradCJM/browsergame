@@ -1,7 +1,7 @@
 import { Shockwave } from './shockwave';
 export class Player {
-    private hp = 500;
-    private maxHp = 3;
+    private hp = 10;
+    private maxHp = 10;
 
     private hitIframesDuration = 3; //duration of invulnerability in seconds
     private isInHitIframes = false;

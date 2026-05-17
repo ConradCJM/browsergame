@@ -16,6 +16,7 @@ export class Game {
     private player: Player;
 
     private enemies: enemy[] = [];
+    private pendingEnemies: { spawnTime: number; x: number; y: number; type: EnemyType }[] = [];
     private enemyBullets: enemyBullet[] = [];
 
     private playerBullets: playerBullet[] = [];
@@ -30,6 +31,10 @@ export class Game {
 
     //shockwave effects
     private shockwaves: Shockwave[] = [];
+
+    addEnemyToQueue(x: number, y: number, type: EnemyType, delay: number) {
+        this.pendingEnemies.push({ spawnTime: performance.now() / 1000 + delay, x, y, type });
+    }
 
     queueEnemyBullet(spec: any) {
         this.pendingEnemyBullets.push(spec);
