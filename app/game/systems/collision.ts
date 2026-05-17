@@ -2,12 +2,14 @@ import {enemy} from "@/app/game/entities/enemy";
 import {playerBullet} from "@/app/game/entities/playerBullet";
 import {enemyBullet} from "@/app/game/entities/enemyBullets";
 import { Player } from "@/app/game/entities/player";
+import { Shockwave } from "../entities/shockwave";
 
 export function checkCollisions(
     player: Player,
     enemies: enemy[],
     playerBullets: playerBullet[],
-    enemyBullets: enemyBullet[]
+    enemyBullets: enemyBullet[],
+    shockwaves: Shockwave[]
 ) {
     // Helper function for circle-to-ellipse collision (thanks co pilot for the algorithm cause i couldnt figure this out after many attempts)
     const isColliding = (
@@ -35,8 +37,9 @@ export function checkCollisions(
     //player bullets on enemies
     playerBullets.forEach((bullet, bIndex) => {
         enemies.forEach((enemy) => {
-            if (isColliding(bullet.x, bullet.y, bullet.Xradius, enemy.getX(), enemy.getY(), enemy.getXRadius(), enemy.getYRadius())) {
+            if (isColliding(bullet.getX(), bullet.getY(), bullet.getXRadius(), enemy.getX(), enemy.getY(), enemy.getXRadius(), enemy.getYRadius())) {
                 enemy.takeDamage(1);
+                shockwaves.push(new Shockwave(bullet.getX(), bullet.getY(),6, 0.3, '#41e9ff72'));
                 playerBullets.splice(bIndex, 1);
             }
         });

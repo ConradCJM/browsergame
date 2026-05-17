@@ -1,13 +1,13 @@
 export class playerBullet {
-    x: number;
-    y: number;
-    vx: number; // velocity x
-    vy: number; // velocity y
-    speed = 400; // pixels per second
-    Xradius = 3;
-    Yradius = 7;
-    color = '#41e9ff';
-    transparency = 0.2;
+    private x: number;
+    private y: number;
+    private vx: number; // velocity x
+    private vy: number; // velocity y
+    private speed = 400; // pixels per second
+    private Xradius = 3;
+    private Yradius = 7;
+    private color = '#41e9ff';
+    private transparency = 0.2;
 
     constructor(startX: number, startY: number, directionX: number, directionY: number) {
         this.x = startX;

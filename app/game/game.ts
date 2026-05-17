@@ -131,7 +131,7 @@ export class Game {
         //remove offscreen player bullets
         this.playerBullets = this.playerBullets.filter(b => !b.isOffScreen(this.canvas.width, this.canvas.height));
 
-        checkCollisions(this.player, this.enemies, this.playerBullets, this.enemyBullets);
+        checkCollisions(this.player, this.enemies, this.playerBullets, this.enemyBullets,this.shockwaves);
 
         //remove dead enemies & create shockwave
         this.enemies = this.enemies.filter(e => {
