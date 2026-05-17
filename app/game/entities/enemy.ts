@@ -90,8 +90,8 @@ export class enemy {
         } else if (this.type === EnemyType.SentryBoss) {
             this.XRadius = 40;
             this.YRadius = 40;
-            this.hp = 750;
-            this.maxHp = 750;
+            this.hp = 1000;
+            this.maxHp = 1000;
             this.attackRate = 0.5;
 
             this.bulletSpeed = 65;
@@ -351,11 +351,11 @@ export class enemy {
 
             this.aimOffset = 0;
             this.phaseCoolDown = 0;
-            this.attackRate = Math.max(0.1, 1 - (this.timeAlive / 60)); //attack faster over time, up to a limit
-            this.maxPhaseTime = Math.max(0.1, 1 - (this.timeAlive / 60));;
+            this.attackRate = Math.max(0.1, 1 - (this.timeAlive / 45)); //attack faster over time, up to a limit
+            this.maxPhaseTime = Math.max(0.1, 1 - (this.timeAlive / 45));;
             const burstCount = 1;
             const burstInterval = 1;
-            const bulletCount = Math.min(3, Math.ceil(this.timeAlive / 10));
+            const bulletCount = Math.min(3, Math.ceil(this.timeAlive / 5));
             const spreadAngle = Math.PI / 40;
             const bulletInterval = 0.1;
             const clockwise = [true, false];
@@ -397,7 +397,7 @@ export class enemy {
             if (this.phase === 0 || this.phase === 2) {
                 this.offsetPattern = [0, Math.PI / 60, Math.PI / 90, Math.PI / 180, -Math.PI / 180, -Math.PI / 60, -Math.PI / 90];
                 this.phaseCoolDown = 0.75;
-                this.attackRate = Math.max(0.20, this.hp / this.maxHp); //attack faster as hp drops
+                this.attackRate = Math.max(0.10, this.hp / this.maxHp / 1.5); //attack faster as hp drops
                 this.maxPhaseTime = 6.75;
                 const burstCount = 6;
                 const burstInterval = 0.065;
