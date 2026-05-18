@@ -1,6 +1,7 @@
 import { EnemyType } from '@/app/game/constants';
 import { Game } from '@/app/game/game';
 import { aimedSpreadToDirection, aimedSpreadToPlayer, spiralPattern, ringPattern } from '@/app/game/patterns';
+import { BossHealthBar } from '@/app/game/entities/hpBar';
 export class enemy {
     private hp: number;
     private maxHp: number;
@@ -39,6 +40,7 @@ export class enemy {
 
     private bossPhase = 0; //for bosses with separate phases that change the entire attack pattern, not just modify it
     private maxBossPhase = 0;
+    private bossHealthBar: BossHealthBar | null = null; //only used for bosses
 
     private currentAimAngle = Math.PI / 2; //for patterns that require continuous aiming
     private aimRotationSpeed = 2; //radians per second
@@ -110,11 +112,21 @@ export class enemy {
             this.maxPhase = 3;
             this.phaseTimer = 0;
             this.maxPhaseTime = 10;
+            this.maxBossPhase = 1;
+        }
+
+        if (this.maxBossPhase > 0) {
+            this.bossHealthBar = new BossHealthBar(50, 20, 300, 20, this.hp, this.maxHp);
         }
     }
     takeDamage(amount: number) {
         this.hp -= amount;
         if (this.hp < 0) this.hp = 0;
+
+        // Add this line to update the health bar
+        if (this.bossHealthBar) {
+            this.bossHealthBar.updateHp(this.hp);
+        }
     }
     getX() {
         return this.x;
@@ -313,6 +325,10 @@ export class enemy {
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.stroke();
+
+        if (this.bossHealthBar) {
+            this.bossHealthBar.draw(ctx);
+        }
     }
 
 
@@ -381,7 +397,7 @@ export class enemy {
             this.offsetPattern = [0, Math.PI / 20];
             this.phaseCoolDown = 0;
             this.attackRate = 10;
-            
+
             const burstCount = 2;
             const burstInterval = 0.5;
             const bulletInterval = 0.05;

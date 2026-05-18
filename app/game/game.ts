@@ -1,12 +1,13 @@
-import { Player } from './entities/player';
-import { Input } from './systems/input';
-import { playerBullet } from './entities/playerBullet';
-import { enemy } from './entities/enemy';
-import { enemyBullet } from './entities/enemyBullets';
-import { EnemyType } from './constants';
-import { checkCollisions } from './systems/collision';
-import { Shockwave } from './entities/shockwave';
-import { createLevel } from './systems/stagescript';
+import { Player } from '@/app/game/entities/player';
+import { Input } from '@/app/game/systems/input';
+import { playerBullet } from '@/app/game/entities/playerBullet';
+import { enemy } from '@/app/game/entities/enemy';
+import { enemyBullet } from '@/app/game/entities/enemyBullets';
+import { EnemyType } from '@/app/game/constants';
+import { checkCollisions } from '@/app/game/systems/collision';
+import { Shockwave } from '@/app/game/entities/shockwave';
+import { createLevel } from '@/app/game/systems/stagescript';
+import { PlayerHpDisplay } from '@/app/game/entities/hpBar';
 
 
 export class Game {

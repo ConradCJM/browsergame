@@ -71,9 +71,11 @@ export class Player {
 
 
     //conmstructor
-    constructor(startX: number, startY: number) {
+    constructor(startX: number, startY: number, maxHp?: number,hp?: number) {
         this.x = startX;
         this.y = startY;
+        this.maxHp = maxHp ?? this.maxHp;
+        this.hp = hp ?? this.hp;
     }
 
     //movement updater
