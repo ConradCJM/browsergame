@@ -8,6 +8,7 @@ export class playerBullet {
     private Yradius = 7;
     private color = '#41e9ff';
     private transparency = 0.2;
+    private outsideMapMargin = 50; //how far outside the map the bullet can go before being removed
 
     constructor(startX: number, startY: number, directionX: number, directionY: number) {
         this.x = startX;
@@ -47,6 +48,9 @@ export class playerBullet {
     }
 
     isOffScreen(canvasWidth: number, canvasHeight: number): boolean {
-        return this.x < 0 || this.x > canvasWidth || this.y < 0 || this.y > canvasHeight;
+        return this.x + this.outsideMapMargin < 0 ||
+            this.x - this.outsideMapMargin > canvasWidth ||
+            this.y + this.outsideMapMargin < 0 ||
+            this.y - this.outsideMapMargin > canvasHeight;
     }
 }

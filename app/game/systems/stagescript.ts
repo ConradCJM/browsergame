@@ -21,10 +21,10 @@ export function createLevel(game: Game, level: number) {
 
         game.addEnemyToQueue(200, 50, EnemyType.Basic, 25);
 
-        game.addEnemyToQueue(200, 80, EnemyType.Tanky, 30);
-        game.addEnemyToQueue(200, 80, EnemyType.Tanky, 32);
-        game.addEnemyToQueue(225, 80, EnemyType.Fast, 33);
-        game.addEnemyToQueue(200, 80, EnemyType.Tanky, 34);
+        game.addEnemyToQueue(200, 90, EnemyType.Tanky, 30);
+        game.addEnemyToQueue(200, 110, EnemyType.Tanky, 34);
+        game.addEnemyToQueue(225, 40, EnemyType.Fast, 33);
+        game.addEnemyToQueue(200, 130, EnemyType.Tanky, 38);
 
 
         game.addEnemyToQueue(200, 50, EnemyType.SentryBoss, 40);
