@@ -35,7 +35,10 @@ export class enemy {
     private maxPhase: number; //0 for no phases, 1 means two phases (phase 0 and phase 1)
     private phaseTimer = 0;
     private maxPhaseTime: number; //time in seconds for each phase
-    private phaseCoolDown = 0; //time in seconds before enemy can change phases again after hp threshold is reached
+    private phaseCoolDown = 0; //time in seconds before enemy can change phases
+
+    private bossPhase = 0; //for bosses with separate phases that change the entire attack pattern, not just modify it
+    private maxBossPhase = 0;
 
     private currentAimAngle = Math.PI / 2; //for patterns that require continuous aiming
     private aimRotationSpeed = 2; //radians per second

@@ -7,7 +7,7 @@ import { EnemyType } from './constants';
 import { checkCollisions } from './systems/collision';
 import { Shockwave } from './entities/shockwave';
 import { createLevel } from './systems/stagescript';
-import { create } from 'domain';
+
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -34,6 +34,9 @@ export class Game {
     //shockwave effects
     private shockwaves: Shockwave[] = [];
 
+    ///level controller didnt think i would actually need to use interfaces that i learned in class lol
+    private levelController: { update(dt: number): void } | null = null
+
     addEnemyToQueue(x: number, y: number, type: EnemyType, delay: number) {
         this.pendingEnemies.push({ spawnTime: performance.now() / 1000 + delay, x, y, type });
     }
@@ -47,10 +50,19 @@ export class Game {
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this.canvas.width / 2, this.canvas.height - 50);
-        createLevel(this, 1);
+
+        this.levelController = createLevel(this, 1);
     }
     addEnemy(startx: number, starty: number, type: EnemyType) {
         this.enemies.push(new enemy(startx, starty, type, this));
+    }
+
+    getEnemies() {
+        return this.enemies;
+    }
+
+    getPendingEnemies() {
+        return this.pendingEnemies;
     }
 
     getPlayer() {
@@ -99,6 +111,7 @@ export class Game {
         //player stuff
         this.player.update(dt, this.input.keys, this.canvas.width, this.canvas.height);
 
+        //player attack
         if (this.input.keys[' ']) {
             const now = performance.now() / 1000;
             if (now - this.input.lastShootTime >= this.input.shootCooldown) {
@@ -136,18 +149,23 @@ export class Game {
             return true;
         });
 
+        //update level-specific logic
+        if (this.levelController) {
+            this.levelController.update(dt);
+        }
+
         //update player bullets
         this.playerBullets.forEach(b => b.update(dt));
 
         //remove offscreen player bullets
         this.playerBullets = this.playerBullets.filter(b => !b.isOffScreen(this.canvas.width, this.canvas.height));
 
-        checkCollisions(this.player, this.enemies, this.playerBullets, this.enemyBullets,this.shockwaves);
+        checkCollisions(this.player, this.enemies, this.playerBullets, this.enemyBullets, this.shockwaves);
 
         //remove dead enemies & create shockwave
         this.enemies = this.enemies.filter(e => {
             if (e.isDead()) {
-                this.shockwaves.push(new Shockwave(e.getX(), e.getY(),(e.getXRadius() + e.getYRadius())/2, 0.5, e.getColor()));
+                this.shockwaves.push(new Shockwave(e.getX(), e.getY(), (e.getXRadius() + e.getYRadius()) / 2, 0.5, e.getColor()));
                 return false; // Remove enemy
             }
             return true;
@@ -170,7 +188,7 @@ export class Game {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         //shockwaves
-        
+
         this.shockwaves.forEach(sw => sw.draw(this.ctx));
         //bullets
         this.playerBullets.forEach(b => b.draw(this.ctx));
