@@ -40,6 +40,7 @@ export class hpBar {
         const radius = this.height / 2; //creates pill-shaped ends
 
         //draw background
+        ctx.beginPath();
         ctx.fillStyle = this.backgroundColor;
         ctx.roundRect(this.x, this.y, this.width, this.height, radius);
         ctx.fill();
@@ -50,6 +51,7 @@ export class hpBar {
         ctx.stroke();
 
         //draw HP fill
+        ctx.beginPath();
         const hpWidth = (this.curretHp / this.maxHp) * this.width;
         ctx.fillStyle = this.color;
         ctx.roundRect(this.x, this.y, hpWidth, this.height, radius);
@@ -65,7 +67,7 @@ export class BossHealthBar extends hpBar {
                 curretHp: number, maxHp: number) {
         // Boss bars typically: wider, different colors, at top of screen
         super(x, y, width, height, curretHp, maxHp, 
-              '#b2ff46',   //hp colour
+              '#ff009d7c',   //hp colour
               '#1a1a1a',    //background
               '#ffffff',    //border
               3);           // thicker border

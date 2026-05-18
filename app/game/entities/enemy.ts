@@ -116,7 +116,7 @@ export class enemy {
         }
 
         if (this.maxBossPhase > 0) {
-            this.bossHealthBar = new BossHealthBar(50, 20, 300, 20, this.hp, this.maxHp);
+            this.bossHealthBar = new BossHealthBar(50, 12, 300, 8, this.hp, this.maxHp);
         }
     }
     takeDamage(amount: number) {
@@ -269,7 +269,7 @@ export class enemy {
     //draw enemy
     draw(ctx: CanvasRenderingContext2D) {
 
-        //circle
+        //color
         if (this.type === EnemyType.Basic) {
             this.enemyColor = '#ff0000';
         } else if (this.type === EnemyType.Fast) {
@@ -280,6 +280,12 @@ export class enemy {
             this.enemyColor = '#0e7900';
         }
 
+        if (this.bossHealthBar) {
+            this.bossHealthBar.draw(ctx);
+        }
+
+
+        //shape
         if (this.type === EnemyType.Basic) {
             ctx.beginPath();
             ctx.fillStyle = this.enemyColor;
@@ -326,9 +332,6 @@ export class enemy {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        if (this.bossHealthBar) {
-            this.bossHealthBar.draw(ctx);
-        }
     }
 
 

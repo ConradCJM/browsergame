@@ -37,6 +37,10 @@ export class Player {
         return this.hitIframesDuration;
     }
 
+    isInvincible() {
+        return this.isInHitIframes;
+    }
+
     getX() {
         return this.x;
     }
@@ -51,23 +55,12 @@ export class Player {
         this.hitIframesTimer = 0;
         this.hp -= amount;
         if (this.hp < 0) this.hp = 0;
-        this.shockwaves.push(new Shockwave(this.x, this.y,500, 0.5));
-    }
-
-    drawClearEnemyBulletsEffect(ctx: CanvasRenderingContext2D) {
-        ctx.fillStyle = '#24b300a4';
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 50, 0, Math.PI * 2);
-        ctx.fill();
+        this.shockwaves.push(new Shockwave(this.x, this.y,500, 0.35));
     }
 
     getHitboxRadius() {
         return this.hitboxRadius/2;
     }
-
-
-
-
 
 
     //conmstructor
