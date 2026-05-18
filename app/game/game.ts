@@ -6,6 +6,8 @@ import { enemyBullet } from './entities/enemyBullets';
 import { EnemyType } from './constants';
 import { checkCollisions } from './systems/collision';
 import { Shockwave } from './entities/shockwave';
+import { createLevel } from './systems/stagescript';
+import { create } from 'domain';
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -45,7 +47,7 @@ export class Game {
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this.canvas.width / 2, this.canvas.height - 50);
-        this.enemies.push(new enemy((this.canvas.width / 4) * 3, 70, EnemyType.SentryBoss, this));
+        createLevel(this, 1);
     }
     addEnemy(startx: number, starty: number, type: EnemyType) {
         this.enemies.push(new enemy(startx, starty, type, this));
@@ -120,6 +122,15 @@ export class Game {
         this.pendingEnemyBullets = this.pendingEnemyBullets.filter(pending => {
             if (now >= pending.spawnTime) {
                 this.enemyBullets.push(new enemyBullet(pending.x, pending.y, pending.dirX, pending.dirY, pending.bulletSpeed, pending.bulletXRadius, pending.bulletYRadius, pending.bulletColor, pending.bulletXGrowth, pending.bulletYGrowth));
+                return false;
+            }
+            return true;
+        });
+
+        //spawn pending enemies when their time comes
+        this.pendingEnemies = this.pendingEnemies.filter(pending => {
+            if (now >= pending.spawnTime) {
+                this.addEnemy(pending.x, pending.y, pending.type);
                 return false;
             }
             return true;

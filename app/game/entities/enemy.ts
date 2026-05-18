@@ -12,6 +12,9 @@ export class enemy {
     private enemyColor = '#ff0000';
     private speed = 20; //pixels per second
 
+    private centerX = 200;
+    private centerY = 70;
+
     private XRadius = 10;
     private YRadius = 10;
 
@@ -47,8 +50,8 @@ export class enemy {
         this.game = game;
 
         //basic stats
-        this.hp = 40;
-        this.maxHp = 40;
+        this.hp = 30;
+        this.maxHp = 30;
         this.attackTimer = 0;
         this.attackRate = 0.5;
 
@@ -62,6 +65,8 @@ export class enemy {
 
         //type-based stat modifications
         if (this.type === EnemyType.Fast) {
+            this.centerX = this.x
+            this.centerY = this.y;
             this.hp = 30;
             this.maxHp = 30;
             this.attackRate = 0.15;
@@ -76,8 +81,8 @@ export class enemy {
             this.XRadius = 12;
             this.YRadius = 5;
         } else if (this.type === EnemyType.Tanky) {
-            this.hp = 100;
-            this.maxHp = 100;
+            this.hp = 75;
+            this.maxHp = 75;
             this.attackRate = 1.25;
 
             this.bulletSpeed = 35;
@@ -199,7 +204,7 @@ export class enemy {
 
         if (this.type === EnemyType.Basic) {
             this.speed = 50;
-            this.y += Math.sin(performance.now() / 1000) * this.speed / 2 * dt;
+            this.y += Math.sin(this.timeAlive) * this.speed / 2 * dt;
 
             let targetX: number;
 
@@ -219,10 +224,10 @@ export class enemy {
         else if (this.type === EnemyType.Fast) {
             //infinity symbol movement
             const speed = 1.5; //radians per second
-            const angle = (performance.now() / 1000) * speed;
+            const angle = this.timeAlive * speed;
             const amplitude = 150;
-            const centerX = 200;
-            const centerY = 150;
+            const centerX = this.centerX;
+            const centerY = this.centerY;
 
             // Lemniscate parametric equations (thanks co-pilot for the formula :D)
             const denominator = 1 + Math.sin(angle) ** 2;
@@ -237,15 +242,13 @@ export class enemy {
             this.speed = 20;
             const baseSpeed = 50; // reference speed
 
-            this.x = centerX + Math.sin((performance.now() / 1000) * (this.speed / baseSpeed)) * amplitude;
+            this.x = centerX + Math.sin(this.timeAlive * (this.speed / baseSpeed)) * amplitude;
         }
         else if (this.type === EnemyType.SentryBoss) {
             this.speed = 10;
-            this.y += Math.sin(performance.now() / 1000) * this.speed * dt;
+            this.y += Math.sin(this.timeAlive) * this.speed * dt;
             this.x = 200;
         }
-
-
     }
 
     //draw enemy
@@ -329,8 +332,8 @@ export class enemy {
             bulletYGrowth?: number
         }[] = [];
         if (this.type === EnemyType.Basic) {
-            this.phaseCoolDown = 0.5;
-            this.attackRate = this.phase % 2 === 1 ? 0.75 : 0.5;
+            this.phaseCoolDown = 0;
+            this.attackRate = this.phase % 2 === 1 ? 1 : 0.75;
             this.maxPhaseTime = 7.5;
             const bulletCount = this.phase % 2 === 1 ? 3 : 1;
             const burstCount = this.phase % 2 === 1 ? 3 : 1;
@@ -351,8 +354,8 @@ export class enemy {
 
             this.aimOffset = 0;
             this.phaseCoolDown = 0;
-            this.attackRate = Math.max(0.1, 1 - (this.timeAlive / 45)); //attack faster over time, up to a limit
-            this.maxPhaseTime = Math.max(0.1, 1 - (this.timeAlive / 45));;
+            this.attackRate = Math.max(0.1, 1 - (this.timeAlive / 60)); //attack faster over time, up to a limit
+            this.maxPhaseTime = Math.max(0.1, 1 - (this.timeAlive / 60));;
             const burstCount = 1;
             const burstInterval = 1;
             const bulletCount = Math.min(3, Math.ceil(this.timeAlive / 5));
@@ -375,7 +378,7 @@ export class enemy {
             this.offsetPattern = [0, Math.PI / 20];
             this.phaseCoolDown = 0;
             this.attackRate = 10;
-            this.maxPhase = 0;
+            
             const burstCount = 2;
             const burstInterval = 0.5;
             const bulletInterval = 0.05;
@@ -401,7 +404,7 @@ export class enemy {
                 this.maxPhaseTime = 6.75;
                 const burstCount = 6;
                 const burstInterval = 0.065;
-                const bulletCount = this.hp >= this.maxHp/2 ? 1:3;
+                const bulletCount = this.hp >= this.maxHp / 2 ? 1 : 3;
 
                 specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
 
