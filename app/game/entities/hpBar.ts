@@ -8,7 +8,7 @@ export class hpBar {
     private borderColor = '#ffffff';
     private borderWidth = 2;
 
-    private curretHp: number;
+    private currentHp: number;
     private maxHp: number;
 
     constructor(
@@ -16,7 +16,7 @@ export class hpBar {
         y: number,
         width: number,
         height: number,
-        curretHp: number,
+        currentHp: number,
         maxHp: number,
         color?: string,
         backgroundColor?: string,
@@ -27,7 +27,7 @@ export class hpBar {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.curretHp = curretHp;
+        this.currentHp = currentHp;
         this.maxHp = maxHp;
 
         this.color = color ?? this.color;
@@ -52,25 +52,25 @@ export class hpBar {
 
         //draw HP fill
         ctx.beginPath();
-        const hpWidth = (this.curretHp / this.maxHp) * this.width;
+        const hpWidth = (this.currentHp / this.maxHp) * this.width;
         ctx.fillStyle = this.color;
         ctx.roundRect(this.x, this.y, hpWidth, this.height, radius);
         ctx.fill();
     }
     updateHp(currentHp: number) {
-        this.curretHp = currentHp;
+        this.currentHp = currentHp;
     }
 }
 //boss health bar class
 export class BossHealthBar extends hpBar {
-    constructor(x: number, y: number, width: number, height: number, 
-                curretHp: number, maxHp: number) {
+    constructor(x: number, y: number, width: number, height: number,
+        currentHp: number, maxHp: number) {
         // Boss bars typically: wider, different colors, at top of screen
-        super(x, y, width, height, curretHp, maxHp, 
-              '#ff009d7c',   //hp colour
-              '#1a1a1a',    //background
-              '#ffffff',    //border
-              3);           // thicker border
+        super(x, y, width, height, currentHp, maxHp,
+            '#ff009d7c',   //hp colour
+            '#1a1a1a',    //background
+            '#ffffff',    //border
+            3);           // thicker border
     }
 }
 

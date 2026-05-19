@@ -36,7 +36,7 @@ export class enemy {
     private attackRate: number; //attacks every x seconds
 
     private phase = 0; //for more complex attack patterns
-    private maxPhase: number; //0 for no phases, 1 means two phases (phase 0 and phase 1)
+    private maxPhase: number; //0 for no phases, 1 means two phases (phase 0 and phase 1) (0 indexed)
     private phaseTimer = 0;
     private maxPhaseTime: number; //time in seconds for each phase
     private phaseCoolDown = 0; //time in seconds before enemy can change phases
