@@ -14,7 +14,7 @@ export function createLevel(game: Game, level: number): LevelController {
         currentWave = 0;
         waveQueued = [false, false, false, false];
         waveTimer = 0;
-        maxWaveTime = [20, 30, 40, 0]; // 0 = no time limit for that wave
+        maxWaveTime = [20, 30, 40, 65]; // 0 = no time limit for that wave
 
         //queue wave 0 immediately
         game.addEnemyToQueue(75, 50, EnemyType.Basic, 0);
@@ -74,6 +74,7 @@ export function createLevel(game: Game, level: number): LevelController {
                 else if (currentWave === 4 &&
                     ((game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) ||
                     (maxWaveTime[3] > 0 && waveTimer > maxWaveTime[3]))) {
+                    game.killAllEnemies(); //kill all enemies if player manages to survive until time limit
                     game.addEnemyToQueue(200, 50, EnemyType.SentryBoss, 0);
                     currentWave = 5;
                 }

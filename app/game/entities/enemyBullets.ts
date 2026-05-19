@@ -6,29 +6,45 @@ export class enemyBullet {
     private color = '#24b300a4';//placeholder (add colour as parameter later)
     private Xradius = 3;
     private Yradius = 3;
-    private speed = 50;
+    private Xspeed = 50;
+    private Yspeed = 50;
     private bulletXGrowth = 0;
     private bulletYGrowth = 0;
+    private rotation?: number;
 
-    constructor(startX: number, startY: number, directionX: number, directionY: number, speed: number, Xradius?: number, Yradius?: number, color?: string, bulletXGrowth?: number, bulletYGrowth?: number) {
+    constructor(startX: number,
+        startY: number,
+        directionX: number,
+        directionY: number,
+        Xspeed: number,
+        YSpeed: number,
+        Xradius?: number,
+        Yradius?: number,
+        color?: string,
+        bulletXGrowth?: number,
+        bulletYGrowth?: number,
+        rotation?: number,
+    ) {
         this.x = startX;
         this.y = startY;
-        this.Xradius = Xradius || this.Xradius;
-        this.Yradius = Yradius || this.Yradius;
-        this.color = color || this.color;
-        this.speed = speed;
-        this.bulletXGrowth = bulletXGrowth || this.bulletXGrowth;
-        this.bulletYGrowth = bulletYGrowth || this.bulletYGrowth;
+        this.Xradius = Xradius ?? this.Xradius;
+        this.Yradius = Yradius ?? this.Yradius;
+        this.color = color ?? this.color;
+        this.Xspeed = Xspeed ?? this.Xspeed;
+        this.Yspeed = YSpeed ?? this.Xspeed; //if Yspeed is not provided, use Xspeed for a consistent speed in all directions
+        this.bulletXGrowth = bulletXGrowth ?? this.bulletXGrowth;
+        this.bulletYGrowth = bulletYGrowth ?? this.bulletYGrowth;
+        this.rotation = rotation;
 
         //normalize direction
         const length = Math.sqrt(directionX ** 2 + directionY ** 2);
-        this.vx = (directionX / length) * this.speed;
-        this.vy = (directionY / length) * this.speed;
+        this.vx = (directionX / length) * this.Xspeed;
+        this.vy = (directionY / length) * this.Yspeed;
     }
 
     getX() {
         return this.x;
-    }   
+    }
     getY() {
         return this.y;
     }
@@ -47,7 +63,7 @@ export class enemyBullet {
         this.Yradius += (this.Yradius * this.bulletYGrowth) * dt;
     }
     draw(ctx: CanvasRenderingContext2D) {
-        const angle = Math.atan2(this.vy, this.vx) + Math.PI / 2;
+        const angle = this.rotation ?? Math.atan2(this.vy, this.vx) + Math.PI / 2;
         ctx.fillStyle = this.color;
         ctx.globalAlpha = 1;
         ctx.beginPath();

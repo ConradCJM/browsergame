@@ -8,6 +8,8 @@ export class enemy {
     private type: EnemyType = EnemyType.Basic;
     private timeAlive: number = 0; //for patterns that change over time
 
+    private isInvincible = false; //for enemies that have invincibility frames for some stages or if the enemy needs to be clicked (clicking feature is still being planned)
+
     private x: number;
     private y: number;
     private enemyColor = '#ff0000';
@@ -19,7 +21,8 @@ export class enemy {
     private XRadius = 10;
     private YRadius = 10;
 
-    private bulletSpeed = 50;
+    private bulletXSpeed = 50;
+    private bulletYSpeed = 50;
     private bulletXRadius = 3;
     private bulletYRadius = 3;
     private bulletColor = '#24b300a4';
@@ -60,7 +63,8 @@ export class enemy {
         this.attackTimer = 0;
         this.attackRate = 0.5;
 
-        this.bulletSpeed = 150;
+        this.bulletXSpeed = 150;
+        this.bulletYSpeed = 150;
         this.bulletXRadius = 3;
         this.bulletYRadius = 3;
         this.bulletColor = '#b30000a4';
@@ -76,7 +80,8 @@ export class enemy {
             this.maxHp = 30;
             this.attackRate = 0.15;
 
-            this.bulletSpeed = 85;
+            this.bulletXSpeed = 85;
+            this.bulletYSpeed = 85;
             this.bulletXRadius = 2;
             this.bulletYRadius = 2.5;
             this.bulletColor = '#fbff00a4';
@@ -90,7 +95,8 @@ export class enemy {
             this.maxHp = 75;
             this.attackRate = 1.25;
 
-            this.bulletSpeed = 35;
+            this.bulletXSpeed = 35;
+            this.bulletYSpeed = 35;
             this.bulletXRadius = 4;
             this.bulletYRadius = 4;
             this.bulletColor = '#5900ffa4';
@@ -104,7 +110,8 @@ export class enemy {
             this.maxHp = 1000;
             this.attackRate = 0.5;
 
-            this.bulletSpeed = 65;
+            this.bulletXSpeed = 65;
+            this.bulletYSpeed = 65;
             this.bulletXRadius = 3.5;
             this.bulletYRadius = 3.5;
             this.bulletColor = '#0e7900a4';
@@ -346,7 +353,8 @@ export class enemy {
             dirX: number,
             dirY: number,
             delay: number,
-            bulletSpeed?: number,
+            bulletXSpeed?: number,
+            bulletYSpeed?: number,
             bulletXRadius?: number,
             bulletYRadius?: number,
             bulletColor?: String,
@@ -365,9 +373,10 @@ export class enemy {
             const dirY = Math.sin(this.currentAimAngle);
             specs = aimedSpreadToDirection(dirX, dirY, burstCount, burstInterval, bulletCount, Math.PI / 30, 0);
             specs.forEach(spec => {
-                spec.bulletSpeed = 250;
-                spec.bulletXRadius = 4;
-                spec.bulletYRadius = 8;
+                spec.bulletXSpeed = 225;
+                spec.bulletYSpeed = 225;
+                spec.bulletXRadius = 3;
+                spec.bulletYRadius = 6;
                 spec.bulletColor = '#b30000ff';
             })
 
@@ -388,8 +397,9 @@ export class enemy {
             specs = spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, this.aimOffset, this.currentAimAngle, clockwise[this.phase % 2]);
 
             specs.forEach(spec => {
-                spec.bulletSpeed = 250;
-                spec.bulletXRadius = 3;
+                spec.bulletXSpeed = 250;
+                spec.bulletYSpeed = 250;
+                spec.bulletXRadius = Math.max(1.25, 3 - (this.timeAlive / 24)); //start larger and shrink over time
                 spec.bulletYRadius = 15;
                 spec.bulletColor = '#fbff00ff';
             })
@@ -410,7 +420,8 @@ export class enemy {
             specs = spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, this.offsetPattern, this.currentAimAngle, true);
 
             specs.forEach(spec => {
-                spec.bulletSpeed = 50;
+                spec.bulletXSpeed = 50;
+                spec.bulletYSpeed = 50;
                 spec.bulletXRadius = 5;
                 spec.bulletYRadius = 5;
                 spec.bulletColor = '#5900ffb4';
@@ -431,7 +442,8 @@ export class enemy {
                 specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
 
                 specs.forEach(spec => {
-                    spec.bulletSpeed = 150;
+                    spec.bulletXSpeed = 150;
+                    spec.bulletYSpeed = 150;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 10;
                     spec.bulletColor = 'rgba(30, 255, 0, 0.4)';
@@ -448,10 +460,11 @@ export class enemy {
 
                 specs = ringPattern(burstCount, burstInterval, spreadAngle, this.offsetPattern, this.currentAimAngle);
                 specs.forEach(spec => {
-                    spec.bulletSpeed = 60;
+                    spec.bulletXSpeed = 60;
+                    spec.bulletYSpeed = 60;
                     spec.bulletXRadius = 20;
                     spec.bulletYRadius = 20;
-                    spec.bulletColor = 'rgba(30, 255, 0, 0.8)';
+                    spec.bulletColor = 'rgba(30, 255, 0, 0.46)';
                     spec.bulletXGrowth = 0.015;
                     spec.bulletYGrowth = 0.015;
                 })
@@ -461,8 +474,9 @@ export class enemy {
                 this.attackRate = 0.1;
                 this.maxPhaseTime = 0.1;
                 const burstCount = 1 + Math.floor((1 - (this.hp / this.maxHp)) * 10); //more bullet bursts as hp drops
-                const burstInterval = 0.5;
+                const burstInterval = 0.75;
                 const bulletCount = 1 + Math.floor(this.timeAlive / 60); //more bullets per burst as time goes on
+                
 
                 //CUSTOM SHOT PATTERN Bullet Rain (if im gonna use this later again il make it a function in another file)
                 for (let j = 0; j < burstCount; j++) {
@@ -470,20 +484,21 @@ export class enemy {
 
                         specs.push({
                             dirY: 1,
-                            dirX: 0,
+                            dirX: 0, 
                             delay: j * burstInterval
 
                         });
                     }
                 }
                 specs.forEach(spec => {
-                    spec.spawnY = -59; //spawn above screen
+                    spec.spawnY = -2; //spawn above screen
                     spec.spawnX = Math.random() * 400; //spawn at random x position
 
 
-                    spec.bulletSpeed = 600;
-                    spec.bulletXRadius = 3;
-                    spec.bulletYRadius = 60;
+                    spec.bulletXSpeed = 0;
+                    spec.bulletYSpeed = 150;
+                    spec.bulletXRadius = 50;
+                    spec.bulletYRadius = 2;
                     spec.bulletColor = 'rgba(30, 255, 0, 1)';
                 })
             }
@@ -496,7 +511,8 @@ export class enemy {
                 y: spec.spawnY ?? this.y,
                 dirX: spec.dirX,
                 dirY: spec.dirY,
-                bulletSpeed: spec.bulletSpeed ?? this.bulletSpeed,
+                bulletXSpeed: spec.bulletXSpeed ?? this.bulletXSpeed,
+                bulletYSpeed: spec.bulletYSpeed ?? this.bulletYSpeed,
                 bulletXRadius: spec.bulletXRadius ?? this.bulletXRadius,
                 bulletYRadius: spec.bulletYRadius ?? this.bulletYRadius,
                 bulletColor: spec.bulletColor ?? this.bulletColor,
