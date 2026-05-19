@@ -140,8 +140,6 @@ export class Game {
 
     private update(dt: number) {
 
-       
-
         //enemy stuff
         this.enemies.forEach(e => e.update(dt));
         this.enemyBullets.forEach(b => b.update(dt));
