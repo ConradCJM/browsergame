@@ -497,7 +497,7 @@ export class enemy {
 
                     spec.bulletXSpeed = 0;
                     spec.bulletYSpeed = 150;
-                    spec.bulletXRadius = 50;
+                    spec.bulletXRadius = 50- burstCount* 2; //start with a wide bullet and shrink based on burst count to create a rain effect
                     spec.bulletYRadius = 2;
                     spec.bulletColor = 'rgba(30, 255, 0, 1)';
                 })

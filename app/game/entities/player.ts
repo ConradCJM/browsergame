@@ -1,4 +1,5 @@
 import { Shockwave } from './shockwave';
+import { Game } from '../game';
 export class Player {
     private hp = 100;
     private maxHp = 5;
@@ -24,6 +25,8 @@ export class Player {
     private focusTransparency = 0.2;
 
     private shockwaves: Shockwave[] = [];
+
+    private game: Game;
 
     getHp() {
         return this.hp;
@@ -55,16 +58,17 @@ export class Player {
         this.hitIframesTimer = 0;
         this.hp -= amount;
         if (this.hp < 0) this.hp = 0;
-        this.shockwaves.push(new Shockwave(this.x, this.y,500, 0.35));
+        this.shockwaves.push(new Shockwave(this.x, this.y, 500, 0.35));
     }
 
     getHitboxRadius() {
-        return this.hitboxRadius/2;
+        return this.hitboxRadius / 2;
     }
 
 
     //conmstructor
-    constructor(startX: number, startY: number, maxHp?: number,hp?: number) {
+    constructor(game: Game, startX: number, startY: number, maxHp?: number, hp?: number) {
+        this.game = game;
         this.x = startX;
         this.y = startY;
         this.maxHp = maxHp ?? this.maxHp;
@@ -89,7 +93,8 @@ export class Player {
         this.isFocused = keys['shift'];
 
         //keep player in map
-        this.x = Math.max((this.hitboxRadius / 2), Math.min(this.x, canvasWidth - (this.hitboxRadius / 2)));
+        const barWidth = this.game.getTimerBarWidth();
+        this.x = Math.max(barWidth + (this.hitboxRadius / 2), Math.min(this.x, canvasWidth - barWidth - (this.hitboxRadius / 2)));
         this.y = Math.max((this.hitboxRadius / 2), Math.min(this.y, canvasHeight - (this.hitboxRadius / 2)));
 
         //shockwave effect
@@ -99,7 +104,7 @@ export class Player {
     //draw player
     draw(ctx: CanvasRenderingContext2D) {
 
-        
+
 
         //focus transparency
         ctx.globalAlpha = this.isFocused ? this.focusTransparency : 1;

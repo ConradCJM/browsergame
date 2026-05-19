@@ -28,6 +28,10 @@ export class Game {
 
     private playerHpDisplay: PlayerHpDisplay = new PlayerHpDisplay(10, 20, 16);
 
+    private barWidth = 2.5;
+    private barColor = '#00ff0079';
+    private barBackgroundColor = '#003300';
+
     //list of pending player bullets
     private pendingPlayerBullets: {
         spawnTime: number;
@@ -57,7 +61,7 @@ export class Game {
     private shockwaves: Shockwave[] = [];
 
     ///level controller didnt think i would actually need to use interfaces that i learned in class lol
-    private levelController: { update(dt: number): void } | null = null
+    private levelController: { update(dt: number): void, getWaveTimerPercent():number } | null = null
 
     addEnemyToQueue(x: number, y: number, type: EnemyType, delay: number) {
         this.pendingEnemies.push({ spawnTime: performance.now() / 1000 + delay, x, y, type });
@@ -71,13 +75,17 @@ export class Game {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
-        this.player = new Player(this.canvas.width / 2, this.canvas.height - 50);
+        this.player = new Player(this,this.canvas.width / 2, this.canvas.height - 50);
 
-        // this.levelController = createLevel(this, 1);
-        this.addEnemyToQueue(200,50, EnemyType.SentryBoss, 2);
+        this.levelController = createLevel(this, 1);
+        // this.addEnemyToQueue(200, 50, EnemyType.SentryBoss, 2);
     }
     addEnemy(startx: number, starty: number, type: EnemyType) {
         this.enemies.push(new enemy(startx, starty, type, this));
+    }
+
+    getTimerBarWidth() {
+        return this.barWidth;
     }
 
     getEnemies() {
@@ -131,6 +139,8 @@ export class Game {
 
 
     private update(dt: number) {
+
+       
 
         //enemy stuff
         this.enemies.forEach(e => e.update(dt));
@@ -212,9 +222,13 @@ export class Game {
 
 
     private render() {
+        
+
         //clear canvas
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        
 
         //shockwaves
         this.shockwaves.forEach(sw => sw.draw(this.ctx));
@@ -232,6 +246,31 @@ export class Game {
         //player health bar
         this.playerHpDisplay.draw(this.ctx, this.player.getHp(), this.player.getMaxHp());
 
-
+        this.drawWaveTimerBars();
     }
+
+    //draw side timer bars
+    private drawWaveTimerBars() {
+        if (!this.levelController) return;
+
+        const timerPercent = this.levelController.getWaveTimerPercent();
+        const filledHeight = (this.canvas.height) * timerPercent;
+
+        // Left bar background
+        this.ctx.fillStyle = this.barBackgroundColor;
+        this.ctx.fillRect(0, this.barWidth, this.barWidth, this.canvas.height);
+
+        // Right bar background
+        this.ctx.fillRect(this.canvas.width - this.barWidth, this.barWidth, this.barWidth, this.canvas.height);
+
+        // Left bar fill (fills from bottom up)
+        this.ctx.fillStyle = this.barColor;
+        this.ctx.fillRect(0, this.canvas.height - filledHeight, this.barWidth, filledHeight);
+
+        // Right bar fill (fills from bottom up)
+        this.ctx.fillRect(this.canvas.width - this.barWidth, this.canvas.height - filledHeight, this.barWidth, filledHeight);
+    }
+
+
+
 }

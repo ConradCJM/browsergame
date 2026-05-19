@@ -3,13 +3,14 @@ import { EnemyType } from "@/app/game/constants";
 
 interface LevelController {
     update(dt: number): void;
+    getWaveTimerPercent(): number;
 }
 
 export function createLevel(game: Game, level: number): LevelController {
     let currentWave = 0;
-    let waveQueued:boolean[] = [];
+    let waveQueued: boolean[] = [];
     let waveTimer = 0;
-    let maxWaveTime:number[] = [];
+    let maxWaveTime: number[] = [];
     if (level === 1) {
         currentWave = 0;
         waveQueued = [false, false, false, false];
@@ -29,10 +30,10 @@ export function createLevel(game: Game, level: number): LevelController {
                 waveTimer += dt;
 
                 //wave 1
-                if (currentWave === 1 && 
+                if (currentWave === 1 &&
                     !waveQueued[1] &&
                     ((game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) ||
-                    (maxWaveTime[0] > 0 && waveTimer > maxWaveTime[0]))) {
+                        (maxWaveTime[0] > 0 && waveTimer > maxWaveTime[0]))) {
                     game.addEnemyToQueue(200, 75, EnemyType.Fast, 0);
                     game.addEnemyToQueue(200, 60, EnemyType.Fast, 2);
                     game.addEnemyToQueue(-50, 50, EnemyType.Tanky, 8);
@@ -41,10 +42,10 @@ export function createLevel(game: Game, level: number): LevelController {
                     waveTimer = 0;
                 }
                 //wave 2
-                else if (currentWave === 2 && 
+                else if (currentWave === 2 &&
                     !waveQueued[2] &&
                     ((game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) ||
-                    (maxWaveTime[1] > 0 && waveTimer > maxWaveTime[1]))) {
+                        (maxWaveTime[1] > 0 && waveTimer > maxWaveTime[1]))) {
                     game.addEnemyToQueue(-50, 50, EnemyType.Tanky, 0);
                     game.addEnemyToQueue(25, 50, EnemyType.Basic, 2);
                     game.addEnemyToQueue(200, 50, EnemyType.Basic, 4);
@@ -54,10 +55,10 @@ export function createLevel(game: Game, level: number): LevelController {
                     waveTimer = 0;
                 }
                 //wave 3
-                else if (currentWave === 3 && 
+                else if (currentWave === 3 &&
                     !waveQueued[3] &&
                     ((game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) ||
-                    (maxWaveTime[2] > 0 && waveTimer > maxWaveTime[2]))) {
+                        (maxWaveTime[2] > 0 && waveTimer > maxWaveTime[2]))) {
                     game.addEnemyToQueue(-50, 90, EnemyType.Tanky, 0);
                     game.addEnemyToQueue(-50, 100, EnemyType.Tanky, 1);
                     game.addEnemyToQueue(225, 40, EnemyType.Fast, 3);
@@ -73,14 +74,18 @@ export function createLevel(game: Game, level: number): LevelController {
                 //boss wave (wave 4)
                 else if (currentWave === 4 &&
                     ((game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) ||
-                    (maxWaveTime[3] > 0 && waveTimer > maxWaveTime[3]))) {
+                        (maxWaveTime[3] > 0 && waveTimer > maxWaveTime[3]))) {
                     game.killAllEnemies(); //kill all enemies if player manages to survive until time limit
                     game.addEnemyToQueue(200, 50, EnemyType.SentryBoss, 0);
                     currentWave = 5;
                 }
+            },
+            getWaveTimerPercent() {
+                if (currentWave === 0 || maxWaveTime[currentWave - 1] === 0) return 0;
+                return Math.min(waveTimer / maxWaveTime[currentWave - 1], 1);
             }
         };
     }
 
-    return { update() {} };
+    return { update() { }, getWaveTimerPercent() { return 0; } };
 }
