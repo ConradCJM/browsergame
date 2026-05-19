@@ -26,6 +26,8 @@ export class Game {
     private playerBulletSpread = 6; //disrtance between bullets
     private playerBulletDesync = 0.05; //time between each bullet in a burst
 
+    private playerHpDisplay: PlayerHpDisplay = new PlayerHpDisplay(10, 20, 16);
+
     //list of pending player bullets
     private pendingPlayerBullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number }[] = [];
 
@@ -189,8 +191,8 @@ export class Game {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         //shockwaves
-
         this.shockwaves.forEach(sw => sw.draw(this.ctx));
+
         //bullets
         this.playerBullets.forEach(b => b.draw(this.ctx));
         this.enemyBullets.forEach(b => b.draw(this.ctx));
@@ -200,6 +202,9 @@ export class Game {
 
         //enemies
         this.enemies.forEach(e => e.draw(this.ctx));
+
+        //player health bar
+        this.playerHpDisplay.draw(this.ctx, this.player.getHp(), this.player.getMaxHp());
 
 
     }

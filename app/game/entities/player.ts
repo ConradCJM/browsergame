@@ -99,6 +99,8 @@ export class Player {
     //draw player
     draw(ctx: CanvasRenderingContext2D) {
 
+        
+
         //focus transparency
         ctx.globalAlpha = this.isFocused ? this.focusTransparency : 1;
 
