@@ -8,7 +8,8 @@ export class enemy {
     private type: EnemyType = EnemyType.Basic;
     private timeAlive: number = 0; //for patterns that change over time
 
-    private isInvincible = false; //for enemies that have invincibility frames for some stages or if the enemy needs to be clicked (clicking feature is still being planned)
+    private isInvincible:boolean = false; //for enemies that have invincibility frames for some stages or if the enemy needs to be clicked (clicking feature is still being planned)
+    private hasHealItem:boolean = false; //whether this enemy will drop a heal item on death
 
     private x: number;
     private y: number;
@@ -51,11 +52,12 @@ export class enemy {
     private aimOffset = 0; //for patterns that aim at player but have a fixed offset (e.g. always aim slightly to the left or right of the player)
 
 
-    constructor(startX: number, startY: number, type: EnemyType, game: Game) {
+    constructor(startX: number, startY: number, type: EnemyType, game: Game, hasHealItem:boolean = false) {
         this.x = startX;
         this.y = startY;
         this.type = type;
         this.game = game;
+        this.hasHealItem = hasHealItem;
 
         //basic stats
         this.hp = 30;
@@ -134,6 +136,10 @@ export class enemy {
         if (this.bossHealthBar) {
             this.bossHealthBar.updateHp(this.hp);
         }
+    }
+
+    getHealItem() {
+        return this.hasHealItem;
     }
     getX() {
         return this.x;

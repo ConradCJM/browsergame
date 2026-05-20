@@ -2,14 +2,17 @@ import {enemy} from "@/app/game/entities/enemy";
 import {playerBullet} from "@/app/game/entities/playerBullet";
 import {enemyBullet} from "@/app/game/entities/enemyBullets";
 import { Player } from "@/app/game/entities/player";
-import { Shockwave } from "../entities/shockwave";
+import { Shockwave } from "@/app/game/entities/shockwave";
+import { healItem } from "@/app/game/entities/healItem";
 
 export function checkCollisions(
     player: Player,
     enemies: enemy[],
     playerBullets: playerBullet[],
     enemyBullets: enemyBullet[],
-    shockwaves: Shockwave[]
+    shockwaves: Shockwave[],
+    healItems: healItem[]
+
 ) {
     // Helper function for circle-to-ellipse collision (thanks co pilot for the algorithm cause i couldnt figure this out after many attempts)
     const isColliding = (
@@ -34,6 +37,13 @@ export function checkCollisions(
     return scaledDistance < 1 + radiusRatio;
 };
 
+    //player touches heal item
+    healItems.forEach((item, i) => {
+        if (isColliding(player.getX(), player.getY(), player.getHitboxRadius(), item.getX(), item.getY(), item.getXRadius()+15, item.getYRadius()+15)) {
+            player.heal(item.getHealAmount());
+            healItems.splice(i, 1);
+        }
+    });
     //player bullets on enemies
     playerBullets.forEach((bullet, bIndex) => {
         enemies.forEach((enemy) => {

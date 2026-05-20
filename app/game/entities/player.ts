@@ -1,7 +1,7 @@
 import { Shockwave } from './shockwave';
 import { Game } from '../game';
 export class Player {
-    private hp = 5;
+    private hp = 3;
     private maxHp = 5;
 
     private hitIframesDuration = 3; //duration of invulnerability in seconds
@@ -30,6 +30,11 @@ export class Player {
 
     getHp() {
         return this.hp;
+    }
+
+    heal(amount: number) {
+        this.hp += amount;
+        if (this.hp > this.maxHp) this.hp = this.maxHp;
     }
 
     getMaxHp() {
