@@ -38,7 +38,7 @@ export class Game {
 
     private screen: Screen = Screen.Game;
 
-    private levelSelected = 0;
+    private levelSelected = 1;
 
     //list of pending player bullets
     private pendingPlayerBullets: {
@@ -84,7 +84,6 @@ export class Game {
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this, this.canvas.width / 2, this.canvas.height - 50);
-
         this.levelController = createLevel(this, 1);
     }
     addEnemy(startx: number, starty: number, type: EnemyType, hasHealItem: boolean) {
