@@ -57,12 +57,13 @@ export function checkCollisions(
 
     //enemy bullets on player
     enemyBullets.forEach((bullet, bIndex) => {
-        if(player.isInvincible()){
+        if(player.isInvincible() && player.getHp() > 0){
             enemyBullets.length = 0; //remove bullets that are spawning from bursts until player is no longer invincible
         }; 
         const hitBoxBuffer = 0.5; //reduce size of hitbox for more forgiving collisions
         if (isColliding(player.getX(), player.getY(), player.getHitboxRadius()-hitBoxBuffer, bullet.getX(), bullet.getY(), bullet.getXRadius()-hitBoxBuffer, bullet.getYRadius()-hitBoxBuffer)) {
             player.takeDamage(1);
+            if (player.getHp() <=0){ return }
             enemyBullets.length = 0; // Remove all bullets on hit
         }
     });

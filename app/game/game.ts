@@ -9,6 +9,7 @@ import { Shockwave } from '@/app/game/entities/shockwave';
 import { createLevel } from '@/app/game/systems/stagescript';
 import { PlayerHpDisplay } from '@/app/game/entities/hpBar';
 import { healItem } from '@/app/game/entities/healItem';
+import { Screen } from '@/app/game/constants';
 
 
 export class Game {
@@ -35,7 +36,7 @@ export class Game {
 
     private healItems: healItem[] = [];
 
-    private isGameOver = false;
+    private screen: Screen = Screen.Game;
 
     private levelSelected = 0;
 
@@ -150,21 +151,37 @@ export class Game {
 
 
     private update(dt: number) {
-        if (this.isGameOver) {
-            
+        if (this.screen === Screen.GameOver) {
+
             //restart
+            if (this.input.keys['r']) {
+                this.clearEntities();
+                this.player = new Player(this, this.canvas.width / 2, this.canvas.height - 50);
+                this.levelController = createLevel(this, this.levelSelected);
+                this.screen = Screen.Game;
+                return;
+            }
 
             //level select
-            
+            if (this.input.keys['l']) {
+                this.clearEntities();
+                this.screen = Screen.LevelScreen;
+                return;
+            }
             return;
         };
 
+        if (this.screen === Screen.LevelScreen) { return };
+        if (this.screen === Screen.MainMenu) { return };
+
+        //game screen
         //enemy stuff
         this.enemies.forEach(e => e.update(dt));
         this.enemyBullets.forEach(b => b.update(dt));
         this.enemyBullets = this.enemyBullets.filter(b => !b.isOffScreen(this.canvas.width, this.canvas.height));
 
         //player stuff
+        if (!this.player) { return };
         this.player.update(dt, this.input.keys, this.canvas.width, this.canvas.height);
 
         //player attack
@@ -246,18 +263,22 @@ export class Game {
         });
 
         if (this.player.getHp() <= 0) {
-            this.clearEntities();
-            this.isGameOver = true;
+            this.screen = Screen.GameOver;
+
         }
     }
 
     private clearEntities() {
         this.enemies = [];
         this.pendingEnemies = [];
-        this.pendingEnemyBullets
+        this.pendingEnemyBullets = [];
         this.enemyBullets = [];
         this.playerBullets = [];
-        this.player = null as any; 
+        this.healItems = [];
+        this.shockwaves = [];
+        this.pendingPlayerBullets = [];
+        this.playerBullets = [];
+        this.player = null as any;
     }
 
     private render() {
@@ -292,7 +313,7 @@ export class Game {
         }
         this.drawWaveTimerBars();
 
-        if (this.isGameOver) {
+        if (this.screen === Screen.GameOver) {
             this.renderGameOverMenu();
         }
     }

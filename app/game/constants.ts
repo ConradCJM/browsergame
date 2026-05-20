@@ -10,3 +10,10 @@ export enum EnemyType {
     SentryBoss,
 
 }
+
+export enum Screen {
+    MainMenu,
+    LevelScreen,
+    Game,
+    GameOver
+}
