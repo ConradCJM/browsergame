@@ -28,11 +28,13 @@ export class Game {
     private playerBulletSpread = 6; //disrtance between bullets
     private playerBulletDesync = 0.05; //time between each bullet in a burst
 
-    private playerHpDisplay: PlayerHpDisplay = new PlayerHpDisplay(10, 20, 16);
+    private playerHpDisplay: PlayerHpDisplay;
+    private playerHpDisplayBarHeight = 3;
 
     private barWidth = 2.5;
     private barColor = '#00ff0079';
     private barBackgroundColor = '#003300';
+
 
     private healItems: healItem[] = [];
 
@@ -79,11 +81,16 @@ export class Game {
         this.pendingEnemyBullets.push(spec);
     }
 
+    getPlayerHpBarHeight() {
+        return this.playerHpDisplayBarHeight;
+    }
+
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this, this.canvas.width / 2, this.canvas.height - 50);
+        this.playerHpDisplay = new PlayerHpDisplay(0, this.canvas.height - this.playerHpDisplayBarHeight, this.canvas.width, this.player.getMaxHp());
         this.levelController = createLevel(this, 1);
     }
     addEnemy(startx: number, starty: number, type: EnemyType, hasHealItem: boolean) {
@@ -100,6 +107,10 @@ export class Game {
 
     getEnemies() {
         return this.enemies;
+    }
+
+    levelClear() {
+        this.screen = Screen.LevelClear;
     }
 
     getPendingEnemies() {
@@ -172,6 +183,7 @@ export class Game {
 
         if (this.screen === Screen.LevelScreen) { return };
         if (this.screen === Screen.MainMenu) { return };
+        if (this.screen === Screen.LevelClear) { return };
 
         //game screen
         //enemy stuff
@@ -286,6 +298,11 @@ export class Game {
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+        //player
+        if (this.player) {
+            this.player.draw(this.ctx);
+        }
+
 
         //healing items
         console.log('Heal items to draw:', this.healItems.length);
@@ -297,11 +314,6 @@ export class Game {
         //bullets
         this.playerBullets.forEach(b => b.draw(this.ctx));
         this.enemyBullets.forEach(b => b.draw(this.ctx));
-
-        //player
-        if (this.player) {
-            this.player.draw(this.ctx);
-        }
 
         //enemies
         this.enemies.forEach(e => e.draw(this.ctx));
@@ -315,7 +327,36 @@ export class Game {
         if (this.screen === Screen.GameOver) {
             this.renderGameOverMenu();
         }
+
+        if (this.screen === Screen.LevelScreen) {
+            this.renderLevelSelectMenu();
+        }
+
+        if (this.screen === Screen.LevelClear) {
+            this.renderLevelClearScreen();
+        }
+
+        
+        if (this.screen === Screen.MainMenu) {
+            this.renderMainMenu();
+        }
+
     }
+    private renderMainMenu() {
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    private renderLevelSelectMenu() {
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    private renderLevelClearScreen() {
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
 
     private renderGameOverMenu() {
 
@@ -324,11 +365,11 @@ export class Game {
 
         //text
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = 'bold 32px Arial';
+        this.ctx.font = '30px fantasy';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Game Over', this.canvas.width / 2, this.canvas.height / 2 - 40);
+        this.ctx.fillText('Game Over', this.canvas.width / 2, this.canvas.height / 2-20);
 
-        this.ctx.font = '20px Arial';
+        this.ctx.font = '20px fantasy';
         this.ctx.fillText('Press R to Retry or L for Level Select', this.canvas.width / 2, this.canvas.height / 2 + 20);
     }
     //draw side timer bars

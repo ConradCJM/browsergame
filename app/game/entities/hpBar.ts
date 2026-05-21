@@ -78,20 +78,38 @@ export class BossHealthBar extends hpBar {
 export class PlayerHpDisplay {
     private x: number;
     private y: number;
-    private fontSize: number = 20;
-    private fontColor = '#ffffff';
-    private fontFamily = 'Arial';
+    private screenWidth: number;
+    private barCount: number = 5;
+    private barHeight: number = 15;
+    private barSpacing: number = 5;  // Small gap between bars
+    private litColor = '#00ff00';
+    private unlockedColor = '#444444';
+    private borderColor = '#ffffff';
+    private borderWidth = 2;
 
-    constructor(x: number, y: number, fontSize?: number) {
+    constructor(x: number, y: number, screenWidth: number, barCount?: number) {
         this.x = x;
         this.y = y;
-        if (fontSize) this.fontSize = fontSize;
+        this.screenWidth = screenWidth;
+        if (barCount) this.barCount = barCount;
     }
 
     draw(ctx: CanvasRenderingContext2D, currentHp: number, maxHp: number) {
-        ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-        ctx.fillStyle = this.fontColor;
-        ctx.textAlign = 'left';
-        ctx.fillText(`HP: ${currentHp}/${maxHp}`, this.x, this.y);
+        const litBars = Math.ceil((currentHp / maxHp) * this.barCount);
+
+        // Calculate bar width to fit screen
+        const totalSpacing = this.barSpacing * (this.barCount - 1);
+        const barWidth = (this.screenWidth - totalSpacing) / this.barCount;
+
+        for (let i = 0; i < this.barCount; i++) {
+            const barX = this.x + i * (barWidth + this.barSpacing);
+
+            ctx.fillStyle = i < litBars ? this.litColor : this.unlockedColor;
+            ctx.fillRect(barX, this.y, barWidth, this.barHeight);
+
+            ctx.strokeStyle = this.borderColor;
+            ctx.lineWidth = this.borderWidth;
+            ctx.strokeRect(barX, this.y, barWidth, this.barHeight);
+        }
     }
 }

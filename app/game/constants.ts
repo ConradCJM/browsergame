@@ -15,5 +15,6 @@ export enum Screen {
     MainMenu,
     LevelScreen,
     Game,
-    GameOver
+    GameOver,
+    LevelClear,
 }

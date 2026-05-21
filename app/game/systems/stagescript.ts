@@ -78,6 +78,11 @@ export function createLevel(game: Game, level: number): LevelController {
                     game.addEnemyToQueue(200, 50, EnemyType.SentryBoss, 0,false);
                     currentWave = 5;
                 }
+                else if (currentWave === 5 && game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) {
+                    //level clear condition
+                    //could trigger some kind of level clear screen here, but for now just stop the game
+                    game.levelClear();
+                }
             },
             getWaveTimerPercent() {
                 if (currentWave === 0 || maxWaveTime[currentWave - 1] === 0) return 0;

@@ -99,8 +99,9 @@ export class Player {
 
         //keep player in map
         const barWidth = this.game.getTimerBarWidth();
+        const playerHpBarHeight = this.game.getPlayerHpBarHeight();
         this.x = Math.max(barWidth + (this.hitboxRadius / 2), Math.min(this.x, canvasWidth - barWidth - (this.hitboxRadius / 2)));
-        this.y = Math.max((this.hitboxRadius / 2), Math.min(this.y, canvasHeight - (this.hitboxRadius / 2)));
+        this.y = Math.max((this.hitboxRadius / 2), Math.min(this.y, canvasHeight - playerHpBarHeight - (this.hitboxRadius / 2)));
 
         //shockwave effect
         this.shockwaves = this.shockwaves.filter(sw => sw.update(dt));
