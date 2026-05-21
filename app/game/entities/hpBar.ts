@@ -82,7 +82,7 @@ export class PlayerHpDisplay {
     private barCount: number = 5;
     private barHeight: number = 15;
     private barSpacing: number = 5;  // Small gap between bars
-    private litColor = '#00ff00';
+    private litColor = '#00ddffa9';
     private unlockedColor = '#444444';
     private borderColor = '#ffffff';
     private borderWidth = 2;

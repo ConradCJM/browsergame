@@ -63,7 +63,7 @@ export class Player {
         this.hitIframesTimer = 0;
         this.hp -= amount;
         if (this.hp < 0) this.hp = 0;
-        this.shockwaves.push(new Shockwave(this.x, this.y, 500, 0.35));
+        this.shockwaves.push(new Shockwave(this.x, this.y, 500, 0.35, '#00c3ff56'));
     }
 
     getHitboxRadius() {
@@ -101,7 +101,7 @@ export class Player {
         const barWidth = this.game.getTimerBarWidth();
         const playerHpBarHeight = this.game.getPlayerHpBarHeight();
         this.x = Math.max(barWidth + (this.hitboxRadius / 2), Math.min(this.x, canvasWidth - barWidth - (this.hitboxRadius / 2)));
-        this.y = Math.max((this.hitboxRadius / 2), Math.min(this.y, canvasHeight - playerHpBarHeight - (this.hitboxRadius / 2)));
+        this.y = Math.max((this.hitboxRadius / 2), Math.min(this.y, canvasHeight - playerHpBarHeight - 3 - (this.hitboxRadius / 2)));
 
         //shockwave effect
         this.shockwaves = this.shockwaves.filter(sw => sw.update(dt));

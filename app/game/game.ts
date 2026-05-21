@@ -90,7 +90,7 @@ export class Game {
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
         this.player = new Player(this, this.canvas.width / 2, this.canvas.height - 50);
-        this.playerHpDisplay = new PlayerHpDisplay(0, this.canvas.height - this.playerHpDisplayBarHeight, this.canvas.width, this.player.getMaxHp());
+        this.playerHpDisplay = new PlayerHpDisplay(0, this.canvas.height - this.playerHpDisplayBarHeight - 3, this.canvas.width, this.player.getMaxHp());
         this.levelController = createLevel(this, 1);
     }
     addEnemy(startx: number, starty: number, type: EnemyType, hasHealItem: boolean) {
@@ -161,7 +161,7 @@ export class Game {
 
 
     private update(dt: number) {
-        if (this.screen === Screen.GameOver) {
+        if (this.screen === Screen.GameOver || this.screen === Screen.LevelClear) {
 
             //restart
             if (this.input.keys['r']) {
@@ -183,7 +183,6 @@ export class Game {
 
         if (this.screen === Screen.LevelScreen) { return };
         if (this.screen === Screen.MainMenu) { return };
-        if (this.screen === Screen.LevelClear) { return };
 
         //game screen
         //enemy stuff
@@ -355,6 +354,15 @@ export class Game {
     private renderLevelClearScreen() {
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        //text
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '30px fantasy';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('Level Cleared!', this.canvas.width / 2, this.canvas.height / 2-20);
+
+        this.ctx.font = '20px fantasy';
+        this.ctx.fillText('Press R to Play Again or L for Level Select', this.canvas.width / 2, this.canvas.height / 2 + 20);
     }
 
 
