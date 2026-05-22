@@ -7,10 +7,12 @@ import { EnemyType } from '@/app/game/constants';
 import { checkCollisions } from '@/app/game/systems/collision';
 import { Shockwave } from '@/app/game/entities/shockwave';
 import { createLevel } from '@/app/game/systems/stagescript';
-import { PlayerHpDisplay } from '@/app/game/entities/hpBar';
+import { PlayerHpDisplay } from '@/app/game/ui/hpBar';
 import { healItem } from '@/app/game/entities/healItem';
 import { Screen } from '@/app/game/constants';
-import {Level} from '@/app/game/constants';
+import { Level } from '@/app/game/constants';
+import { Button } from '@/app/game/ui/button';
+import { WaveTimerBar } from '@/app/game/ui/waveTimerBar';
 
 
 export class Game {
@@ -26,22 +28,18 @@ export class Game {
     private enemyBullets: enemyBullet[] = [];
 
     private playerBullets: playerBullet[] = [];
-    private playerBulletSpread = 6; //disrtance between bullets
-    private playerBulletDesync = 0.05; //time between each bullet in a burst
 
     private playerHpDisplay?: PlayerHpDisplay;
-    private playerHpDisplayBarHeight = 3;
 
-    private barWidth = 2.5;
-    private barColor = '#00ff0079';
-    private barBackgroundColor = '#003300';
-
+    private waveTimerBar?: WaveTimerBar;
+    private mainMenuButtons: Button[] = [];
 
     private healItems: healItem[] = [];
 
     private screen: Screen;
 
-    private level:Level = Level.Tutorial;
+    //once done testing change to a null value or dont initialize
+    private level: Level = Level.CampaignLevel1;
 
     //list of pending player bullets
     private pendingPlayerBullets: {
@@ -83,7 +81,8 @@ export class Game {
     }
 
     getPlayerHpBarHeight() {
-        return this.playerHpDisplayBarHeight;
+        if (!this.playerHpDisplay) { return 0 };
+        return this.playerHpDisplay.getBarHeight();
     }
 
     constructor(canvas: HTMLCanvasElement) {
@@ -91,14 +90,46 @@ export class Game {
         this.screen = Screen.MainMenu;
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
+        this.waveTimerBar = new WaveTimerBar(canvas.width, canvas.height);
+        this.setupMainMenuButtons();
         // this.levelController = createLevel(this, 1);
     }
     getCanvas() {
         return this.canvas;
     }
+
+    setupMainMenuButtons() {
+        const buttonWidth = 200;
+        const buttonHeight = 50;
+        const buttonX = this.canvas.width / 2 - buttonWidth / 2;
+        const buttonY = this.canvas.height - 120;
+
+        this.mainMenuButtons.push(
+            new Button(
+                buttonX,
+                buttonY,
+                buttonWidth,
+                buttonHeight,
+                'Play Game',
+                () => {
+                    this.screen = Screen.Game;
+                    this.levelController = createLevel(this, Level.CampaignLevel1);
+                }
+            )
+        );
+    }
+
     addPlayer(player: Player) {
+        const hpBarHeightOffset = 2.5
         this.player = player;
-        this.playerHpDisplay = new PlayerHpDisplay(0, this.canvas.height - this.playerHpDisplayBarHeight - 3, this.canvas.width, player.getMaxHp());
+        this.playerHpDisplay = new PlayerHpDisplay(0, this.canvas.height - hpBarHeightOffset - 3, this.canvas.width, player.getMaxHp());
+    }
+    createWaveTimerBar() {
+        this.waveTimerBar = new WaveTimerBar(this.canvas.width, this.canvas.height);
+    }
+    resetGame() {
+        this.clearEntities();
+        this.clearUiElements();
     }
 
     addEnemy(startx: number, starty: number, type: EnemyType, hasHealItem: boolean) {
@@ -106,7 +137,8 @@ export class Game {
     }
 
     getTimerBarWidth() {
-        return this.barWidth;
+        if (!this.waveTimerBar) { return 0 };
+        return this.waveTimerBar.getWidth();
     }
 
     addHealItem(x: number, y: number) {
@@ -173,7 +205,6 @@ export class Game {
 
             //restart
             if (this.input.keys['r']) {
-                this.clearEntities();
                 this.player = new Player(this, this.canvas.width / 2, this.canvas.height - 50);
                 this.levelController = createLevel(this, this.level);
                 this.screen = Screen.Game;
@@ -182,7 +213,7 @@ export class Game {
 
             //level select
             if (this.input.keys['l']) {
-                this.clearEntities();
+                this.resetGame();
                 this.screen = Screen.LevelScreen;
                 return;
             }
@@ -206,8 +237,11 @@ export class Game {
         if (this.input.keys[' ']) {
             const now = performance.now() / 1000;
             if (now - this.input.lastShootTime >= this.input.shootCooldown) {
+                const playerBulletSpread = 6; //disrtance between bullets
+                const playerBulletDesync = 0.05; //time between each bullet in a burst
+
                 this.input.lastShootTime = now;
-                const bulletPattern = this.player.getBulletPattern(now, this.playerBulletDesync, this.playerBulletSpread);
+                const bulletPattern = this.player.getBulletPattern(now, playerBulletDesync, playerBulletSpread);
                 this.pendingPlayerBullets.push(...bulletPattern);
             }
         }
@@ -286,6 +320,10 @@ export class Game {
         }
     }
 
+    private clearUiElements() {
+        this.playerHpDisplay = undefined;
+        this.waveTimerBar = undefined;
+    }
     private clearEntities() {
         this.enemies = [];
         this.pendingEnemies = [];
@@ -360,40 +398,16 @@ export class Game {
         this.ctx.textAlign = 'center';
         this.ctx.fillText('Browser Game', this.canvas.width / 2, 100);
 
-        //play game butttonm
-        const buttonWidth = 200;
-        const buttonHeight = 50;
-        const buttonX = this.canvas.width / 2 - buttonWidth / 2;
-        const buttonY = this.canvas.height - 120;
+        //update and draw buttons
+        this.mainMenuButtons.forEach(button => {
+            button.update(this.input.mouseX, this.input.mouseY);
+            button.draw(this.ctx);
+        });
 
-        //for highlighting button on hover 
-        const isHovering = this.input.mouseX >= buttonX &&
-            this.input.mouseX <= buttonX + buttonWidth &&
-            this.input.mouseY >= buttonY &&
-            this.input.mouseY <= buttonY + buttonHeight;
-
-
-        //draw button background
-        this.ctx.fillStyle = !isHovering? '#004902':'#00ff00a0';
-        this.ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-
-        //draw button text
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '24px fantasy';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText('Play Game', this.canvas.width / 2, buttonY + buttonHeight / 2);
-
-        //check if button is clicked
+        //handle clicks
         if (this.input.mouseClicked) {
-            if (this.input.mouseX >= buttonX &&
-                this.input.mouseX <= buttonX + buttonWidth &&
-                this.input.mouseY >= buttonY &&
-                this.input.mouseY <= buttonY + buttonHeight) {
-                this.screen = Screen.Game;
-                this.levelController = createLevel(this, Level.CampaignLevel1);
-            }
-            this.input.mouseClicked = false; // Reset after checking
+            this.mainMenuButtons.forEach(button => button.handleClick());
+            this.input.mouseClicked = false;
         }
     }
 
@@ -433,24 +447,8 @@ export class Game {
     }
     //draw side timer bars
     private drawWaveTimerBars() {
-        if (!this.levelController) return;
-
-        const timerPercent = this.levelController.getWaveTimerPercent();
-        const filledHeight = (this.canvas.height) * timerPercent;
-
-        // Left bar background
-        this.ctx.fillStyle = this.barBackgroundColor;
-        this.ctx.fillRect(0, this.barWidth, this.barWidth, this.canvas.height);
-
-        // Right bar background
-        this.ctx.fillRect(this.canvas.width - this.barWidth, this.barWidth, this.barWidth, this.canvas.height);
-
-        // Left bar fill (fills from bottom up)
-        this.ctx.fillStyle = this.barColor;
-        this.ctx.fillRect(0, this.canvas.height - filledHeight, this.barWidth, filledHeight);
-
-        // Right bar fill (fills from bottom up)
-        this.ctx.fillRect(this.canvas.width - this.barWidth, this.canvas.height - filledHeight, this.barWidth, filledHeight);
+        if (!this.levelController || !this.waveTimerBar) return;
+        this.waveTimerBar.draw(this.ctx, this.levelController.getWaveTimerPercent());
     }
 
 

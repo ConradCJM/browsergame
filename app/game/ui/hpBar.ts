@@ -112,4 +112,8 @@ export class PlayerHpDisplay {
             ctx.strokeRect(barX, this.y, barWidth, this.barHeight);
         }
     }
+
+    getBarHeight() {
+        return this.barHeight;
+    }
 }

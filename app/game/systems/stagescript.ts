@@ -9,6 +9,8 @@ interface LevelController {
 }
 
 export function createLevel(game: Game, level: Level): LevelController {
+    game.resetGame();
+    game.createWaveTimerBar();
     let currentWave = 0;
     let waveQueued: boolean[] = [];
     let waveTimer = 0;

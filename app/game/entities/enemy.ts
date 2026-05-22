@@ -1,7 +1,7 @@
 import { EnemyType } from '@/app/game/constants';
 import { Game } from '@/app/game/game';
 import { aimedSpreadToDirection, aimedSpreadToPlayer, spiralPattern, ringPattern } from '@/app/game/patterns';
-import { BossHealthBar } from '@/app/game/entities/hpBar';
+import { BossHealthBar } from '@/app/game/ui/hpBar';
 export class enemy {
     private hp: number;
     private maxHp: number;
