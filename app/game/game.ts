@@ -396,7 +396,7 @@ export class Game {
         this.ctx.fillStyle = '#ffffff';
         this.ctx.font = '48px fantasy';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Browser Game', this.canvas.width / 2, 100);
+        this.ctx.fillText('Game', this.canvas.width / 2, 100);
 
         //update and draw buttons
         this.mainMenuButtons.forEach(button => {
