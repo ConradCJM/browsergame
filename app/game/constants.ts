@@ -18,3 +18,10 @@ export enum Screen {
     GameOver,
     LevelClear,
 }
+
+export enum Level{
+    Tutorial,
+    CampaignLevel1,
+    BossLevel1,
+
+}

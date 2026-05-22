@@ -1,17 +1,28 @@
 import { Game } from "../game";
 import { EnemyType } from "@/app/game/constants";
+import {Level} from "@/app/game/constants";
+import { Player } from "@/app/game/entities/player";
 
 interface LevelController {
     update(dt: number): void;
     getWaveTimerPercent(): number;
 }
 
-export function createLevel(game: Game, level: number): LevelController {
+export function createLevel(game: Game, level: Level): LevelController {
     let currentWave = 0;
     let waveQueued: boolean[] = [];
     let waveTimer = 0;
     let maxWaveTime: number[] = [];
-    if (level === 1) {
+    let playerStats = {
+        maxHp: 5,
+        startHp: 2,
+        startX: game.getCanvas().width / 2,
+        startY: game.getCanvas().height - 50,
+    };
+    if (level === Level.CampaignLevel1) {
+
+
+        game.addPlayer(new Player(game, game.getCanvas().width / 2, game.getCanvas().height - 50, playerStats.maxHp,playerStats.startHp));
         currentWave = 0;
         waveQueued = [false, false, false, false];
         waveTimer = 0;

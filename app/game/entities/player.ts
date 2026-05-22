@@ -115,11 +115,12 @@ export class Player {
         //focus transparency
         ctx.globalAlpha = this.isFocused ? this.focusTransparency : 1;
 
-        //player shape based on hp
         if (this.hp === 1) {
+            this.drawHollowEllipse(ctx);
+        } else if (this.hp === 2) {
             this.drawEllipse(ctx);
         } else {
-            this.drawPolygon(ctx, this.hp + 1);
+            this.drawPolygon(ctx, this.hp);
         }
 
         //circle hitbox
@@ -158,6 +159,14 @@ export class Player {
         ctx.beginPath();
         ctx.ellipse(this.x, this.y, this.modelWidth, this.modelHeight, 0, 0, Math.PI * 2);
         ctx.fill();
+    }
+
+    private drawHollowEllipse(ctx: CanvasRenderingContext2D) {
+        ctx.strokeStyle = this.diamondColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y, this.modelWidth, this.modelHeight, 0, 0, Math.PI * 2);
+        ctx.stroke();
     }
 
     getBulletPattern(now: number, playerBulletDesync: number, playerBulletSpread: number) {

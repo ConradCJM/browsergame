@@ -10,6 +10,7 @@ import { createLevel } from '@/app/game/systems/stagescript';
 import { PlayerHpDisplay } from '@/app/game/entities/hpBar';
 import { healItem } from '@/app/game/entities/healItem';
 import { Screen } from '@/app/game/constants';
+import {Level} from '@/app/game/constants';
 
 
 export class Game {
@@ -18,7 +19,7 @@ export class Game {
     private running = false;
     private lastTime = 0;
     private input: Input;
-    private player: Player;
+    private player?: Player;
 
     private enemies: enemy[] = [];
     private pendingEnemies: { spawnTime: number; x: number; y: number; type: EnemyType, hasHealItem: boolean }[] = [];
@@ -28,7 +29,7 @@ export class Game {
     private playerBulletSpread = 6; //disrtance between bullets
     private playerBulletDesync = 0.05; //time between each bullet in a burst
 
-    private playerHpDisplay: PlayerHpDisplay;
+    private playerHpDisplay?: PlayerHpDisplay;
     private playerHpDisplayBarHeight = 3;
 
     private barWidth = 2.5;
@@ -38,9 +39,9 @@ export class Game {
 
     private healItems: healItem[] = [];
 
-    private screen: Screen = Screen.Game;
+    private screen: Screen;
 
-    private levelSelected = 1;
+    private level:Level = Level.Tutorial;
 
     //list of pending player bullets
     private pendingPlayerBullets: {
@@ -87,12 +88,19 @@ export class Game {
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
+        this.screen = Screen.MainMenu;
         this.ctx = canvas.getContext('2d')!;
         this.input = new Input();
-        this.player = new Player(this, this.canvas.width / 2, this.canvas.height - 50);
-        this.playerHpDisplay = new PlayerHpDisplay(0, this.canvas.height - this.playerHpDisplayBarHeight - 3, this.canvas.width, this.player.getMaxHp());
-        this.levelController = createLevel(this, 1);
+        // this.levelController = createLevel(this, 1);
     }
+    getCanvas() {
+        return this.canvas;
+    }
+    addPlayer(player: Player) {
+        this.player = player;
+        this.playerHpDisplay = new PlayerHpDisplay(0, this.canvas.height - this.playerHpDisplayBarHeight - 3, this.canvas.width, player.getMaxHp());
+    }
+
     addEnemy(startx: number, starty: number, type: EnemyType, hasHealItem: boolean) {
         this.enemies.push(new enemy(startx, starty, type, this, hasHealItem));
     }
@@ -167,7 +175,7 @@ export class Game {
             if (this.input.keys['r']) {
                 this.clearEntities();
                 this.player = new Player(this, this.canvas.width / 2, this.canvas.height - 50);
-                this.levelController = createLevel(this, this.levelSelected);
+                this.levelController = createLevel(this, this.level);
                 this.screen = Screen.Game;
                 return;
             }
@@ -318,7 +326,7 @@ export class Game {
         this.enemies.forEach(e => e.draw(this.ctx));
 
         //player health bar
-        if (this.player) {
+        if (this.player && this.playerHpDisplay) {
             this.playerHpDisplay.draw(this.ctx, this.player.getHp(), this.player.getMaxHp());
         }
         this.drawWaveTimerBars();
@@ -335,15 +343,58 @@ export class Game {
             this.renderLevelClearScreen();
         }
 
-        
+
         if (this.screen === Screen.MainMenu) {
             this.renderMainMenu();
         }
 
     }
     private renderMainMenu() {
+        //semi-transparent overlay
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        //title
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '48px fantasy';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('Browser Game', this.canvas.width / 2, 100);
+
+        //play game butttonm
+        const buttonWidth = 200;
+        const buttonHeight = 50;
+        const buttonX = this.canvas.width / 2 - buttonWidth / 2;
+        const buttonY = this.canvas.height - 120;
+
+        //for highlighting button on hover 
+        const isHovering = this.input.mouseX >= buttonX &&
+            this.input.mouseX <= buttonX + buttonWidth &&
+            this.input.mouseY >= buttonY &&
+            this.input.mouseY <= buttonY + buttonHeight;
+
+
+        //draw button background
+        this.ctx.fillStyle = !isHovering? '#004902':'#00ff00a0';
+        this.ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+        //draw button text
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '24px fantasy';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText('Play Game', this.canvas.width / 2, buttonY + buttonHeight / 2);
+
+        //check if button is clicked
+        if (this.input.mouseClicked) {
+            if (this.input.mouseX >= buttonX &&
+                this.input.mouseX <= buttonX + buttonWidth &&
+                this.input.mouseY >= buttonY &&
+                this.input.mouseY <= buttonY + buttonHeight) {
+                this.screen = Screen.Game;
+                this.levelController = createLevel(this, Level.CampaignLevel1);
+            }
+            this.input.mouseClicked = false; // Reset after checking
+        }
     }
 
     private renderLevelSelectMenu() {
@@ -359,7 +410,7 @@ export class Game {
         this.ctx.fillStyle = '#ffffff';
         this.ctx.font = '30px fantasy';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Level Cleared!', this.canvas.width / 2, this.canvas.height / 2-20);
+        this.ctx.fillText('Level Cleared!', this.canvas.width / 2, this.canvas.height / 2 - 20);
 
         this.ctx.font = '20px fantasy';
         this.ctx.fillText('Press R to Play Again or L for Level Select', this.canvas.width / 2, this.canvas.height / 2 + 20);
@@ -375,7 +426,7 @@ export class Game {
         this.ctx.fillStyle = '#ffffff';
         this.ctx.font = '30px fantasy';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Game Over', this.canvas.width / 2, this.canvas.height / 2-20);
+        this.ctx.fillText('Game Over', this.canvas.width / 2, this.canvas.height / 2 - 20);
 
         this.ctx.font = '20px fantasy';
         this.ctx.fillText('Press R to Retry or L for Level Select', this.canvas.width / 2, this.canvas.height / 2 + 20);
