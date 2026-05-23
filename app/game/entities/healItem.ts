@@ -39,6 +39,7 @@ export class healItem {
     }
 
     private drawCross(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+        ctx.globalAlpha = 1;
         ctx.fillStyle = this.color;
         const thickness = 10; //thickness of the cross arms
 

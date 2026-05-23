@@ -45,6 +45,7 @@ export class playerBullet {
         ctx.beginPath();
         ctx.ellipse(this.x, this.y, this.Xradius, this.Yradius, angle, 0, Math.PI * 2);
         ctx.fill();
+        ctx.globalAlpha = 1;
     }
 
     isOffScreen(canvasWidth: number, canvasHeight: number): boolean {

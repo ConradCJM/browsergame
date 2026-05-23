@@ -81,7 +81,7 @@ export class PlayerHpDisplay {
     private screenWidth: number;
     private barCount: number = 5;
     private barHeight: number = 15;
-    private barSpacing: number = 5;  // Small gap between bars
+    private barSpacing: number = 5;  //small gap between bars
     private litColor = '#00ddffa9';
     private unlockedColor = '#444444';
     private borderColor = '#ffffff';
@@ -97,7 +97,7 @@ export class PlayerHpDisplay {
     draw(ctx: CanvasRenderingContext2D, currentHp: number, maxHp: number) {
         const litBars = Math.ceil((currentHp / maxHp) * this.barCount);
 
-        // Calculate bar width to fit screen
+        //calculate bar width to fit screen
         const totalSpacing = this.barSpacing * (this.barCount - 1);
         const barWidth = (this.screenWidth - totalSpacing) / this.barCount;
 

@@ -92,8 +92,6 @@ export function createLevel(game: Game, level: Level): LevelController {
                     currentWave = 5;
                 }
                 else if (currentWave === 5 && game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) {
-                    //level clear condition
-                    //could trigger some kind of level clear screen here, but for now just stop the game
                     game.levelClear();
                 }
             },

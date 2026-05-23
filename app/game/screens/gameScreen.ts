@@ -1,0 +1,106 @@
+import { Screen } from '@/app/game/screens/screenInterface';
+import { Input } from '@/app/game/systems/input';
+import { Game } from '@/app/game/game';
+import { checkCollisions } from '@/app/game/systems/collision';
+
+export class GameScreen implements Screen {
+    private game: Game;
+    private onGameOver: () => void;
+    private onLevelClear: () => void;
+
+    constructor(game: Game, onGameOver: () => void, onLevelClear: () => void) {
+        this.game = game;
+        this.onGameOver = onGameOver;
+        this.onLevelClear = onLevelClear;
+    }
+
+    update(dt: number): void {
+        const player = this.game.getPlayer();
+        if (!player) return;
+
+        //enemy stuff
+        this.game.getEnemies().forEach(e => e.update(dt));
+        this.game.getEnemyBullets().forEach(b => b.update(dt));
+        this.game.getEnemyBullets().forEach(b => {
+            if (b.isOffScreen(this.game.getCanvas().width, this.game.getCanvas().height)) {
+                const idx = this.game.getEnemyBullets().indexOf(b);
+                if (idx > -1) this.game.getEnemyBullets().splice(idx, 1);
+            }
+        });
+
+        //player update
+        player.update(dt, this.game.getInput().keys, this.game.getCanvas().width, this.game.getCanvas().height);
+
+        //player attack
+        if (this.game.getInput().keys[' ']) {
+            const now = performance.now() / 1000;
+            if (now - this.game.getInput().lastShootTime >= this.game.getInput().shootCooldown) {
+                const playerBulletSpread = 6;
+                const playerBulletDesync = 0.05;
+
+                this.game.getInput().lastShootTime = now;
+                const bulletPattern = player.getBulletPattern(now, playerBulletDesync, playerBulletSpread);
+                bulletPattern.forEach(pattern => this.game.queuePlayerBullet(pattern));
+            }
+        }
+
+        const now = performance.now() / 1000;
+        this.game.spawnPendingPlayerBullets(now);
+        this.game.spawnPendingEnemyBullets(now);
+        this.game.spawnPendingEnemies(now);
+
+        //update level controller
+        this.game.updateLevelController(dt);
+
+        //collision checks
+        checkCollisions(player, this.game.getEnemies(), this.game.getPlayerBullets(), this.game.getEnemyBullets(), this.game.getShockwaves(), this.game.getHealItems());
+        
+        //remove dead enemies and create shockwaves
+        this.game.removeDeadEnemiesAndCreateShockwaves();
+
+        //update and filter shockwaves and heal items
+        this.game.updateAndFilterShockwaves(dt);
+        this.game.updateAndFilterHealItems(dt,this.game.getCanvas());
+        this.game.updateAndFilterPlayerBullets(dt, this.game.getCanvas());
+        this.game.filterOffscreenEnemyBullets(this.game.getCanvas());
+
+        //game over check
+        if (player.getHp() <= 0) {
+            this.onGameOver();
+        }
+    }
+
+    handleInput(input: Input): void {
+        //input handled in update
+    }
+
+    render(ctx: CanvasRenderingContext2D): void {
+        const player = this.game.getPlayer();
+
+        //player
+        if (player) {
+            player.draw(ctx);
+        }
+
+        //healing items
+        this.game.getHealItems().forEach(item => item.draw(ctx));
+
+        //shockwaves
+        this.game.getShockwaves().forEach(sw => sw.draw(ctx));
+
+        //bullets
+        this.game.getPlayerBullets().forEach(b => b.draw(ctx));
+        this.game.getEnemyBullets().forEach(b => b.draw(ctx));
+
+        //enemies
+        this.game.getEnemies().forEach(e => e.draw(ctx));
+
+        //player health bar
+        if (player) {
+            this.game.getPlayerHpDisplay()?.draw(ctx, player.getHp(), player.getMaxHp());
+        }
+
+        //wave timer bar
+        this.game.drawWaveTimerBar(ctx);
+    }
+}

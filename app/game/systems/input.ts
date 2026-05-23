@@ -3,12 +3,13 @@ export class Input {
     lastShootTime = 0;
     shootCooldown = 0.2;
     
-    // Add these for mouse tracking
     mouseX = 0;
     mouseY = 0;
     mouseClicked = false;
 
     constructor() {
+
+        //keyboard tracking
         window.addEventListener('keydown', (e) => {
             this.keys[e.key.toLowerCase()] = true;
         });
@@ -16,7 +17,7 @@ export class Input {
             this.keys[e.key.toLowerCase()] = false;
         });
         
-        // Add mouse tracking
+        //mouse tracking
         window.addEventListener('mousemove', (e) => {
             const canvas = document.querySelector('canvas') as HTMLCanvasElement;
             if (canvas) {

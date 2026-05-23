@@ -8,8 +8,8 @@ export class enemy {
     private type: EnemyType = EnemyType.Basic;
     private timeAlive: number = 0; //for patterns that change over time
 
-    private isInvincible:boolean = false; //for enemies that have invincibility frames for some stages or if the enemy needs to be clicked (clicking feature is still being planned)
-    private hasHealItem:boolean = false; //whether this enemy will drop a heal item on death
+    private isInvincible: boolean = false; //for enemies that have invincibility frames for some stages or if the enemy needs to be clicked (clicking feature is still being planned)
+    private hasHealItem: boolean = false; //whether this enemy will drop a heal item on death
 
     private x: number;
     private y: number;
@@ -52,7 +52,7 @@ export class enemy {
     private aimOffset = 0; //for patterns that aim at player but have a fixed offset (e.g. always aim slightly to the left or right of the player)
 
 
-    constructor(startX: number, startY: number, type: EnemyType, game: Game, hasHealItem:boolean = false) {
+    constructor(startX: number, startY: number, type: EnemyType, game: Game, hasHealItem: boolean = false) {
         this.x = startX;
         this.y = startY;
         this.type = type;
@@ -194,9 +194,11 @@ export class enemy {
 
 
     updateAim(dt: number) {
+        const player = this.game.getPlayer();
+        if (!player) return;
 
         //gradually rotate aim towards player
-        const targetAngle = Math.atan2(this.game.getPlayer().getY() - this.y, this.game.getPlayer().getX() - this.x);
+        const targetAngle = Math.atan2(player.getY() - this.y, player.getX() - this.x);
         const angleDiff = targetAngle - this.currentAimAngle;
 
         //shortest rotation path
@@ -349,6 +351,8 @@ export class enemy {
 
 
     attack() {
+        const player = this.game.getPlayer();
+        if (!player) return;
         const attackCount = Math.floor(this.phaseTimer / this.attackRate);
         this.aimOffset = this.offsetPattern[attackCount % this.offsetPattern.length];
 
@@ -445,7 +449,7 @@ export class enemy {
                 const burstInterval = 0.065;
                 const bulletCount = this.hp >= this.maxHp / 2 ? 1 : 3;
 
-                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer(), burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
+                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!, burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
 
                 specs.forEach(spec => {
                     spec.bulletXSpeed = 150;
@@ -482,7 +486,7 @@ export class enemy {
                 const burstCount = 1 + Math.floor((1 - (this.hp / this.maxHp)) * 10); //more bullet bursts as hp drops
                 const burstInterval = 0.75;
                 const bulletCount = 1 + Math.floor(this.timeAlive / 60); //more bullets per burst as time goes on
-                
+
 
                 //CUSTOM SHOT PATTERN Bullet Rain (if im gonna use this later again il make it a function in another file)
                 for (let j = 0; j < burstCount; j++) {
@@ -490,7 +494,7 @@ export class enemy {
 
                         specs.push({
                             dirY: 1,
-                            dirX: 0, 
+                            dirX: 0,
                             delay: j * burstInterval
 
                         });
@@ -503,7 +507,7 @@ export class enemy {
 
                     spec.bulletXSpeed = 0;
                     spec.bulletYSpeed = 150;
-                    spec.bulletXRadius = 50- burstCount* 2; //start with a wide bullet and shrink based on burst count to create a rain effect
+                    spec.bulletXRadius = 50 - burstCount * 2; //start with a wide bullet and shrink based on burst count to create a rain effect
                     spec.bulletYRadius = 2;
                     spec.bulletColor = 'rgba(30, 255, 0, 1)';
                 })

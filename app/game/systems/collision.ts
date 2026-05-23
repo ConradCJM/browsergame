@@ -45,15 +45,21 @@ export function checkCollisions(
         }
     });
     //player bullets on enemies
-    playerBullets.forEach((bullet, bIndex) => {
+    const bulletsToRemove = new Set<playerBullet>();
+    
+    playerBullets.forEach((bullet) => {
         enemies.forEach((enemy) => {
             if (isColliding(bullet.getX(), bullet.getY(), bullet.getXRadius(), enemy.getX(), enemy.getY(), enemy.getXRadius(), enemy.getYRadius())) {
                 enemy.takeDamage(1);
-                shockwaves.push(new Shockwave(bullet.getX(), bullet.getY(),6, 0.3, '#41e9ff72'));
-                playerBullets.splice(bIndex, 1);
+                shockwaves.push(new Shockwave(bullet.getX(), bullet.getY(), 6, 0.3, '#41e9ff72'));
+                bulletsToRemove.add(bullet);
             }
         });
     });
+    
+    //remove marked bullets after iteration
+    const updatedPlayerBullets = playerBullets.filter(b => !bulletsToRemove.has(b));
+    playerBullets.splice(0, playerBullets.length, ...updatedPlayerBullets);
 
     //enemy bullets on player
     enemyBullets.forEach((bullet, bIndex) => {

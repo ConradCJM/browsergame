@@ -1,19 +1,23 @@
 import { Player } from '@/app/game/entities/player';
 import { Input } from '@/app/game/systems/input';
-import { playerBullet } from '@/app/game/entities/playerBullet';
 import { enemy } from '@/app/game/entities/enemy';
 import { enemyBullet } from '@/app/game/entities/enemyBullets';
 import { EnemyType } from '@/app/game/constants';
-import { checkCollisions } from '@/app/game/systems/collision';
 import { Shockwave } from '@/app/game/entities/shockwave';
 import { createLevel } from '@/app/game/systems/stagescript';
 import { PlayerHpDisplay } from '@/app/game/ui/hpBar';
 import { healItem } from '@/app/game/entities/healItem';
-import { Screen } from '@/app/game/constants';
 import { Level } from '@/app/game/constants';
-import { Button } from '@/app/game/ui/button';
 import { WaveTimerBar } from '@/app/game/ui/waveTimerBar';
 
+//import screens
+import { Screen } from '@/app/game/screens/screenInterface';
+import { MainMenuScreen } from '@/app/game/screens/mainMenuScreen';
+import { GameScreen } from '@/app/game/screens/gameScreen';
+import { GameOverScreen } from '@/app/game/screens/gameOverScreen';
+import { LevelClearScreen } from '@/app/game/screens/levelClearScreen';
+import { LevelSelectScreen } from '@/app/game/screens/levelSelectScreen';
+import { playerBullet } from '@/app/game/entities/playerBullet';
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -26,22 +30,12 @@ export class Game {
     private enemies: enemy[] = [];
     private pendingEnemies: { spawnTime: number; x: number; y: number; type: EnemyType, hasHealItem: boolean }[] = [];
     private enemyBullets: enemyBullet[] = [];
-
     private playerBullets: playerBullet[] = [];
-
     private playerHpDisplay?: PlayerHpDisplay;
-
     private waveTimerBar?: WaveTimerBar;
-    private mainMenuButtons: Button[] = [];
-
     private healItems: healItem[] = [];
+    private shockwaves: Shockwave[] = [];
 
-    private screen: Screen;
-
-    //once done testing change to a null value or dont initialize
-    private level: Level = Level.CampaignLevel1;
-
-    //list of pending player bullets
     private pendingPlayerBullets: {
         spawnTime: number;
         x: number;
@@ -50,7 +44,6 @@ export class Game {
         dirY?: number
     }[] = [];
 
-    //pending enemy bullets (patterns that spawn bullets over time instead of all at once)
     private pendingEnemyBullets: {
         spawnTime: number;
         x: number;
@@ -66,91 +59,139 @@ export class Game {
         bulletYGrowth: number;
     }[] = [];
 
-    //shockwave effects
-    private shockwaves: Shockwave[] = [];
+    private levelController: { update(dt: number): void, getWaveTimerPercent(): number } | null = null;
+    private level: Level = Level.CampaignLevel1;
 
-    ///level controller didnt think i would actually need to use interfaces that i learned in class lol
-    private levelController: { update(dt: number): void, getWaveTimerPercent(): number } | null = null
+    //screen manager
+    private currentScreen: Screen;
 
-    addEnemyToQueue(x: number, y: number, type: EnemyType, delay: number, hasHealItem: boolean) {
-        this.pendingEnemies.push({ spawnTime: performance.now() / 1000 + delay, x, y, type, hasHealItem });
+    constructor(canvas: HTMLCanvasElement) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d')!;
+        this.input = new Input();
+        this.waveTimerBar = new WaveTimerBar(canvas.width, canvas.height);
+
+        //initialize with main menu
+        this.currentScreen = new MainMenuScreen(canvas.width, canvas.height, () => this.startGame());
+    }
+
+    private startGame() {
+        this.levelController = createLevel(this, this.level);
+        this.currentScreen = new GameScreen(
+            this,
+            () => this.gameOver(),
+            () => this.levelClear()
+        );
+    }
+
+    private gameOver() {
+        this.currentScreen = new GameOverScreen(
+            () => this.startGame(),
+            () => this.goToLevelSelect()
+        );
+    }
+    createWaveTimerBar() {
+        this.waveTimerBar = new WaveTimerBar(this.canvas.width, this.canvas.height);
+    }
+
+    killAllEnemies() {
+        this.pendingEnemies = [];
+        this.enemies.forEach(e => {
+            e.takeDamage(9999);
+        });
+    }
+
+    public levelClear() {
+        this.currentScreen = new LevelClearScreen(
+            () => this.startGame(),
+            () => this.goToLevelSelect()
+        );
+    }
+
+    private goToLevelSelect() {
+        this.resetGame();
+        this.currentScreen = new LevelSelectScreen();
+    }
+
+    getCanvas() {
+        return this.canvas;
+    }
+
+    getInput() {
+        return this.input;
+    }
+
+    getPendingPlayerBullets() {
+        return this.pendingPlayerBullets;
+    }
+
+    getPendingEnemyBullets() {
+        return this.pendingEnemyBullets;
+    }
+
+    getPlayerBullets() {
+        return this.playerBullets;
+    }
+
+    getShockwaves() {
+        return this.shockwaves;
+    }
+
+    getHealItems() {
+        return this.healItems;
+    }
+
+    getPlayerHpDisplay() {
+        return this.playerHpDisplay;
+    }
+
+    queuePlayerBullet(spec: any) {
+        this.pendingPlayerBullets.push(spec);
     }
 
     queueEnemyBullet(spec: any) {
         this.pendingEnemyBullets.push(spec);
     }
 
-    getPlayerHpBarHeight() {
-        if (!this.playerHpDisplay) { return 0 };
-        return this.playerHpDisplay.getBarHeight();
+    updateLevelController(dt: number) {
+        if (this.levelController) {
+            this.levelController.update(dt);
+        }
     }
 
-    constructor(canvas: HTMLCanvasElement) {
-        this.canvas = canvas;
-        this.screen = Screen.MainMenu;
-        this.ctx = canvas.getContext('2d')!;
-        this.input = new Input();
-        this.waveTimerBar = new WaveTimerBar(canvas.width, canvas.height);
-        this.setupMainMenuButtons();
-        // this.levelController = createLevel(this, 1);
-    }
-    getCanvas() {
-        return this.canvas;
-    }
-
-    setupMainMenuButtons() {
-        const buttonWidth = 200;
-        const buttonHeight = 50;
-        const buttonX = this.canvas.width / 2 - buttonWidth / 2;
-        const buttonY = this.canvas.height - 120;
-
-        this.mainMenuButtons.push(
-            new Button(
-                buttonX,
-                buttonY,
-                buttonWidth,
-                buttonHeight,
-                'Play Game',
-                () => {
-                    this.screen = Screen.Game;
-                    this.levelController = createLevel(this, Level.CampaignLevel1);
-                }
-            )
-        );
+    drawWaveTimerBar(ctx: CanvasRenderingContext2D) {
+        if (!this.levelController || !this.waveTimerBar) return;
+        this.waveTimerBar.draw(ctx, this.levelController.getWaveTimerPercent());
     }
 
     addPlayer(player: Player) {
-        const hpBarHeightOffset = 2.5
+        const hpBarHeightOffset = 2.5;
         this.player = player;
         this.playerHpDisplay = new PlayerHpDisplay(0, this.canvas.height - hpBarHeightOffset - 3, this.canvas.width, player.getMaxHp());
-    }
-    createWaveTimerBar() {
-        this.waveTimerBar = new WaveTimerBar(this.canvas.width, this.canvas.height);
-    }
-    resetGame() {
-        this.clearEntities();
-        this.clearUiElements();
     }
 
     addEnemy(startx: number, starty: number, type: EnemyType, hasHealItem: boolean) {
         this.enemies.push(new enemy(startx, starty, type, this, hasHealItem));
     }
 
-    getTimerBarWidth() {
-        if (!this.waveTimerBar) { return 0 };
-        return this.waveTimerBar.getWidth();
+    addEnemyBullet(bullet: enemyBullet) {
+        this.enemyBullets.push(bullet);
     }
 
     addHealItem(x: number, y: number) {
         this.healItems.push(new healItem(x, y));
     }
 
+    addEnemyToQueue(x: number, y: number, type: EnemyType, delay: number, hasHealItem: boolean) {
+        this.pendingEnemies.push({ spawnTime: performance.now() / 1000 + delay, x, y, type, hasHealItem });
+    }
+
     getEnemies() {
         return this.enemies;
     }
 
-    levelClear() {
-        this.screen = Screen.LevelClear;
+    getEnemyBullets() {
+        return this.enemyBullets;
     }
 
     getPendingEnemies() {
@@ -161,13 +202,102 @@ export class Game {
         return this.player;
     }
 
-
-    addEnemyBullet(bullet: enemyBullet) {
-        this.enemyBullets.push(bullet);
+    getPlayerHpBarHeight() {
+        if (!this.playerHpDisplay) return 0;
+        return this.playerHpDisplay.getBarHeight();
     }
 
-    getEnemyBullets() {
-        return this.enemyBullets;
+    getTimerBarWidth() {
+        if (!this.waveTimerBar) return 0;
+        return this.waveTimerBar.getWidth();
+    }
+
+    resetGame() {
+        this.clearEntities();
+        this.clearUiElements();
+    }
+    spawnPendingPlayerBullets(now: number) {
+        this.pendingPlayerBullets = this.pendingPlayerBullets.filter(pending => {
+            if (now >= pending.spawnTime) {
+                this.playerBullets.push(new playerBullet(pending.x, pending.y, pending.dirX ?? 0, pending.dirY ?? -1));
+                return false; //remove from pending
+            }
+            return true;
+        });
+    }
+    removeDeadEnemiesAndCreateShockwaves() {
+        this.enemies = this.enemies.filter(e => {
+            if (e.isDead()) {
+                this.shockwaves.push(new Shockwave(e.getX(), e.getY(), (e.getXRadius() + e.getYRadius()) / 2, 0.5, e.getColor()));
+                console.log('Enemy killed');
+                if (e.getHealItem()) {
+                    console.log('dropping heal item');
+                    this.addHealItem(e.getX(), e.getY());
+                    console.log('Heal item added')
+                }
+                return false;
+            }
+            return true;
+        });
+    }
+
+    spawnPendingEnemyBullets(now: number) {
+        this.pendingEnemyBullets = this.pendingEnemyBullets.filter(pending => {
+            if (now >= pending.spawnTime) {
+                this.enemyBullets.push(new enemyBullet(pending.x, pending.y, pending.dirX, pending.dirY, pending.bulletXSpeed, pending.bulletYSpeed, pending.bulletXRadius, pending.bulletYRadius, pending.bulletColor, pending.bulletXGrowth, pending.bulletYGrowth));
+                return false; //remove from pending
+            }
+            return true;
+        });
+    }
+
+    spawnPendingEnemies(now: number) {
+        this.pendingEnemies = this.pendingEnemies.filter(pending => {
+            if (now >= pending.spawnTime) {
+                this.addEnemy(pending.x, pending.y, pending.type, pending.hasHealItem);
+                return false; //remove from pending
+            }
+            return true;
+        });
+    }
+    updateAndFilterShockwaves(dt: number) {
+        this.shockwaves = this.shockwaves.filter(sw => sw.update(dt));
+    }
+
+    updateAndFilterHealItems(dt: number, canvas: HTMLCanvasElement) {
+        this.healItems.forEach(item => item.update(dt));
+        this.healItems = this.healItems.filter(item => {
+            if (item.isOffScreen(canvas.width, canvas.height)) {
+                return false;
+            }
+            return true;
+        });
+    }
+
+    updateAndFilterPlayerBullets(dt: number, canvas: HTMLCanvasElement) {
+        this.playerBullets.forEach(b => b.update(dt));
+        this.playerBullets = this.playerBullets.filter(b => !b.isOffScreen(canvas.width, canvas.height));
+    }
+
+    filterOffscreenEnemyBullets(canvas: HTMLCanvasElement) {
+        this.enemyBullets = this.enemyBullets.filter(b => !b.isOffScreen(canvas.width, canvas.height));
+    }
+
+    private clearUiElements() {
+        this.playerHpDisplay = undefined;
+        this.waveTimerBar = undefined;
+    }
+
+    private clearEntities() {
+        this.enemies = [];
+        this.pendingEnemies = [];
+        this.pendingEnemyBullets = [];
+        this.enemyBullets = [];
+        this.playerBullets = [];
+        this.healItems = [];
+        this.shockwaves = [];
+        this.pendingPlayerBullets = [];
+        this.player = null as any;
     }
 
     start() {
@@ -181,7 +311,7 @@ export class Game {
     }
 
     private gameLoop = (now: number) => {
-        const dt = Math.min((now - this.lastTime) / 1000, 0.016); //60fps
+        const dt = Math.min((now - this.lastTime) / 1000, 0.016);
         this.lastTime = now;
 
         this.update(dt);
@@ -192,265 +322,17 @@ export class Game {
         }
     };
 
-    killAllEnemies() {
-        this.pendingEnemies = [];
-        this.enemies.forEach(e => {
-            e.takeDamage(9999);
-        });
-    }
-
-
     private update(dt: number) {
-        if (this.screen === Screen.GameOver || this.screen === Screen.LevelClear) {
-
-            //restart
-            if (this.input.keys['r']) {
-                this.player = new Player(this, this.canvas.width / 2, this.canvas.height - 50);
-                this.levelController = createLevel(this, this.level);
-                this.screen = Screen.Game;
-                return;
-            }
-
-            //level select
-            if (this.input.keys['l']) {
-                this.resetGame();
-                this.screen = Screen.LevelScreen;
-                return;
-            }
-            return;
-        };
-
-        if (this.screen === Screen.LevelScreen) { return };
-        if (this.screen === Screen.MainMenu) { return };
-
-        //game screen
-        //enemy stuff
-        this.enemies.forEach(e => e.update(dt));
-        this.enemyBullets.forEach(b => b.update(dt));
-        this.enemyBullets = this.enemyBullets.filter(b => !b.isOffScreen(this.canvas.width, this.canvas.height));
-
-        //player stuff
-        if (!this.player) { return };
-        this.player.update(dt, this.input.keys, this.canvas.width, this.canvas.height);
-
-        //player attack
-        if (this.input.keys[' ']) {
-            const now = performance.now() / 1000;
-            if (now - this.input.lastShootTime >= this.input.shootCooldown) {
-                const playerBulletSpread = 6; //disrtance between bullets
-                const playerBulletDesync = 0.05; //time between each bullet in a burst
-
-                this.input.lastShootTime = now;
-                const bulletPattern = this.player.getBulletPattern(now, playerBulletDesync, playerBulletSpread);
-                this.pendingPlayerBullets.push(...bulletPattern);
-            }
-        }
-
-        //spawn pending player bullets when their time comes
-        const now = performance.now() / 1000;
-        this.pendingPlayerBullets = this.pendingPlayerBullets.filter(pending => {
-            if (now >= pending.spawnTime) {
-                this.playerBullets.push(new playerBullet(pending.x, pending.y, pending.dirX ?? 0, pending.dirY ?? -1));
-                return false; //remove from pending
-            }
-            return true;
-        });
-
-        //spawn pending enemy bullets when their time comes
-        this.pendingEnemyBullets = this.pendingEnemyBullets.filter(pending => {
-            if (now >= pending.spawnTime) {
-                this.enemyBullets.push(new enemyBullet(pending.x, pending.y, pending.dirX, pending.dirY, pending.bulletXSpeed, pending.bulletYSpeed, pending.bulletXRadius, pending.bulletYRadius, pending.bulletColor, pending.bulletXGrowth, pending.bulletYGrowth));
-                return false;
-            }
-            return true;
-        });
-
-        //spawn pending enemies when their time comes
-        this.pendingEnemies = this.pendingEnemies.filter(pending => {
-            if (now >= pending.spawnTime) {
-                this.addEnemy(pending.x, pending.y, pending.type, pending.hasHealItem);
-                return false;
-            }
-            return true;
-        });
-
-        //update level-specific logic
-        if (this.levelController) {
-            this.levelController.update(dt);
-        }
-
-        //update player bullets
-        this.playerBullets.forEach(b => b.update(dt));
-
-        //remove offscreen player bullets
-        this.playerBullets = this.playerBullets.filter(b => !b.isOffScreen(this.canvas.width, this.canvas.height));
-
-        checkCollisions(this.player, this.enemies, this.playerBullets, this.enemyBullets, this.shockwaves, this.healItems);
-
-        //remove dead enemies & create shockwave
-        this.enemies = this.enemies.filter(e => {
-            if (e.isDead()) {
-                this.shockwaves.push(new Shockwave(e.getX(), e.getY(), (e.getXRadius() + e.getYRadius()) / 2, 0.5, e.getColor()));
-                console.log('Enemy killed');
-                console.log('has heal item? ' + e.getHealItem());
-                if (e.getHealItem()) {
-                    console.log('dropping heal item');
-                    this.addHealItem(e.getX(), e.getY());
-                    console.log('Heal item added')
-                }
-                return false; // Remove enemy
-            }
-            return true;
-        });
-        //update shockwaves and remove finished ones
-        this.shockwaves = this.shockwaves.filter(sw => sw.update(dt));
-
-        //heal items
-        this.healItems.forEach(item => item.update(dt));
-        this.healItems = this.healItems.filter(item => {
-            if (item.isOffScreen(this.canvas.width, this.canvas.height)) {
-                return false;
-            }
-            return true;
-        });
-
-        if (this.player.getHp() <= 0) {
-            this.screen = Screen.GameOver;
-
-        }
-    }
-
-    private clearUiElements() {
-        this.playerHpDisplay = undefined;
-        this.waveTimerBar = undefined;
-    }
-    private clearEntities() {
-        this.enemies = [];
-        this.pendingEnemies = [];
-        this.pendingEnemyBullets = [];
-        this.enemyBullets = [];
-        this.playerBullets = [];
-        this.healItems = [];
-        this.shockwaves = [];
-        this.pendingPlayerBullets = [];
-        this.playerBullets = [];
-        this.player = null as any;
+        this.currentScreen.handleInput(this.input);
+        this.currentScreen.update(dt);
     }
 
     private render() {
-
         //clear canvas
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        //player
-        if (this.player) {
-            this.player.draw(this.ctx);
-        }
-
-
-        //healing items
-        console.log('Heal items to draw:', this.healItems.length);
-        this.healItems.forEach(item => item.draw(this.ctx));
-
-        //shockwaves
-        this.shockwaves.forEach(sw => sw.draw(this.ctx));
-
-        //bullets
-        this.playerBullets.forEach(b => b.draw(this.ctx));
-        this.enemyBullets.forEach(b => b.draw(this.ctx));
-
-        //enemies
-        this.enemies.forEach(e => e.draw(this.ctx));
-
-        //player health bar
-        if (this.player && this.playerHpDisplay) {
-            this.playerHpDisplay.draw(this.ctx, this.player.getHp(), this.player.getMaxHp());
-        }
-        this.drawWaveTimerBars();
-
-        if (this.screen === Screen.GameOver) {
-            this.renderGameOverMenu();
-        }
-
-        if (this.screen === Screen.LevelScreen) {
-            this.renderLevelSelectMenu();
-        }
-
-        if (this.screen === Screen.LevelClear) {
-            this.renderLevelClearScreen();
-        }
-
-
-        if (this.screen === Screen.MainMenu) {
-            this.renderMainMenu();
-        }
-
+        //current screen
+        this.currentScreen.render(this.ctx);
     }
-    private renderMainMenu() {
-        //semi-transparent overlay
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        //title
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '48px fantasy';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText('Game', this.canvas.width / 2, 100);
-
-        //update and draw buttons
-        this.mainMenuButtons.forEach(button => {
-            button.update(this.input.mouseX, this.input.mouseY);
-            button.draw(this.ctx);
-        });
-
-        //handle clicks
-        if (this.input.mouseClicked) {
-            this.mainMenuButtons.forEach(button => button.handleClick());
-            this.input.mouseClicked = false;
-        }
-    }
-
-    private renderLevelSelectMenu() {
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-
-    private renderLevelClearScreen() {
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        //text
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '30px fantasy';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText('Level Cleared!', this.canvas.width / 2, this.canvas.height / 2 - 20);
-
-        this.ctx.font = '20px fantasy';
-        this.ctx.fillText('Press R to Play Again or L for Level Select', this.canvas.width / 2, this.canvas.height / 2 + 20);
-    }
-
-
-    private renderGameOverMenu() {
-
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        //text
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '30px fantasy';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText('Game Over', this.canvas.width / 2, this.canvas.height / 2 - 20);
-
-        this.ctx.font = '20px fantasy';
-        this.ctx.fillText('Press R to Retry or L for Level Select', this.canvas.width / 2, this.canvas.height / 2 + 20);
-    }
-    //draw side timer bars
-    private drawWaveTimerBars() {
-        if (!this.levelController || !this.waveTimerBar) return;
-        this.waveTimerBar.draw(this.ctx, this.levelController.getWaveTimerPercent());
-    }
-
-
-
 }
