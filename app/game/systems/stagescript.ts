@@ -23,12 +23,19 @@ export function createLevel(game: Game, level: Level): LevelController {
         startX: game.getCanvas().width / 2,
         startY: game.getCanvas().height - 50,
     };
+    //helper function to check if all enemies have been defeated
+    function hasAllEnemiesDefeated() {
+        return (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0);
+    }
+    function waveTimeExceeded() {
+        return maxWaveTime[currentWave - 1] > 0 && waveTimer > maxWaveTime[currentWave - 1];
+    }
     if (level === Level.Tutorial) {
         //tutorial configuration
         const TUTORIAL_DELAY = 2; // seconds before first enemy spawns
         currentWave = 1;
         const TUTORIAL_WAVE_TIMES = [0, 10, 10, 0];
-        
+
         //helper to create tutorial message with consistent defaults
         const createTutorialMessage = (
             text: string,
@@ -67,13 +74,6 @@ export function createLevel(game: Game, level: Level): LevelController {
         const tutorialOverlay = new TutorialOverlay(tutorialMessages);
         let tutorialDelay = TUTORIAL_DELAY;
 
-        //helper function to check if all enemies have been defeated
-        function hasAllEnemiesDefeated(){
-            return (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0);
-        }
-        function waveTimeExceeded(){
-            return maxWaveTime[currentWave - 1] > 0 && waveTimer > maxWaveTime[currentWave - 1];
-        }
         return {
             update(dt: number) {
                 tutorialDelay -= dt;
@@ -226,6 +226,35 @@ export function createLevel(game: Game, level: Level): LevelController {
                 return Math.min(waveTimer / maxWaveTime[currentWave - 1], 1);
             }
         };
+    }
+    if (level === Level.BossLevel2) {
+        playerStats.maxHp = 2;
+        playerStats.startHp = 2;
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
+        game.addEnemyToQueue(200, 50, EnemyType.TeleportingBoss, 3, false);
+        return {
+            update(dt: number) {
+                if (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) {
+                    game.levelClear();
+                }
+            }, getWaveTimerPercent() { return 0; }
+        }
+    }
+    if (level === Level.CampaignLevel2) {
+        playerStats.maxHp = 6;
+        playerStats.startHp = 3;
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
+
+        return {
+            update(dt: number) {
+                if (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) {
+                    game.levelClear();
+                }
+            }, getWaveTimerPercent() {
+                if (currentWave === 0 || maxWaveTime[currentWave - 1] === 0) return 0;
+                return Math.min(waveTimer / maxWaveTime[currentWave - 1], 1);
+            }
+        }
     }
 
     return { update() { }, getWaveTimerPercent() { return 0; } };
