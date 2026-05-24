@@ -2,21 +2,48 @@ import { Screen } from '@/app/game/screens/screenInterface';
 import { Input } from '@/app/game/systems/input';
 import { Game } from '@/app/game/game';
 import { checkCollisions } from '@/app/game/systems/collision';
+import { TutorialOverlay } from '@/app/game/ui/tutorialOverlay';
 
 export class GameScreen implements Screen {
     private game: Game;
     private onGameOver: () => void;
     private onLevelClear: () => void;
+    private tutorialOverlay: TutorialOverlay | undefined;
+    private lastMouseClick: { x: number; y: number } | undefined;
 
     constructor(game: Game, onGameOver: () => void, onLevelClear: () => void) {
         this.game = game;
         this.onGameOver = onGameOver;
         this.onLevelClear = onLevelClear;
+
+        document.addEventListener('click', (e) => {
+            const canvas = this.game.getCanvas();
+            const rect = canvas.getBoundingClientRect();
+            this.lastMouseClick = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        });
+    }
+    setTutorialOverlay(overlay: TutorialOverlay): void {
+        this.tutorialOverlay = overlay;
     }
 
     update(dt: number): void {
         const player = this.game.getPlayer();
         if (!player) return;
+
+        //check tutorial overlay actions (if tutorial is active)
+        if (this.tutorialOverlay && !this.tutorialOverlay.isDone()) {
+            if (this.tutorialOverlay.checkAction({
+                spacedPressed: this.game.getInput().keys[' '],
+                shiftPressed: this.game.getInput().keys['shift'],
+                mouseClick: this.lastMouseClick
+            })) {
+                this.tutorialOverlay.advance();
+                this.lastMouseClick = undefined; //reset click after processing
+            }
+        }
 
         //enemy stuff
         this.game.getEnemies().forEach(e => e.update(dt));
@@ -54,13 +81,13 @@ export class GameScreen implements Screen {
 
         //collision checks
         checkCollisions(player, this.game.getEnemies(), this.game.getPlayerBullets(), this.game.getEnemyBullets(), this.game.getShockwaves(), this.game.getHealItems());
-        
+
         //remove dead enemies and create shockwaves
         this.game.removeDeadEnemiesAndCreateShockwaves();
 
         //update and filter shockwaves and heal items
         this.game.updateAndFilterShockwaves(dt);
-        this.game.updateAndFilterHealItems(dt,this.game.getCanvas());
+        this.game.updateAndFilterHealItems(dt, this.game.getCanvas());
         this.game.updateAndFilterPlayerBullets(dt, this.game.getCanvas());
         this.game.filterOffscreenEnemyBullets(this.game.getCanvas());
 
@@ -95,6 +122,10 @@ export class GameScreen implements Screen {
         //enemies
         this.game.getEnemies().forEach(e => e.draw(ctx));
 
+        if (this.tutorialOverlay && !this.tutorialOverlay.isDone()) {
+            this.tutorialOverlay.draw(ctx, this.game.getCanvas().width, this.game.getCanvas().height);
+        }
+
         //player health bar
         if (player) {
             this.game.getPlayerHpDisplay()?.draw(ctx, player.getHp(), player.getMaxHp());
@@ -102,5 +133,7 @@ export class GameScreen implements Screen {
 
         //wave timer bar
         this.game.drawWaveTimerBar(ctx);
+
+
     }
 }

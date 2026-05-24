@@ -72,16 +72,26 @@ export class Game {
         this.waveTimerBar = new WaveTimerBar(canvas.width, canvas.height);
 
         //initialize with main menu
-        this.currentScreen = new MainMenuScreen(canvas.width, canvas.height, () => this.startGame());
+        this.currentScreen = new MainMenuScreen(canvas.width, canvas.height, () => this.goToLevelSelect());
     }
 
     private startGame() {
         this.levelController = createLevel(this, this.level);
-        this.currentScreen = new GameScreen(
+
+        const gameScreen = new GameScreen(
             this,
             () => this.gameOver(),
             () => this.levelClear()
         );
+
+
+        //tutorial level
+        if (this.level === Level.Tutorial && 'getTutorialOverlay' in this.levelController) {
+            gameScreen.setTutorialOverlay((this.levelController as any).getTutorialOverlay());
+        }
+
+        this.currentScreen = gameScreen;
+
     }
 
     private gameOver() {
@@ -110,7 +120,10 @@ export class Game {
 
     private goToLevelSelect() {
         this.resetGame();
-        this.currentScreen = new LevelSelectScreen();
+        this.currentScreen = new LevelSelectScreen((selectedLevel: Level) => {
+            this.level = selectedLevel;  //set the selected level
+            this.startGame();            //start the game with selected level
+        });
     }
 
     getCanvas() {
