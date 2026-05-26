@@ -1,5 +1,6 @@
 import { Shockwave } from './shockwave';
 import { Game } from '../game';
+import {drawPolygon,drawEllipse,drawHollowEllipse} from "@/app/game/utils/drawingUtils";
 export class Player {
     private hp = 3;
     private maxHp = 5;
@@ -21,7 +22,7 @@ export class Player {
 
     private modelWidth = 10;
     private modelHeight = 14;
-    private diamondColor = '#419aff';
+    private color = '#419aff';
     private focusTransparency = 0.2;
 
     private shockwaves: Shockwave[] = [];
@@ -116,11 +117,11 @@ export class Player {
         ctx.globalAlpha = this.isFocused ? this.focusTransparency : 1;
 
         if (this.hp === 1) {
-            this.drawHollowEllipse(ctx);
+            drawHollowEllipse(ctx, this.x, this.y, this.modelWidth, this.modelHeight, this.color, 2);
         } else if (this.hp === 2) {
-            this.drawEllipse(ctx);
+            drawEllipse(ctx, this.x, this.y, this.modelWidth, this.modelHeight, this.color);
         } else {
-            this.drawPolygon(ctx, this.hp);
+            drawPolygon(ctx, this.x, this.y, this.modelHeight, this.hp, -Math.PI/2, this.color);
         }
 
         //circle hitbox
@@ -133,40 +134,6 @@ export class Player {
 
         //draw shockwave
         this.shockwaves.forEach(sw => sw.draw(ctx));
-    }
-    private drawPolygon(ctx: CanvasRenderingContext2D, sides: number) {
-        ctx.fillStyle = this.diamondColor;
-        ctx.beginPath();
-
-        for (let i = 0; i < sides; i++) {
-            const angle = (i / sides) * Math.PI * 2 - Math.PI / 2; //start from top
-            const radius = this.modelHeight; //use existing radius value
-            const x = this.x + Math.cos(angle) * radius;
-            const y = this.y + Math.sin(angle) * radius;
-
-            if (i === 0) {
-                ctx.moveTo(x, y);
-            } else {
-                ctx.lineTo(x, y);
-            }
-        }
-        ctx.closePath();
-        ctx.fill();
-    }
-
-    private drawEllipse(ctx: CanvasRenderingContext2D) {
-        ctx.fillStyle = this.diamondColor;
-        ctx.beginPath();
-        ctx.ellipse(this.x, this.y, this.modelWidth, this.modelHeight, 0, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    private drawHollowEllipse(ctx: CanvasRenderingContext2D) {
-        ctx.strokeStyle = this.diamondColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.ellipse(this.x, this.y, this.modelWidth, this.modelHeight, 0, 0, Math.PI * 2);
-        ctx.stroke();
     }
 
     getBulletPattern(now: number, playerBulletDesync: number, playerBulletSpread: number) {

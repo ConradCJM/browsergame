@@ -18,7 +18,7 @@ export function createLevel(game: Game, level: Level): LevelController {
     let waveTimer = 0;
     let maxWaveTime: number[] = [];
     let playerStats = {
-        maxHp: 5,
+        maxHp: 6,
         startHp: 2,
         startX: game.getCanvas().width / 2,
         startY: game.getCanvas().height - 50,
@@ -135,14 +135,14 @@ export function createLevel(game: Game, level: Level): LevelController {
         playerStats.startHp = 1;
 
         game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
-        game.addEnemyToQueue(200, 50, EnemyType.SentryBoss, 3, false);
+        game.addEnemyToQueue(200, 100, EnemyType.SentryBoss, 3, false);
 
         return {
             update(dt: number) {
                 if (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) {
                     game.levelClear();
                 }
-            }, getWaveTimerPercent() { return 0; }
+            }, getWaveTimerPercent() { return 1; }
         };
     }
     if (level === Level.CampaignLevel1) {
@@ -214,7 +214,7 @@ export function createLevel(game: Game, level: Level): LevelController {
                 else if (currentWave === 4 &&
                     (hasAllEnemiesDefeated() || waveTimeExceeded())) {
                     game.killAllEnemies(); //kill all enemies if player manages to survive until time limit
-                    game.addEnemyToQueue(200, 50, EnemyType.SentryBoss, 0, false);
+                    game.addEnemyToQueue(200, 100, EnemyType.SentryBoss, 0, false);
                     currentWave = 5;
                 }
                 else if (currentWave === 5 && hasAllEnemiesDefeated()) {
@@ -222,27 +222,33 @@ export function createLevel(game: Game, level: Level): LevelController {
                 }
             },
             getWaveTimerPercent() {
-                if (currentWave === 0 || maxWaveTime[currentWave - 1] === 0) return 0;
+                if (currentWave === 0 || maxWaveTime[currentWave - 1] === 0) return 1;
                 return Math.min(waveTimer / maxWaveTime[currentWave - 1], 1);
             }
         };
     }
     if (level === Level.BossLevel2) {
-        playerStats.maxHp = 2;
-        playerStats.startHp = 2;
+        playerStats.maxHp = 3;
+        playerStats.startHp = 3;
         game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
-        game.addEnemyToQueue(200, 50, EnemyType.TeleportingBoss, 3, false);
+        game.addEnemyToQueue(-300, 100, EnemyType.TeleportingBoss, 3, false);
         return {
             update(dt: number) {
                 if (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) {
                     game.levelClear();
                 }
-            }, getWaveTimerPercent() { return 0; }
+            }, getWaveTimerPercent() { return 1; }
         }
     }
     if (level === Level.CampaignLevel2) {
         playerStats.maxHp = 6;
         playerStats.startHp = 3;
+
+        currentWave = 0;
+        waveQueued = [];
+        waveTimer = 0;
+        maxWaveTime = [];
+
         game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
 
         return {
@@ -251,7 +257,7 @@ export function createLevel(game: Game, level: Level): LevelController {
                     game.levelClear();
                 }
             }, getWaveTimerPercent() {
-                if (currentWave === 0 || maxWaveTime[currentWave - 1] === 0) return 0;
+                if (currentWave === 0 || maxWaveTime[currentWave - 1] === 0) return 1;
                 return Math.min(waveTimer / maxWaveTime[currentWave - 1], 1);
             }
         }

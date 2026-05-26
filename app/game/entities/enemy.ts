@@ -2,6 +2,8 @@ import { EnemyType } from '@/app/game/constants';
 import { Game } from '@/app/game/game';
 import { aimedSpreadToDirection, aimedSpreadToPlayer, spiralPattern, ringPattern } from '@/app/game/patterns';
 import { BossHealthBar } from '@/app/game/ui/hpBar';
+import { drawIsometricEllipse, drawIsometricPolygon } from '@/app/game/utils/drawingUtils';
+import { drawPolygon } from "@/app/game/utils/drawingUtils";
 export class enemy {
     private hp: number;
     private maxHp: number;
@@ -14,6 +16,7 @@ export class enemy {
     private x: number;
     private y: number;
     private enemyColor = '#ff0000';
+    private seondaryColor? = '#000000';
     private speed = 20; //pixels per second
 
     private centerX = 200;
@@ -43,8 +46,9 @@ export class enemy {
     private phaseCoolDown = 0; //time in seconds before enemy can change phases
 
     private bossPhase = 0; //for bosses with separate phases that change the entire attack pattern, not just modify it
-    private maxBossPhase = 0;
+    private maxBossPhase = -1;
     private bossHealthBar: BossHealthBar | null = null; //only used for bosses
+    private hpDrain?: number = 0;//some enemies might have hp drain so they lose hp over time
 
     private currentAimAngle = Math.PI / 2; //for patterns that require continuous aiming
     private aimRotationSpeed = 2; //radians per second
@@ -96,6 +100,8 @@ export class enemy {
             this.hp = 75;
             this.maxHp = 75;
             this.attackRate = 1.25;
+            this.XRadius = 20;
+            this.YRadius = 20;
 
             this.bulletXSpeed = 35;
             this.bulletYSpeed = 35;
@@ -111,6 +117,7 @@ export class enemy {
             this.hp = 1000;
             this.maxHp = 1000;
             this.attackRate = 0.5;
+            this.hpDrain = 2.5;
 
             this.bulletXSpeed = 65;
             this.bulletYSpeed = 65;
@@ -121,15 +128,50 @@ export class enemy {
             this.maxPhase = 3;
             this.phaseTimer = 0;
             this.maxPhaseTime = 10;
+            this.maxBossPhase = 0;
+
+        }
+        else if (this.type === EnemyType.SentryMiniboss) {
+            this.XRadius = 25;
+            this.YRadius = 25;
+            this.hp = 500;
+            this.maxHp = 500;
+            this.maxPhase = 1;
+
+
+        }
+        else if (this.type === EnemyType.TeleportingBoss) {
+            this.XRadius = 30;
+            this.YRadius = 24;
+            this.hp = 750;
+            this.maxHp = 750;
+            this.hpDrain = 5;
+
+            this.bossPhase = 0;
             this.maxBossPhase = 1;
+            this.maxPhase = 3;
+
+            this.attackRate = 0;
+            this.maxPhaseTime = 3;
+        }
+        else if (this.type === EnemyType.TeleportingMiniboss) {
+            this.XRadius = 20;
+            this.YRadius = 16;
+            this.hp = 375;
+            this.maxHp = 375;
+            this.maxPhase = 3;
+
+            this.attackRate = 4.5;
+            this.maxPhaseTime = 4.5;
         }
 
-        if (this.maxBossPhase > 0) {
+        if (this.maxBossPhase >= 0) {
             this.bossHealthBar = new BossHealthBar(50, 12, 300, 8, this.hp, this.maxHp);
         }
     }
     takeDamage(amount: number) {
         this.hp -= amount;
+        if (this.hp > this.maxHp) this.hp = this.maxHp;
         if (this.hp < 0) this.hp = 0;
 
         // Add this line to update the health bar
@@ -163,7 +205,7 @@ export class enemy {
     }
 
     isDead(): boolean {
-        return this.hp <= 0;
+        return this.hp <= 0 && this.bossPhase >= this.maxBossPhase;
     }
 
     subFromAttackTimer(value: number) {
@@ -172,6 +214,9 @@ export class enemy {
 
     update(dt: number) {
         this.timeAlive += dt;
+        if (this.hpDrain) {
+            this.takeDamage(this.hpDrain * dt);
+        }
         this.updatePosition(dt);
         this.updateAim(dt);
         this.updateAttack(dt);
@@ -215,6 +260,11 @@ export class enemy {
     }
 
     updatePhase(dt: number) {
+        if (this.hp <= 0 && this.bossPhase < this.maxBossPhase) { //if boss has multiple phases and is currently "dead", move to next phase instead of dying
+            this.bossPhase += 1;
+            this.takeDamage(-this.maxHp); //restore boss hp on phase change
+        }
+
         if (this.maxPhaseTime === 0 || this.maxPhase === 0) return; //no phases, skip
         //track phase timer
         this.phaseTimer += dt;
@@ -279,6 +329,16 @@ export class enemy {
             this.y += Math.sin(this.timeAlive) * this.speed * dt;
             this.x = 200;
         }
+        else if (this.type === EnemyType.SentryMiniboss) {
+            this.speed = 10;
+            this.y += Math.sin(this.timeAlive) * this.speed * dt;
+            this.x = 200;
+        }
+        else if (this.type === EnemyType.TeleportingBoss || this.type === EnemyType.TeleportingMiniboss) {
+            //custom movement in attack patterns, so no movement here except maybe a slight idle movement
+            this.speed = 10;
+            this.y += Math.sin(this.timeAlive) * this.speed * dt;
+        }
     }
 
     //draw enemy
@@ -291,9 +351,15 @@ export class enemy {
             this.enemyColor = '#fbff00';
         } else if (this.type === EnemyType.Tanky) {
             this.enemyColor = '#5900ff';
-        } else if (this.type === EnemyType.SentryBoss) {
+        } else if (this.type === EnemyType.SentryBoss || this.type === EnemyType.SentryMiniboss) {
             this.enemyColor = '#0e7900';
+            this.seondaryColor = '#00ff00';
         }
+        else if (this.type === EnemyType.TeleportingBoss || this.type === EnemyType.TeleportingMiniboss) {
+            this.enemyColor = '#ff050598';
+            this.seondaryColor = 'rgb(0, 47, 255)';
+        }
+
 
         if (this.bossHealthBar) {
             this.bossHealthBar.draw(ctx);
@@ -308,13 +374,7 @@ export class enemy {
             ctx.fill();
         }
         else if (this.type === EnemyType.Tanky) {
-
-            ctx.beginPath();
-            ctx.fillStyle = this.enemyColor;
-            ctx.fillRect(this.x - this.XRadius, this.y - this.YRadius, this.XRadius * 2, this.YRadius * 2);
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(this.x - this.XRadius, this.y - this.YRadius, this.XRadius * 2, this.YRadius * 2);
+            drawPolygon(ctx, this.x, this.y, this.XRadius, 4, Math.PI / 4, this.enemyColor);
 
         }
         else if (this.type === EnemyType.Fast) {
@@ -326,21 +386,26 @@ export class enemy {
 
         }
         else if (this.type === EnemyType.SentryBoss) {
-            //hexagon
-            ctx.beginPath();
-            ctx.fillStyle = this.enemyColor;
-            for (let i = 0; i < 6; i++) {
-                const angle = (i * Math.PI) / 3;
-                const x = this.x + this.XRadius * Math.cos(angle);
-                const y = this.y + this.XRadius * Math.sin(angle);
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
+            const bossSecondaryColor = this.seondaryColor!;
+            drawIsometricPolygon(ctx, this.x, this.y, this.XRadius, this.enemyColor, bossSecondaryColor, 6, 0.87, 1.5);
+        }
+        else if (this.type === EnemyType.SentryMiniboss) {
+            drawPolygon(ctx, this.x, this.y, this.XRadius, 6, 0, this.enemyColor);
+        }
+        else if (this.type === EnemyType.TeleportingBoss) {
+            let bossPrimaryColor = this.enemyColor;
+            let bossSecondaryColor = this.seondaryColor!;
+            if (this.phase % 2 === 0) {
+                bossSecondaryColor = '#ff0505';
+                bossPrimaryColor = '#0516ff98';
+
             }
-            ctx.closePath();
-            ctx.fill();
+            if (this.bossPhase === 1) {
+                bossPrimaryColor = '#8f05ff';
+                bossSecondaryColor = '#8f05ff';
+            }
+            drawIsometricEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, bossPrimaryColor, bossSecondaryColor, 1, 1);
+
         }
         //add outline
         ctx.strokeStyle = '#ffffff';
@@ -513,6 +578,140 @@ export class enemy {
                 })
             }
 
+        }
+        else if (this.type === EnemyType.SentryMiniboss) {
+            if (this.phase === 0) {
+
+            }
+            else if (this.phase === 1) {
+
+            }
+        }
+        else if (this.type === EnemyType.TeleportingBoss) {
+            //movement for teleporting boss is integrated with attack patterns since movement and attacks are closely tied together for this enemy
+            this.speed = 10;
+            const yPositions = [75, 100, 125, 150, 175, 200];
+            const baseY = yPositions[Math.floor(Math.random() * yPositions.length)];
+            this.y = baseY + Math.sin(this.timeAlive) * this.speed;
+            if (this.phase === 0) {
+                this.x = 75;
+            }
+            else if (this.phase === 1) {
+                this.x = 200;
+            }
+            else if (this.phase === 2) {
+                this.x = 325;
+            }
+            else if (this.phase === 3) {
+                this.x = 200;
+            }
+
+            //attacks
+            const phaseTimeDecay = this.maxPhaseTime <= 1 ? 0.05 : 0.2;
+            const minPhaseTime = this.bossPhase === 1? -1: 0;
+            if (this.maxPhaseTime <= minPhaseTime) {
+                this.maxPhaseTime = 3;
+            }
+            else { this.maxPhaseTime = this.maxPhaseTime - phaseTimeDecay; }
+            this.attackRate = this.maxPhaseTime;
+            if (this.phase === 0 || this.phase === 2) {
+                const burstCount = 2;
+                const burstInterval = 0.05;
+                const bulletCount = this.bossPhase === 1? 9: 3;
+
+                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!, burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
+
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 200;
+                    spec.bulletYSpeed = 200;
+                    spec.bulletXRadius = 5;
+                    spec.bulletYRadius = 20;
+                    spec.bulletColor = 'rgba(166, 70, 255, 0.47)';
+                    spec.bulletXGrowth = 0;
+                    spec.bulletYGrowth = 0;
+                })
+
+            }
+            else if (this.phase === 1) {
+                const burstCount = 1;
+                const burstInterval = 0.1;
+                const bulletCount = 36;
+                const bulletInterval = 0.0125;
+                const spreadAngle = this.bossPhase === 1? Math.PI / 36: Math.PI / 18;
+                const startOffsetList = [0, Math.PI/2, Math.PI, -Math.PI/2];
+                
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[0], 0, true));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[1], 0, true));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[2], 0, false));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[3], 0, false));
+
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 125;
+                    spec.bulletYSpeed = 300;
+                    spec.bulletXRadius = 3;
+                    spec.bulletYRadius = 10;
+                    spec.bulletColor = 'rgba(172, 83, 255, 0.57)';
+                    spec.bulletXGrowth = 0;
+                    spec.bulletYGrowth = 0;
+                })
+            }
+            else if (this.phase === 3) {
+                const burstCount = this.bossPhase === 1? 6:5;
+                const burstInterval = this.bossPhase ===1? 0.045:0.05;
+                const spreadAngle = this.bossPhase===1?Math.PI/20:Math.PI / 18;
+                const startOffsetList = [0,Math.PI/9];
+
+                specs.push(...ringPattern(burstCount, burstInterval, spreadAngle,startOffsetList , 0));
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 300;
+                    spec.bulletYSpeed = 100;
+                    spec.bulletXRadius = 5;
+                    spec.bulletYRadius = 15;
+                    spec.bulletColor = 'rgba(172, 83, 255, 0.57)';
+                    spec.bulletXGrowth = 0;
+                    spec.bulletYGrowth = 0;
+                })
+
+
+            }
+        }
+        else if (this.type === EnemyType.TeleportingMiniboss) {
+            //movement for teleporting boss is integrated with attack patterns since movement and attacks are closely tied together for this enemy
+            this.speed = 10;
+            const yPositions = [75, 100, 125, 150, 175, 200];
+            const baseY = yPositions[Math.floor(Math.random() * yPositions.length)];
+            this.y = baseY + Math.sin(this.timeAlive) * this.speed;
+            if (this.phase === 0) {
+                this.x = 75;
+            }
+            else if (this.phase === 1) {
+                this.x = 200;
+            }
+            else if (this.phase === 2) {
+                this.x = 325;
+            }
+            else if (this.phase === 3) {
+                this.x = 200;
+            }
+
+            const phaseTimeDecay = 0.25;
+            if (this.maxBossPhase < 1) {
+                this.maxBossPhase = 4.5;
+            }
+            else { this.maxBossPhase = this.maxBossPhase - phaseTimeDecay; }
+
+            if (this.phase === 0) {
+
+            }
+            else if (this.phase === 1) {
+
+            }
+            else if (this.phase === 2) {
+
+            }
+            else if (this.phase === 3) {
+
+            }
         }
         specs.forEach(spec => {
             this.game.queueEnemyBullet({
