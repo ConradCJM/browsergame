@@ -138,6 +138,7 @@ export class enemy {
             this.hp = 500;
             this.maxHp = 500;
             this.maxPhase = 1;
+            this.phaseTimer = 0;
 
 
         }
@@ -582,10 +583,42 @@ export class enemy {
         }
         else if (this.type === EnemyType.SentryMiniboss) {
             if (this.phase === 0) {
+                this.offsetPattern = [0, Math.PI / 60, Math.PI / 90, Math.PI / 180, -Math.PI / 180, -Math.PI / 60, -Math.PI / 90];
+                this.phaseCoolDown = 0;
+                this.attackRate = Math.max(0.2, this.hp / this.maxHp / 1.5); //attack faster as hp drops
+                this.maxPhaseTime = 3;
+                const burstCount = 4;
+                const burstInterval = 0.065;
+                const bulletCount = 1;
 
+                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!, burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 125;
+                    spec.bulletYSpeed = 125;
+                    spec.bulletXRadius = 3;
+                    spec.bulletYRadius = 8;
+                    spec.bulletColor = 'rgba(30, 255, 0, 0.4)';
+                })
             }
             else if (this.phase === 1) {
+                this.offsetPattern = [0, Math.PI / 20];
+                this.phaseCoolDown = 0;
+                this.attackRate = 0.1;
+                this.maxPhaseTime = 0.1;
+                const burstCount = 2;                
+                const burstInterval = 0.5;
+                const spreadAngle = Math.PI / 10;
 
+                specs = ringPattern(burstCount, burstInterval, spreadAngle, this.offsetPattern, this.currentAimAngle);
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 80;
+                    spec.bulletYSpeed = 80;
+                    spec.bulletXRadius = 15;
+                    spec.bulletYRadius = 15;
+                    spec.bulletColor = 'rgba(30, 255, 0, 0.46)';
+                    spec.bulletXGrowth = 0.015;
+                    spec.bulletYGrowth = 0.015;
+                })
             }
         }
         else if (this.type === EnemyType.TeleportingBoss) {

@@ -148,9 +148,9 @@ export function createLevel(game: Game, level: Level): LevelController {
     if (level === Level.CampaignLevel1) {
         game.addPlayer(new Player(game, game.getCanvas().width / 2, game.getCanvas().height - 50, playerStats.maxHp, playerStats.startHp));
         currentWave = 0;
-        waveQueued = [false, false, false, false];
+        waveQueued = [false, false, false, false, false];
         waveTimer = 0;
-        maxWaveTime = [20, 30, 40, 65]; // 0 = no time limit for that wave
+        maxWaveTime = [20, 30, 40, 65, 0]; // 0 = no time limit for that wave
 
         //queue wave 0 immediately
         game.addEnemyToQueue(75, 50, EnemyType.Basic, 2, true);
@@ -175,7 +175,7 @@ export function createLevel(game: Game, level: Level): LevelController {
                 if (currentWave === 1 &&
                     !waveQueued[1] &&
                     (hasAllEnemiesDefeated() || waveTimeExceeded())) {
-                    game.addEnemyToQueue(200, 75, EnemyType.Fast, 0, false);
+                    game.addEnemyToQueue(200, 75, EnemyType.Fast, 1, false);
                     game.addEnemyToQueue(200, 60, EnemyType.Fast, 2, false);
                     game.addEnemyToQueue(-50, 50, EnemyType.Tanky, 8, true);
                     waveQueued[1] = true;
@@ -186,7 +186,7 @@ export function createLevel(game: Game, level: Level): LevelController {
                 else if (currentWave === 2 &&
                     !waveQueued[2] &&
                     (hasAllEnemiesDefeated() || waveTimeExceeded())) {
-                    game.addEnemyToQueue(-50, 50, EnemyType.Tanky, 0, false);
+                    game.addEnemyToQueue(-50, 50, EnemyType.Tanky, 1, false);
                     game.addEnemyToQueue(25, 50, EnemyType.Basic, 2, false);
                     game.addEnemyToQueue(200, 50, EnemyType.Basic, 4, false);
                     game.addEnemyToQueue(175, 50, EnemyType.Fast, 10, true);
@@ -198,26 +198,35 @@ export function createLevel(game: Game, level: Level): LevelController {
                 else if (currentWave === 3 &&
                     !waveQueued[3] &&
                     (hasAllEnemiesDefeated() || waveTimeExceeded())) {
-                    game.addEnemyToQueue(-50, 90, EnemyType.Tanky, 0, false);
-                    game.addEnemyToQueue(-50, 100, EnemyType.Tanky, 1, true);
-                    game.addEnemyToQueue(225, 40, EnemyType.Fast, 3, false);
-                    game.addEnemyToQueue(-50, 110, EnemyType.Tanky, 2, false);
-                    game.addEnemyToQueue(175, 40, EnemyType.Fast, 3, false);
-                    game.addEnemyToQueue(-50, 120, EnemyType.Tanky, 3, true);
-                    game.addEnemyToQueue(-50, 130, EnemyType.Tanky, 4, false);
-                    game.addEnemyToQueue(-50, 140, EnemyType.Tanky, 5, false);
+                    game.addEnemyToQueue(-50, 90, EnemyType.Tanky, 1, false);
+                    game.addEnemyToQueue(-50, 100, EnemyType.Tanky, 2, true);
+                    game.addEnemyToQueue(225, 40, EnemyType.Fast, 3.33, false);
+                    game.addEnemyToQueue(-50, 110, EnemyType.Tanky, 3, false);
+                    game.addEnemyToQueue(175, 40, EnemyType.Fast, 3.67, false);
+                    game.addEnemyToQueue(-50, 120, EnemyType.Tanky, 4, true);
+                    game.addEnemyToQueue(-50, 130, EnemyType.Tanky, 5, false);
+                    game.addEnemyToQueue(-50, 140, EnemyType.Tanky, 6, false);
                     waveQueued[3] = true;
                     currentWave = 4;
                     waveTimer = 0;
                 }
-                //boss wave (wave 4)
+                //miniboss wave (wave 4)
                 else if (currentWave === 4 &&
+                    !waveQueued[4] &&
                     (hasAllEnemiesDefeated() || waveTimeExceeded())) {
-                    game.killAllEnemies(); //kill all enemies if player manages to survive until time limit
-                    game.addEnemyToQueue(200, 100, EnemyType.SentryBoss, 0, false);
+                    game.addEnemyToQueue(200, 75, EnemyType.SentryMiniboss, 2, true);
+                    waveQueued[4] = true;
                     currentWave = 5;
+                    waveTimer = 0;
                 }
-                else if (currentWave === 5 && hasAllEnemiesDefeated()) {
+
+                //boss wavce5
+                else if (currentWave === 5 &&
+                    (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(200, 100, EnemyType.SentryBoss, 2, false);
+                    currentWave = 6;
+                }
+                else if (currentWave === 6 && hasAllEnemiesDefeated()) {
                     game.levelClear();
                 }
             },
