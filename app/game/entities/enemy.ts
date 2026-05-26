@@ -50,6 +50,7 @@ export class enemy {
     private bossHealthBar: BossHealthBar | null = null; //only used for bosses
     private hpDrain?: number = 0;//some enemies might have hp drain so they lose hp over time
 
+    private targetAngle = 0; //for patterns that require continuous aiming
     private currentAimAngle = Math.PI / 2; //for patterns that require continuous aiming
     private aimRotationSpeed = 2; //radians per second
     private offsetPattern = [0, Math.PI / 60, -Math.PI / 60]; //for patterns that have a fixed offset from aiming direction (e.g. always aim slightly to the left or right of the player)
@@ -243,8 +244,8 @@ export class enemy {
         if (!player) return;
 
         //gradually rotate aim towards player
-        const targetAngle = Math.atan2(player.getY() - this.y, player.getX() - this.x);
-        const angleDiff = targetAngle - this.currentAimAngle;
+        this.targetAngle = Math.atan2(player.getY() - this.y, player.getX() - this.x);
+        const angleDiff = this.targetAngle - this.currentAimAngle;
 
         //shortest rotation path
         const shortestAngle = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
@@ -401,8 +402,8 @@ export class enemy {
 
             }
             if (this.bossPhase === 1) {
-                bossPrimaryColor = '#8f05ff';
-                bossSecondaryColor = '#8f05ff';
+                bossSecondaryColor = '#9900ff';
+                bossPrimaryColor = '#8c00ffb0';
             }
             drawIsometricEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, bossPrimaryColor, bossSecondaryColor, 1, 1);
 
@@ -593,7 +594,11 @@ export class enemy {
             const yPositions = [75, 100, 125, 150, 175, 200];
             const baseY = yPositions[Math.floor(Math.random() * yPositions.length)];
             this.y = baseY + Math.sin(this.timeAlive) * this.speed;
-            if (this.phase === 0) {
+            if (this.bossPhase === 1){
+                this.x = 125 + Math.random() * 150;
+                this.takeDamage(2);
+            }
+            else if (this.phase === 0) {
                 this.x = 75;
             }
             else if (this.phase === 1) {
@@ -607,8 +612,19 @@ export class enemy {
             }
 
             //attacks
-            const phaseTimeDecay = this.maxPhaseTime <= 1 ? 0.05 : 0.2;
-            const minPhaseTime = this.bossPhase === 1? -1: 0;
+            let phaseTimeDecay:number = this.maxPhaseTime <= 1 ? 0.05 : 0.2;
+
+            if (this.maxPhaseTime <= 1) {
+                phaseTimeDecay = 0.05;
+            }
+            else if(this.bossPhase === 1){
+                phaseTimeDecay = 0.3;
+            }
+            else {
+                phaseTimeDecay = 0.2;
+            }
+
+            const minPhaseTime = this.bossPhase === 1 ? -0.1 : 0.1;
             if (this.maxPhaseTime <= minPhaseTime) {
                 this.maxPhaseTime = 3;
             }
@@ -617,7 +633,7 @@ export class enemy {
             if (this.phase === 0 || this.phase === 2) {
                 const burstCount = 2;
                 const burstInterval = 0.05;
-                const bulletCount = this.bossPhase === 1? 9: 3;
+                const bulletCount = this.bossPhase === 1 ? 9 : 3;
 
                 specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!, burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
 
@@ -637,17 +653,18 @@ export class enemy {
                 const burstInterval = 0.1;
                 const bulletCount = 36;
                 const bulletInterval = 0.0125;
-                const spreadAngle = this.bossPhase === 1? Math.PI / 36: Math.PI / 18;
-                const startOffsetList = [0, Math.PI/2, Math.PI, -Math.PI/2];
-                
-                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[0], 0, true));
-                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[1], 0, true));
-                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[2], 0, false));
-                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[3], 0, false));
+                const spreadAngle = this.bossPhase === 1 ? Math.PI / 24 : Math.PI / 18;
+                const startOffsetList = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
+                const clockwiseList = [true,true,true,true];
+
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[0], 0, clockwiseList[0]));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[1], 0, clockwiseList[1]));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[2], 0, clockwiseList[2]));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[3], 0, clockwiseList[3]));
 
                 specs.forEach(spec => {
                     spec.bulletXSpeed = 125;
-                    spec.bulletYSpeed = 300;
+                    spec.bulletYSpeed = 275;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 10;
                     spec.bulletColor = 'rgba(172, 83, 255, 0.57)';
@@ -656,20 +673,24 @@ export class enemy {
                 })
             }
             else if (this.phase === 3) {
-                const burstCount = this.bossPhase === 1? 6:5;
-                const burstInterval = this.bossPhase ===1? 0.045:0.05;
-                const spreadAngle = this.bossPhase===1?Math.PI/20:Math.PI / 18;
-                const startOffsetList = [0,Math.PI/9];
+                const bulletCount = this.bossPhase === 1 ? 12 : 6;
+                const burstCount = 1;
+                const burstInterval = 0.1;
+                const bulletInterval = 0.1;
+                const spreadAngle =this.bossPhase===1?Math.PI/36:  Math.PI / 24;
+                const aimOffset = 0;
 
-                specs.push(...ringPattern(burstCount, burstInterval, spreadAngle,startOffsetList , 0));
+
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, aimOffset, Math.PI/2, true));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, aimOffset, Math.PI/2, false));
                 specs.forEach(spec => {
-                    spec.bulletXSpeed = 300;
+                    spec.bulletXSpeed = 125;
                     spec.bulletYSpeed = 100;
-                    spec.bulletXRadius = 5;
-                    spec.bulletYRadius = 15;
+                    spec.bulletXRadius = 0.5;
+                    spec.bulletYRadius = 1;
                     spec.bulletColor = 'rgba(172, 83, 255, 0.57)';
-                    spec.bulletXGrowth = 0;
-                    spec.bulletYGrowth = 0;
+                    spec.bulletXGrowth = 0.7;
+                    spec.bulletYGrowth = 0.7;
                 })
 
 
