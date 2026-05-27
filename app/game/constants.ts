@@ -27,3 +27,11 @@ export enum Level{
     BossLevel2,
 
 }
+
+
+export enum PlayerCharacter {
+    Basic,
+    Sentry,
+    Teleporting,
+    Challenge,
+}
