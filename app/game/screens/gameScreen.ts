@@ -8,13 +8,16 @@ export class GameScreen implements Screen {
     private game: Game;
     private onGameOver: () => void;
     private onLevelClear: () => void;
+    private onPause: () => void;
     private tutorialOverlay: TutorialOverlay | undefined;
     private lastMouseClick: { x: number; y: number } | undefined;
+    private lastEscapePressed = false;
 
-    constructor(game: Game, onGameOver: () => void, onLevelClear: () => void) {
+    constructor(game: Game, onGameOver: () => void, onLevelClear: () => void, onPause: () => void) {
         this.game = game;
         this.onGameOver = onGameOver;
         this.onLevelClear = onLevelClear;
+        this.onPause = onPause;
 
         document.addEventListener('click', (e) => {
             const canvas = this.game.getCanvas();
@@ -98,7 +101,12 @@ export class GameScreen implements Screen {
     }
 
     handleInput(input: Input): void {
-        //input handled in update
+        //check for pause (only trigger on key press transition, not while held)
+        const isEscapePressed = input.keys['escape'];
+        if (isEscapePressed && !this.lastEscapePressed) {
+            this.onPause();
+        }
+        this.lastEscapePressed = isEscapePressed;
     }
 
     render(ctx: CanvasRenderingContext2D): void {

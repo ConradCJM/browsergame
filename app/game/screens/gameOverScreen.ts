@@ -32,6 +32,7 @@ export class GameOverScreen implements Screen {
     ctx.fillText('Game Over', ctx.canvas.width / 2, ctx.canvas.height / 2 - 20);
 
     ctx.font = '20px fantasy';
-    ctx.fillText('Press R to Retry or L for Level Select', ctx.canvas.width / 2, ctx.canvas.height / 2 + 20);
+    ctx.fillText('R - Restart', ctx.canvas.width / 2, ctx.canvas.height / 2 + 40);
+    ctx.fillText('L - Level Select', ctx.canvas.width / 2, ctx.canvas.height / 2 + 80);
   }
 }
