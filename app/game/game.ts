@@ -17,6 +17,7 @@ import { GameScreen } from '@/app/game/screens/gameScreen';
 import { GameOverScreen } from '@/app/game/screens/gameOverScreen';
 import { LevelClearScreen } from '@/app/game/screens/levelClearScreen';
 import { LevelSelectScreen } from '@/app/game/screens/levelSelectScreen';
+import { PauseScreen } from '@/app/game/screens/pauseScreen';
 import { playerBullet } from '@/app/game/entities/playerBullet';
 
 export class Game {
@@ -64,6 +65,9 @@ export class Game {
 
     //screen manager
     private currentScreen: Screen;
+    private pausedGameScreen: GameScreen | null = null;
+    private lastPauseTransitionTime = 0;
+    private pauseTransitionCooldown = 0.2; // 200ms cooldown to prevent flickering
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -81,7 +85,8 @@ export class Game {
         const gameScreen = new GameScreen(
             this,
             () => this.gameOver(),
-            () => this.levelClear()
+            () => this.levelClear(),
+            () => this.pauseGame()
         );
 
 
@@ -92,6 +97,40 @@ export class Game {
 
         this.currentScreen = gameScreen;
 
+    }
+
+    private pauseGame() {
+        const now = performance.now() / 1000;
+        //don't allow pause if still in cooldown from last transition
+        if (now - this.lastPauseTransitionTime < this.pauseTransitionCooldown) {
+            return;
+        }
+        this.lastPauseTransitionTime = now;
+
+        if (this.currentScreen instanceof GameScreen) {
+            this.pausedGameScreen = this.currentScreen;
+        }
+        this.input.keys['escape'] = false; // Clear escape key to prevent immediate unpause
+        this.currentScreen = new PauseScreen(
+            () => this.unpauseGame(),
+            () => this.startGame(),
+            () => this.goToLevelSelect()
+        );
+    }
+
+    private unpauseGame() {
+        const now = performance.now() / 1000;
+        //don't allow unpause if still in cooldown from last transition
+        if (now - this.lastPauseTransitionTime < this.pauseTransitionCooldown) {
+            return;
+        }
+        this.lastPauseTransitionTime = now;
+
+        if (this.pausedGameScreen) {
+            this.input.keys['escape'] = false; //clear escape key to prevent immediate re-pause
+            this.currentScreen = this.pausedGameScreen;
+            this.pausedGameScreen = null;
+        }
     }
 
     private gameOver() {

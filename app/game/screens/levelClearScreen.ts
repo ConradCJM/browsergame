@@ -32,6 +32,7 @@ export class LevelClearScreen implements Screen {
     ctx.fillText('Level Cleared!', ctx.canvas.width / 2, ctx.canvas.height / 2 - 20);
 
     ctx.font = '20px fantasy';
-    ctx.fillText('Press R to Play Again or L for Level Select', ctx.canvas.width / 2, ctx.canvas.height / 2 + 20);
+    ctx.fillText('R - Restart', ctx.canvas.width / 2, ctx.canvas.height / 2 + 40);
+    ctx.fillText('L - Level Select', ctx.canvas.width / 2, ctx.canvas.height / 2 + 80);
   }
 }
