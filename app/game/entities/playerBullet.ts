@@ -6,7 +6,7 @@ export class playerBullet {
     private speed = 400; // pixels per second
     private Xradius = 3;
     private Yradius = 7;
-    private color = '#41e9ff';
+    private colour = '#41e9ff';
     private transparency = 0.2;
     private outsideMapMargin = 50; //how far outside the map the bullet can go before being removed
 
@@ -41,7 +41,7 @@ export class playerBullet {
     draw(ctx: CanvasRenderingContext2D) {
         const angle = Math.atan2(this.vy, this.vx) + Math.PI / 2;//rotate to match velocity direction
         ctx.globalAlpha = this.transparency;
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = this.colour;
         ctx.beginPath();
         ctx.ellipse(this.x, this.y, this.Xradius, this.Yradius, angle, 0, Math.PI * 2);
         ctx.fill();

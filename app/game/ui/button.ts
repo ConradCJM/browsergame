@@ -6,9 +6,9 @@ export class Button {
     private text: string;
     private isHovered = false;
     private onClick: () => void;
-    private hoverColor: string;
-    private normalColor: string;
-    private textColor: string;
+    private hoverColour: string;
+    private normalColour: string;
+    private textColour: string;
     private font: string;
 
     constructor(
@@ -18,9 +18,9 @@ export class Button {
         height: number,
         text: string,
         onClick: () => void,
-        normalColor: string = '#004902',
-        hoverColor: string = '#00ff00a0',
-        textColor: string = '#ffffff',
+        normalColour: string = '#004902',
+        hoverColour: string = '#00ff00a0',
+        textColour: string = '#ffffff',
         font: string = '24px fantasy'
     ) {
         this.x = x;
@@ -29,9 +29,9 @@ export class Button {
         this.height = height;
         this.text = text;
         this.onClick = onClick;
-        this.normalColor = normalColor;
-        this.hoverColor = hoverColor;
-        this.textColor = textColor;
+        this.normalColour = normalColour;
+        this.hoverColour = hoverColour;
+        this.textColour = textColour;
         this.font = font;
     }
 
@@ -44,11 +44,11 @@ export class Button {
 
     draw(ctx: CanvasRenderingContext2D) {
         //draw button background
-        ctx.fillStyle = this.isHovered ? this.hoverColor : this.normalColor;
+        ctx.fillStyle = this.isHovered ? this.hoverColour : this.normalColour;
         ctx.fillRect(this.x, this.y, this.width, this.height);
 
         //draw button text
-        ctx.fillStyle = this.textColor;
+        ctx.fillStyle = this.textColour;
         ctx.font = this.font;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';

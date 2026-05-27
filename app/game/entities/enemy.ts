@@ -2,8 +2,7 @@ import { EnemyType } from '@/app/game/constants';
 import { Game } from '@/app/game/game';
 import { aimedSpreadToDirection, aimedSpreadToPlayer, spiralPattern, ringPattern } from '@/app/game/patterns';
 import { BossHealthBar } from '@/app/game/ui/hpBar';
-import { drawIsometricEllipse, drawIsometricPolygon } from '@/app/game/utils/drawingUtils';
-import { drawPolygon } from "@/app/game/utils/drawingUtils";
+import { drawIsometricEllipse, drawIsometricPolygon, drawPolygon, drawEllipse } from '@/app/game/utils/drawingUtils';
 export class enemy {
     private hp: number;
     private maxHp: number;
@@ -15,8 +14,8 @@ export class enemy {
 
     private x: number;
     private y: number;
-    private enemyColor = '#ff0000';
-    private seondaryColor? = '#000000';
+    private enemyColour = '#ff0000';
+    private seondaryColour? = '#000000';
     private speed = 20; //pixels per second
 
     private centerX = 200;
@@ -29,7 +28,7 @@ export class enemy {
     private bulletYSpeed = 50;
     private bulletXRadius = 3;
     private bulletYRadius = 3;
-    private bulletColor = '#24b300a4';
+    private bulletColour = '#24b300a4';
     private bulletXGrowth = 0;
     private bulletYGrowth = 0;
 
@@ -74,7 +73,7 @@ export class enemy {
         this.bulletYSpeed = 150;
         this.bulletXRadius = 3;
         this.bulletYRadius = 3;
-        this.bulletColor = '#b30000a4';
+        this.bulletColour = '#b30000a4';
 
         this.maxPhase = 3;
         this.maxPhaseTime = 10;
@@ -91,7 +90,7 @@ export class enemy {
             this.bulletYSpeed = 85;
             this.bulletXRadius = 2;
             this.bulletYRadius = 2.5;
-            this.bulletColor = '#fbff00a4';
+            this.bulletColour = '#fbff00a4';
 
             this.maxPhase = 1;
             this.maxPhaseTime = 0.15;
@@ -108,7 +107,7 @@ export class enemy {
             this.bulletYSpeed = 35;
             this.bulletXRadius = 4;
             this.bulletYRadius = 4;
-            this.bulletColor = '#5900ffa4';
+            this.bulletColour = '#5900ffa4';
 
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
@@ -124,7 +123,7 @@ export class enemy {
             this.bulletYSpeed = 65;
             this.bulletXRadius = 3.5;
             this.bulletYRadius = 3.5;
-            this.bulletColor = '#0e7900a4';
+            this.bulletColour = '#0e7900a4';
 
             this.maxPhase = 3;
             this.phaseTimer = 0;
@@ -157,8 +156,8 @@ export class enemy {
             this.maxPhaseTime = 3;
         }
         else if (this.type === EnemyType.TeleportingMiniboss) {
-            this.XRadius = 20;
-            this.YRadius = 16;
+            this.XRadius = 12.5;
+            this.YRadius = 20;
             this.hp = 375;
             this.maxHp = 375;
             this.maxPhase = 3;
@@ -198,8 +197,8 @@ export class enemy {
         return this.YRadius;
     }
 
-    getColor() {
-        return this.enemyColor;
+    getColour() {
+        return this.enemyColour;
     }
 
     getHp() {
@@ -346,20 +345,20 @@ export class enemy {
     //draw enemy
     draw(ctx: CanvasRenderingContext2D) {
 
-        //color
+        //colour
         if (this.type === EnemyType.Basic) {
-            this.enemyColor = '#ff0000';
+            this.enemyColour = '#ff0000';
         } else if (this.type === EnemyType.Fast) {
-            this.enemyColor = '#fbff00';
+            this.enemyColour = '#fbff00';
         } else if (this.type === EnemyType.Tanky) {
-            this.enemyColor = '#5900ff';
+            this.enemyColour = '#5900ff';
         } else if (this.type === EnemyType.SentryBoss || this.type === EnemyType.SentryMiniboss) {
-            this.enemyColor = '#0e7900';
-            this.seondaryColor = '#00ff00';
+            this.enemyColour = '#0e7900';
+            this.seondaryColour = '#00ff00';
         }
         else if (this.type === EnemyType.TeleportingBoss || this.type === EnemyType.TeleportingMiniboss) {
-            this.enemyColor = '#ff050598';
-            this.seondaryColor = 'rgb(0, 47, 255)';
+            this.enemyColour = '#ff050598';
+            this.seondaryColour = 'rgb(0, 47, 255)';
         }
 
 
@@ -371,43 +370,47 @@ export class enemy {
         //shape
         if (this.type === EnemyType.Basic) {
             ctx.beginPath();
-            ctx.fillStyle = this.enemyColor;
+            ctx.fillStyle = this.enemyColour;
             ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
             ctx.fill();
         }
         else if (this.type === EnemyType.Tanky) {
-            drawPolygon(ctx, this.x, this.y, this.XRadius, 4, Math.PI / 4, this.enemyColor);
+            drawPolygon(ctx, this.x, this.y, this.XRadius, 4, Math.PI / 4, this.enemyColour);
 
         }
         else if (this.type === EnemyType.Fast) {
             ctx.beginPath();
-            ctx.fillStyle = this.enemyColor;
+            ctx.fillStyle = this.enemyColour;
             ctx.ellipse(this.x, this.y, this.XRadius, this.YRadius, 0, 0, Math.PI * 2);
             ctx.fill();
 
 
         }
         else if (this.type === EnemyType.SentryBoss) {
-            const bossSecondaryColor = this.seondaryColor!;
-            drawIsometricPolygon(ctx, this.x, this.y, this.XRadius, this.enemyColor, bossSecondaryColor, 6, 0.87, 1.5);
+            const bossSecondaryColour = this.seondaryColour!;
+            drawIsometricPolygon(ctx, this.x, this.y, this.XRadius, this.enemyColour, bossSecondaryColour, 6, 0.87, 1.5);
         }
         else if (this.type === EnemyType.SentryMiniboss) {
-            drawPolygon(ctx, this.x, this.y, this.XRadius, 6, 0, this.enemyColor);
+            drawPolygon(ctx, this.x, this.y, this.XRadius, 6, 0, this.enemyColour);
         }
         else if (this.type === EnemyType.TeleportingBoss) {
-            let bossPrimaryColor = this.enemyColor;
-            let bossSecondaryColor = this.seondaryColor!;
+            let bossPrimaryColour = this.enemyColour;
+            let bossSecondaryColour = this.seondaryColour!;
             if (this.phase % 2 === 0) {
-                bossSecondaryColor = '#ff0505';
-                bossPrimaryColor = '#0516ff98';
+                bossSecondaryColour = '#ff0505';
+                bossPrimaryColour = '#0516ff98';
 
             }
             if (this.bossPhase === 1) {
-                bossSecondaryColor = '#9900ff';
-                bossPrimaryColor = '#8c00ffb0';
+                bossSecondaryColour = '#9900ff';
+                bossPrimaryColour = '#8c00ffb0';
             }
-            drawIsometricEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, bossPrimaryColor, bossSecondaryColor, 1, 1);
+            drawIsometricEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, bossPrimaryColour, bossSecondaryColour, 1, 1);
 
+        }
+        else if (this.type === EnemyType.TeleportingMiniboss) {
+            const currentColour = this.phase % 2 === 0 ? this.enemyColour : this.seondaryColour!;
+            drawEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, currentColour);
         }
         //add outline
         ctx.strokeStyle = '#ffffff';
@@ -434,7 +437,7 @@ export class enemy {
             bulletYSpeed?: number,
             bulletXRadius?: number,
             bulletYRadius?: number,
-            bulletColor?: String,
+            bulletColour?: String,
             bulletXGrowth?: number,
             bulletYGrowth?: number
         }[] = [];
@@ -454,7 +457,7 @@ export class enemy {
                 spec.bulletYSpeed = 225;
                 spec.bulletXRadius = 3;
                 spec.bulletYRadius = 6;
-                spec.bulletColor = '#b30000ff';
+                spec.bulletColour = '#b30000ff';
             })
 
         }
@@ -478,7 +481,7 @@ export class enemy {
                 spec.bulletYSpeed = 250;
                 spec.bulletXRadius = Math.max(1.25, 3 - (this.timeAlive / 24)); //start larger and shrink over time
                 spec.bulletYRadius = 15;
-                spec.bulletColor = '#fbff00ff';
+                spec.bulletColour = '#fbff00ff';
             })
 
 
@@ -501,7 +504,7 @@ export class enemy {
                 spec.bulletYSpeed = 50;
                 spec.bulletXRadius = 5;
                 spec.bulletYRadius = 5;
-                spec.bulletColor = '#5900ffb4';
+                spec.bulletColour = '#5900ffb4';
                 spec.bulletXGrowth = 0.135;
                 spec.bulletYGrowth = 0.135;
             })
@@ -523,7 +526,7 @@ export class enemy {
                     spec.bulletYSpeed = 150;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 10;
-                    spec.bulletColor = 'rgba(30, 255, 0, 0.4)';
+                    spec.bulletColour = 'rgba(30, 255, 0, 0.4)';
                 })
             }
             else if (this.phase === 1) {
@@ -541,7 +544,7 @@ export class enemy {
                     spec.bulletYSpeed = 60;
                     spec.bulletXRadius = 20;
                     spec.bulletYRadius = 20;
-                    spec.bulletColor = 'rgba(30, 255, 0, 0.46)';
+                    spec.bulletColour = 'rgba(30, 255, 0, 0.46)';
                     spec.bulletXGrowth = 0.015;
                     spec.bulletYGrowth = 0.015;
                 })
@@ -576,7 +579,7 @@ export class enemy {
                     spec.bulletYSpeed = 150;
                     spec.bulletXRadius = 50 - burstCount * 2; //start with a wide bullet and shrink based on burst count to create a rain effect
                     spec.bulletYRadius = 2;
-                    spec.bulletColor = 'rgba(30, 255, 0, 1)';
+                    spec.bulletColour = 'rgba(30, 255, 0, 1)';
                 })
             }
 
@@ -597,7 +600,7 @@ export class enemy {
                     spec.bulletYSpeed = 125;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 8;
-                    spec.bulletColor = 'rgba(30, 255, 0, 0.4)';
+                    spec.bulletColour = 'rgba(30, 255, 0, 0.4)';
                 })
             }
             else if (this.phase === 1) {
@@ -605,7 +608,7 @@ export class enemy {
                 this.phaseCoolDown = 0;
                 this.attackRate = 0.1;
                 this.maxPhaseTime = 0.1;
-                const burstCount = 2;                
+                const burstCount = 2;
                 const burstInterval = 0.5;
                 const spreadAngle = Math.PI / 10;
 
@@ -615,7 +618,7 @@ export class enemy {
                     spec.bulletYSpeed = 80;
                     spec.bulletXRadius = 15;
                     spec.bulletYRadius = 15;
-                    spec.bulletColor = 'rgba(30, 255, 0, 0.46)';
+                    spec.bulletColour = 'rgba(30, 255, 0, 0.46)';
                     spec.bulletXGrowth = 0.015;
                     spec.bulletYGrowth = 0.015;
                 })
@@ -625,10 +628,11 @@ export class enemy {
             //movement for teleporting boss is integrated with attack patterns since movement and attacks are closely tied together for this enemy
             this.speed = 10;
             const yPositions = [75, 100, 125, 150, 175, 200];
+            const xPositions = [125, 150, 175, 200, 225, 250, 275, 300, 325];
             const baseY = yPositions[Math.floor(Math.random() * yPositions.length)];
             this.y = baseY + Math.sin(this.timeAlive) * this.speed;
-            if (this.bossPhase === 1){
-                this.x = 125 + Math.random() * 150;
+            if (this.bossPhase === 1) {
+                this.x = xPositions[Math.floor(Math.random() * xPositions.length)];
                 this.takeDamage(2);
             }
             else if (this.phase === 0) {
@@ -645,12 +649,12 @@ export class enemy {
             }
 
             //attacks
-            let phaseTimeDecay:number = this.maxPhaseTime <= 1 ? 0.05 : 0.2;
+            let phaseTimeDecay: number = this.maxPhaseTime <= 1 ? 0.05 : 0.2;
 
             if (this.maxPhaseTime <= 1) {
                 phaseTimeDecay = 0.05;
             }
-            else if(this.bossPhase === 1){
+            else if (this.bossPhase === 1) {
                 phaseTimeDecay = 0.3;
             }
             else {
@@ -664,8 +668,8 @@ export class enemy {
             else { this.maxPhaseTime = this.maxPhaseTime - phaseTimeDecay; }
             this.attackRate = this.maxPhaseTime;
             if (this.phase === 0 || this.phase === 2) {
-                const burstCount = 2;
-                const burstInterval = 0.05;
+                const burstCount = this.bossPhase === 1 ? 6 : 3;
+                const burstInterval = 0.13;
                 const bulletCount = this.bossPhase === 1 ? 9 : 3;
 
                 specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!, burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
@@ -673,9 +677,9 @@ export class enemy {
                 specs.forEach(spec => {
                     spec.bulletXSpeed = 200;
                     spec.bulletYSpeed = 200;
-                    spec.bulletXRadius = 5;
-                    spec.bulletYRadius = 20;
-                    spec.bulletColor = 'rgba(166, 70, 255, 0.47)';
+                    spec.bulletXRadius = 4;
+                    spec.bulletYRadius = 16;
+                    spec.bulletColour = 'rgba(166, 70, 255, 0.47)';
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -688,7 +692,7 @@ export class enemy {
                 const bulletInterval = 0.0125;
                 const spreadAngle = this.bossPhase === 1 ? Math.PI / 24 : Math.PI / 18;
                 const startOffsetList = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
-                const clockwiseList = [true,true,true,true];
+                const clockwiseList = [true, true, true, true];
 
                 specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[0], 0, clockwiseList[0]));
                 specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[1], 0, clockwiseList[1]));
@@ -700,7 +704,7 @@ export class enemy {
                     spec.bulletYSpeed = 275;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 10;
-                    spec.bulletColor = 'rgba(172, 83, 255, 0.57)';
+                    spec.bulletColour = 'rgba(172, 83, 255, 0.57)';
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -710,20 +714,20 @@ export class enemy {
                 const burstCount = 1;
                 const burstInterval = 0.1;
                 const bulletInterval = 0.1;
-                const spreadAngle =this.bossPhase===1?Math.PI/36:  Math.PI / 24;
+                const spreadAngle = this.bossPhase === 1 ? Math.PI / 36 : Math.PI / 24;
                 const aimOffset = 0;
 
 
-                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, aimOffset, Math.PI/2, true));
-                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, aimOffset, Math.PI/2, false));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, aimOffset, Math.PI / 2, true));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, aimOffset, Math.PI / 2, false));
                 specs.forEach(spec => {
                     spec.bulletXSpeed = 125;
                     spec.bulletYSpeed = 100;
-                    spec.bulletXRadius = 0.5;
-                    spec.bulletYRadius = 1;
-                    spec.bulletColor = 'rgba(172, 83, 255, 0.57)';
-                    spec.bulletXGrowth = 0.7;
-                    spec.bulletYGrowth = 0.7;
+                    spec.bulletXRadius = 1;
+                    spec.bulletYRadius = 2;
+                    spec.bulletColour = 'rgba(172, 83, 255, 0.57)';
+                    spec.bulletXGrowth = 0.5;
+                    spec.bulletYGrowth = 0.5;
                 })
 
 
@@ -733,38 +737,98 @@ export class enemy {
             //movement for teleporting boss is integrated with attack patterns since movement and attacks are closely tied together for this enemy
             this.speed = 10;
             const yPositions = [75, 100, 125, 150, 175, 200];
+            const xPositions = [75, 200, 325, 200];
             const baseY = yPositions[Math.floor(Math.random() * yPositions.length)];
             this.y = baseY + Math.sin(this.timeAlive) * this.speed;
-            if (this.phase === 0) {
-                this.x = 75;
-            }
-            else if (this.phase === 1) {
-                this.x = 200;
-            }
-            else if (this.phase === 2) {
-                this.x = 325;
-            }
-            else if (this.phase === 3) {
-                this.x = 200;
-            }
+            this.x = xPositions[this.phase]; // phase is 0 indexed
 
             const phaseTimeDecay = 0.25;
-            if (this.maxBossPhase < 1) {
-                this.maxBossPhase = 4.5;
+            if (this.maxPhaseTime < 0.25) {
+                this.maxPhaseTime = 3;
             }
-            else { this.maxBossPhase = this.maxBossPhase - phaseTimeDecay; }
-
+            else { this.maxPhaseTime = this.maxPhaseTime - phaseTimeDecay; }
+            this.attackRate = this.maxPhaseTime;
+            //ATTACKS
             if (this.phase === 0) {
+                const burstCount = 1;
+                const burstInterval = 1;
+                const bulletCount = 3;
+
+                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!, burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
+
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 200;
+                    spec.bulletYSpeed = 200;
+                    spec.bulletXRadius = 4;
+                    spec.bulletYRadius = 15;
+                    spec.bulletColour = 'rgba(166, 70, 255, 0.47)';
+                    spec.bulletXGrowth = 0;
+                    spec.bulletYGrowth = 0;
+                })
 
             }
             else if (this.phase === 1) {
+                const burstCount = 1;
+                const burstInterval = 0.1;
+                const bulletCount = 36;
+                const bulletInterval = 0.0125;
+                const spreadAngle = Math.PI / 18;
+                const startOffsetList = [Math.PI / 2, -Math.PI / 2];
+                const clockwiseList = [true, true];
 
+
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[0], 0, clockwiseList[0]));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, startOffsetList[1], 0, clockwiseList[1]));
+
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 75;
+                    spec.bulletYSpeed = 225;
+                    spec.bulletXRadius = 3;
+                    spec.bulletYRadius = 10;
+                    spec.bulletColour = 'rgba(172, 83, 255, 0.57)';
+                    spec.bulletXGrowth = 0;
+                    spec.bulletYGrowth = 0;
+                })
             }
             else if (this.phase === 2) {
+                const burstCount = 6;
+                const burstInterval = 0.1;
+                const bulletCount = 1;
+
+                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!, burstCount, burstInterval, bulletCount, Math.PI / 12, this.aimOffset);
+
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 200;
+                    spec.bulletYSpeed = 200;
+                    spec.bulletXRadius = 4;
+                    spec.bulletYRadius = 15;
+                    spec.bulletColour = 'rgba(166, 70, 255, 0.47)';
+                    spec.bulletXGrowth = 0;
+                    spec.bulletYGrowth = 0;
+                })
+
 
             }
             else if (this.phase === 3) {
+                const bulletCount = 5;
+                const burstCount = 1;
+                const burstInterval = 0.1;
+                const bulletInterval = 0.1;
+                const spreadAngle = Math.PI / 24;
+                const aimOffset = 0;
 
+
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, aimOffset, Math.PI / 2, true));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, aimOffset, Math.PI / 2, false));
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 125;
+                    spec.bulletYSpeed = 100;
+                    spec.bulletXRadius = 1;
+                    spec.bulletYRadius = 2;
+                    spec.bulletColour = 'rgba(172, 83, 255, 0.57)';
+                    spec.bulletXGrowth = 0.5;
+                    spec.bulletYGrowth = 0.5;
+                })
             }
         }
         specs.forEach(spec => {
@@ -778,7 +842,7 @@ export class enemy {
                 bulletYSpeed: spec.bulletYSpeed ?? this.bulletYSpeed,
                 bulletXRadius: spec.bulletXRadius ?? this.bulletXRadius,
                 bulletYRadius: spec.bulletYRadius ?? this.bulletYRadius,
-                bulletColor: spec.bulletColor ?? this.bulletColor,
+                bulletColour: spec.bulletColour ?? this.bulletColour,
                 bulletXGrowth: spec.bulletXGrowth ?? this.bulletXGrowth,
                 bulletYGrowth: spec.bulletYGrowth ?? this.bulletYGrowth
             });

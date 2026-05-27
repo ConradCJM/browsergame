@@ -18,11 +18,11 @@ export class Player {
     private isFocused = false;
 
     private hitboxRadius = 2; //visual size of hitbox actual hitbox radius used in collision detection is half of this value
-    private hitboxColor = '#cef8ff';
+    private hitboxColour = '#cef8ff';
 
     private modelWidth = 10;
     private modelHeight = 14;
-    private color = '#419aff';
+    private colour = '#419aff';
     private focusTransparency = 0.2;
 
     private shockwaves: Shockwave[] = [];
@@ -117,17 +117,17 @@ export class Player {
         ctx.globalAlpha = this.isFocused ? this.focusTransparency : 1;
 
         if (this.hp === 1) {
-            drawHollowEllipse(ctx, this.x, this.y, this.modelWidth, this.modelHeight, this.color, 2);
+            drawHollowEllipse(ctx, this.x, this.y, this.modelWidth, this.modelHeight, this.colour, 2);
         } else if (this.hp === 2) {
-            drawEllipse(ctx, this.x, this.y, this.modelWidth, this.modelHeight, this.color);
+            drawEllipse(ctx, this.x, this.y, this.modelWidth, this.modelHeight, this.colour);
         } else {
-            drawPolygon(ctx, this.x, this.y, this.modelHeight, this.hp, -Math.PI/2, this.color);
+            drawPolygon(ctx, this.x, this.y, this.modelHeight, this.hp, -Math.PI/2, this.colour);
         }
 
         //circle hitbox
         if (this.isFocused)
             ctx.globalAlpha = 1;
-        ctx.fillStyle = this.hitboxColor;
+        ctx.fillStyle = this.hitboxColour;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.hitboxRadius, 0, Math.PI * 2);
         ctx.fill();

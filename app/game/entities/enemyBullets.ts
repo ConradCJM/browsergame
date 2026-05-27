@@ -3,7 +3,7 @@ export class enemyBullet {
     private y: number;
     private vx: number; // velocity x
     private vy: number; // velocity y
-    private color = '#24b300a4';//placeholder (add colour as parameter later)
+    private colour = '#24b300a4';//placeholder (add colour as parameter later)
     private Xradius = 3;
     private Yradius = 3;
     private Xspeed = 50;
@@ -20,7 +20,7 @@ export class enemyBullet {
         YSpeed: number,
         Xradius?: number,
         Yradius?: number,
-        color?: string,
+        colour?: string,
         bulletXGrowth?: number,
         bulletYGrowth?: number,
         rotation?: number,
@@ -29,7 +29,7 @@ export class enemyBullet {
         this.y = startY;
         this.Xradius = Xradius ?? this.Xradius;
         this.Yradius = Yradius ?? this.Yradius;
-        this.color = color ?? this.color;
+        this.colour = colour ?? this.colour;
         this.Xspeed = Xspeed ?? this.Xspeed;
         this.Yspeed = YSpeed ?? this.Xspeed; //if Yspeed is not provided, use Xspeed for a consistent speed in all directions
         this.bulletXGrowth = bulletXGrowth ?? this.bulletXGrowth;
@@ -64,7 +64,7 @@ export class enemyBullet {
     }
     draw(ctx: CanvasRenderingContext2D) {
         const angle = this.rotation ?? Math.atan2(this.vy, this.vx) + Math.PI / 2;
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = this.colour;
         ctx.globalAlpha = 1;
         ctx.beginPath();
         ctx.ellipse(this.x, this.y, this.Xradius, this.Yradius, angle, 0, Math.PI * 2);

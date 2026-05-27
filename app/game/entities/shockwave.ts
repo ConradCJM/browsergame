@@ -5,14 +5,14 @@ export class Shockwave {
     private maxRadius: number = 150;
     private duration: number = 0.3;
     private elapsedTime: number = 0;
-    private color = '#81ff6299';
+    private colour = '#81ff6299';
 
-    constructor(x: number, y: number, maxRadius?: number, duration?: number,color?: string) {
+    constructor(x: number, y: number, maxRadius?: number, duration?: number,colour?: string) {
         this.x = x;
         this.y = y;
         this.maxRadius = maxRadius ?? this.maxRadius;
         this.duration = duration ?? this.duration;
-        this.color = color ?? this.color;
+        this.colour = colour ?? this.colour;
     }
 
     update(dt: number): boolean {
@@ -22,7 +22,7 @@ export class Shockwave {
     }
 
     draw(ctx: CanvasRenderingContext2D) {
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = this.colour;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.currentRadius, 0, Math.PI * 2);
         ctx.fill();

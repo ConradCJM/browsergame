@@ -3,7 +3,7 @@ export class healItem {
     private y: number;
     private xRadius = 15;
     private yRadius = 1;
-    private color = '#00a50b';
+    private colour = '#00a50b';
     private speed = 25; //pixels per second
     private healAmount = 1;
 
@@ -40,7 +40,7 @@ export class healItem {
 
     private drawCross(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
         ctx.globalAlpha = 1;
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = this.colour;
         const thickness = 10; //thickness of the cross arms
 
         //horizontal bar

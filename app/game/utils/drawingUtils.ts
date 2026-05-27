@@ -5,8 +5,8 @@ export function drawPolygon(
     size: number,
     sides: number,
     rotation: number = 0,
-    fillColor: string,
-    strokeColor: string = '#ffffff',
+    fillColour: string,
+    strokeColour: string = '#ffffff',
     lineWidth: number = 2
 ) {
     ctx.beginPath();
@@ -18,9 +18,9 @@ export function drawPolygon(
         else ctx.lineTo(px, py);
     }
     ctx.closePath();
-    ctx.fillStyle = fillColor;
+    ctx.fillStyle = fillColour;
     ctx.fill();
-    ctx.strokeStyle = strokeColor;
+    ctx.strokeStyle = strokeColour;
     ctx.lineWidth = lineWidth;
     ctx.stroke();
 }
@@ -30,8 +30,8 @@ export function drawIsometricPolygon(
     x: number,
     y: number,
     size: number,
-    primaryColor: string,
-    secondaryColor: string,
+    primaryColour: string,
+    secondaryColour: string,
     sides: number = 6,
     scaleX: number = 1,
     scaleY: number = 1
@@ -40,7 +40,7 @@ export function drawIsometricPolygon(
     const isoY = (px: number, py: number, pz: number) => y + (px + py) * Math.sin(Math.PI / 6) * scaleY - pz;
 
     // Draw front face
-    ctx.fillStyle = secondaryColor;
+    ctx.fillStyle = secondaryColour;
     ctx.beginPath();
     for (let i = 0; i < sides; i++) {
         const angle = (i * 2 * Math.PI) / sides;
@@ -58,7 +58,7 @@ export function drawIsometricPolygon(
     ctx.stroke();
 
     // Draw top face
-    ctx.fillStyle = primaryColor;
+    ctx.fillStyle = primaryColour;
     const depth = size * 0.5;
     ctx.beginPath();
     for (let i = 0; i < sides; i++) {
@@ -80,9 +80,9 @@ export function drawEllipse(
     y: number,
     radiusX: number,
     radiusY: number,
-    fillColor: string
+    fillColour: string
 ) {
-    ctx.fillStyle = fillColor;
+    ctx.fillStyle = fillColour;
     ctx.beginPath();
     ctx.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -94,10 +94,10 @@ export function drawHollowEllipse(
     y: number,
     radiusX: number,
     radiusY: number,
-    strokeColor: string,
+    strokeColour: string,
     lineWidth: number = 2
 ) {
-    ctx.strokeStyle = strokeColor;
+    ctx.strokeStyle = strokeColour;
     ctx.lineWidth = lineWidth;
     ctx.beginPath();
     ctx.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2);
@@ -110,8 +110,8 @@ export function drawIsometricEllipse(
     y: number,
     radiusX: number,
     radiusY: number,
-    primaryColor: string,
-    secondaryColor: string,
+    primaryColour: string,
+    secondaryColour: string,
     scaleX: number = 1,
     scaleY: number = 1,
     segments: number = 32
@@ -119,8 +119,8 @@ export function drawIsometricEllipse(
     const isoX = (px: number, py: number, pz: number) => x + (px - py) * Math.cos(Math.PI / 6) * scaleX;
     const isoY = (px: number, py: number, pz: number) => y + (px + py) * Math.sin(Math.PI / 6) * scaleY - pz;
 
-    // Draw front face (secondary color)
-    ctx.fillStyle = secondaryColor;
+    // Draw front face (secondary colour)
+    ctx.fillStyle = secondaryColour;
     ctx.beginPath();
     for (let i = 0; i <= segments; i++) {
         const angle = (i / segments) * Math.PI * 2;
@@ -137,8 +137,8 @@ export function drawIsometricEllipse(
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Draw top face (primary color)
-    ctx.fillStyle = primaryColor;
+    // Draw top face (primary colour)
+    ctx.fillStyle = primaryColour;
     const depth = Math.max(radiusX, radiusY) * 0.5;
     ctx.beginPath();
     for (let i = 0; i <= segments; i++) {

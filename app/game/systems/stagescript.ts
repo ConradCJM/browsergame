@@ -203,6 +203,7 @@ export function createLevel(game: Game, level: Level): LevelController {
                     game.addEnemyToQueue(225, 40, EnemyType.Fast, 3.33, false);
                     game.addEnemyToQueue(-50, 110, EnemyType.Tanky, 3, false);
                     game.addEnemyToQueue(175, 40, EnemyType.Fast, 3.67, false);
+                    game.addEnemyToQueue(0, 50, EnemyType.Basic, 4.33, true);
                     game.addEnemyToQueue(-50, 120, EnemyType.Tanky, 4, true);
                     game.addEnemyToQueue(-50, 130, EnemyType.Tanky, 5, false);
                     game.addEnemyToQueue(-50, 140, EnemyType.Tanky, 6, false);
@@ -243,7 +244,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         game.addEnemyToQueue(-300, 100, EnemyType.TeleportingBoss, 3, false);
         return {
             update(dt: number) {
-                if (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) {
+                if (hasAllEnemiesDefeated()) {
                     game.levelClear();
                 }
             }, getWaveTimerPercent() { return 1; }
@@ -254,15 +255,24 @@ export function createLevel(game: Game, level: Level): LevelController {
         playerStats.startHp = 3;
 
         currentWave = 0;
-        waveQueued = [];
+        waveQueued = [false, false];
         waveTimer = 0;
-        maxWaveTime = [];
+        maxWaveTime = [0];
 
         game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
 
+
+
         return {
             update(dt: number) {
-                if (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0) {
+                if (currentWave === 0 && !waveQueued[0] && (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0)) {
+                    game.addEnemyToQueue(-100, 75, EnemyType.TeleportingMiniboss, 1, false);
+                    waveTimer = 0;
+                }
+                else if (currentWave === 1 && !waveQueued[1] && (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0)) {
+                    waveTimer = 0;
+                }
+                else if (currentWave === 6 && hasAllEnemiesDefeated()) {
                     game.levelClear();
                 }
             }, getWaveTimerPercent() {

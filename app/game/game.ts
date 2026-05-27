@@ -54,7 +54,7 @@ export class Game {
         bulletYSpeed: number;
         bulletXRadius: number;
         bulletYRadius: number;
-        bulletColor: string;
+        bulletColour: string;
         bulletXGrowth: number;
         bulletYGrowth: number;
     }[] = [];
@@ -241,7 +241,7 @@ export class Game {
     removeDeadEnemiesAndCreateShockwaves() {
         this.enemies = this.enemies.filter(e => {
             if (e.isDead()) {
-                this.shockwaves.push(new Shockwave(e.getX(), e.getY(), (e.getXRadius() + e.getYRadius()) / 2, 0.5, e.getColor()));
+                this.shockwaves.push(new Shockwave(e.getX(), e.getY(), (e.getXRadius() + e.getYRadius()) / 2, 0.5, e.getColour()));
                 console.log('Enemy killed');
                 if (e.getHealItem()) {
                     console.log('dropping heal item');
@@ -257,7 +257,7 @@ export class Game {
     spawnPendingEnemyBullets(now: number) {
         this.pendingEnemyBullets = this.pendingEnemyBullets.filter(pending => {
             if (now >= pending.spawnTime) {
-                this.enemyBullets.push(new enemyBullet(pending.x, pending.y, pending.dirX, pending.dirY, pending.bulletXSpeed, pending.bulletYSpeed, pending.bulletXRadius, pending.bulletYRadius, pending.bulletColor, pending.bulletXGrowth, pending.bulletYGrowth));
+                this.enemyBullets.push(new enemyBullet(pending.x, pending.y, pending.dirX, pending.dirY, pending.bulletXSpeed, pending.bulletYSpeed, pending.bulletXRadius, pending.bulletYRadius, pending.bulletColour, pending.bulletXGrowth, pending.bulletYGrowth));
                 return false; //remove from pending
             }
             return true;
