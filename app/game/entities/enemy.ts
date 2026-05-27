@@ -64,8 +64,8 @@ export class enemy {
         this.hasHealItem = hasHealItem;
 
         //basic stats
-        this.hp = 30;
-        this.maxHp = 30;
+        this.hp = 27;
+        this.maxHp = 27;
         this.attackTimer = 0;
         this.attackRate = 0.5;
 
@@ -82,8 +82,8 @@ export class enemy {
         if (this.type === EnemyType.Fast) {
             this.centerX = this.x
             this.centerY = this.y;
-            this.hp = 30;
-            this.maxHp = 30;
+            this.hp = 23;
+            this.maxHp = 23;
             this.attackRate = 0.15;
 
             this.bulletXSpeed = 85;
@@ -94,11 +94,11 @@ export class enemy {
 
             this.maxPhase = 1;
             this.maxPhaseTime = 0.15;
-            this.XRadius = 12;
+            this.XRadius = 18;
             this.YRadius = 5;
         } else if (this.type === EnemyType.Tanky) {
-            this.hp = 75;
-            this.maxHp = 75;
+            this.hp = 80;
+            this.maxHp = 80;
             this.attackRate = 1.25;
             this.XRadius = 20;
             this.YRadius = 20;
@@ -109,15 +109,18 @@ export class enemy {
             this.bulletYRadius = 4;
             this.bulletColour = '#5900ffa4';
 
+
+            this.hpDrain = -0.25; //slowly regenerate hp over time 
+
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
         } else if (this.type === EnemyType.SentryBoss) {
             this.XRadius = 40;
             this.YRadius = 40;
-            this.hp = 1000;
-            this.maxHp = 1000;
+            this.hp = 1250;
+            this.maxHp = 1250;
             this.attackRate = 0.5;
-            this.hpDrain = 2.5;
+            this.hpDrain = -2.5; //heal 2.5 hp per second 
 
             this.bulletXSpeed = 65;
             this.bulletYSpeed = 65;
@@ -139,14 +142,16 @@ export class enemy {
             this.maxPhase = 1;
             this.phaseTimer = 0;
 
+            this.hpDrain = -1;
+
 
         }
         else if (this.type === EnemyType.TeleportingBoss) {
             this.XRadius = 30;
             this.YRadius = 24;
-            this.hp = 750;
-            this.maxHp = 750;
-            this.hpDrain = 5;
+            this.hp = 967;
+            this.maxHp = 967;
+            this.hpDrain = 2;
 
             this.bossPhase = 0;
             this.maxBossPhase = 1;
@@ -164,6 +169,8 @@ export class enemy {
 
             this.attackRate = 4.5;
             this.maxPhaseTime = 4.5;
+
+            this.hpDrain = this.maxHp / 240;// boss dies in 240 seconds if player doesnt attack
         }
 
         if (this.maxBossPhase >= 0) {
@@ -333,7 +340,7 @@ export class enemy {
         else if (this.type === EnemyType.SentryMiniboss) {
             this.speed = 10;
             this.y += Math.sin(this.timeAlive) * this.speed * dt;
-            this.x = 200;
+            
         }
         else if (this.type === EnemyType.TeleportingBoss || this.type === EnemyType.TeleportingMiniboss) {
             //custom movement in attack patterns, so no movement here except maybe a slight idle movement
@@ -405,11 +412,14 @@ export class enemy {
                 bossSecondaryColour = '#9900ff';
                 bossPrimaryColour = '#8c00ffb0';
             }
+            this.bulletColour = bossPrimaryColour;
             drawIsometricEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, bossPrimaryColour, bossSecondaryColour, 1, 1);
 
         }
         else if (this.type === EnemyType.TeleportingMiniboss) {
             const currentColour = this.phase % 2 === 0 ? this.enemyColour : this.seondaryColour!;
+            const bulletColour = this.phase % 2 === 1 ? this.enemyColour : this.seondaryColour!;//for some dumbass reason this needs to be here or the colour is inverted (racecondition probably lol)
+            this.bulletColour = bulletColour;
             drawEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, currentColour);
         }
         //add outline
@@ -679,7 +689,7 @@ export class enemy {
                     spec.bulletYSpeed = 200;
                     spec.bulletXRadius = 4;
                     spec.bulletYRadius = 16;
-                    spec.bulletColour = 'rgba(166, 70, 255, 0.47)';
+                
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -704,7 +714,7 @@ export class enemy {
                     spec.bulletYSpeed = 275;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 10;
-                    spec.bulletColour = 'rgba(172, 83, 255, 0.57)';
+                    
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -725,7 +735,7 @@ export class enemy {
                     spec.bulletYSpeed = 100;
                     spec.bulletXRadius = 1;
                     spec.bulletYRadius = 2;
-                    spec.bulletColour = 'rgba(172, 83, 255, 0.57)';
+                    
                     spec.bulletXGrowth = 0.5;
                     spec.bulletYGrowth = 0.5;
                 })
@@ -761,7 +771,6 @@ export class enemy {
                     spec.bulletYSpeed = 200;
                     spec.bulletXRadius = 4;
                     spec.bulletYRadius = 15;
-                    spec.bulletColour = 'rgba(166, 70, 255, 0.47)';
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -785,7 +794,7 @@ export class enemy {
                     spec.bulletYSpeed = 225;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 10;
-                    spec.bulletColour = 'rgba(172, 83, 255, 0.57)';
+                    
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -802,7 +811,7 @@ export class enemy {
                     spec.bulletYSpeed = 200;
                     spec.bulletXRadius = 4;
                     spec.bulletYRadius = 15;
-                    spec.bulletColour = 'rgba(166, 70, 255, 0.47)';
+                    
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -825,7 +834,7 @@ export class enemy {
                     spec.bulletYSpeed = 100;
                     spec.bulletXRadius = 1;
                     spec.bulletYRadius = 2;
-                    spec.bulletColour = 'rgba(172, 83, 255, 0.57)';
+                    
                     spec.bulletXGrowth = 0.5;
                     spec.bulletYGrowth = 0.5;
                 })

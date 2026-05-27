@@ -251,13 +251,13 @@ export function createLevel(game: Game, level: Level): LevelController {
         }
     }
     if (level === Level.CampaignLevel2) {
-        playerStats.maxHp = 6;
-        playerStats.startHp = 3;
+        playerStats.maxHp = 5;
+        playerStats.startHp = 2;
 
         currentWave = 0;
-        waveQueued = [false, false];
+        waveQueued = [false, false, false, false, false, false, false];
         waveTimer = 0;
-        maxWaveTime = [0];
+        maxWaveTime = [0, 37, 24, 45, 0, 0, 0];
 
         game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
 
@@ -265,14 +265,105 @@ export function createLevel(game: Game, level: Level): LevelController {
 
         return {
             update(dt: number) {
-                if (currentWave === 0 && !waveQueued[0] && (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0)) {
-                    game.addEnemyToQueue(-100, 75, EnemyType.TeleportingMiniboss, 1, false);
+                if (currentWave === 0 && !waveQueued[0] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(-100, 75, EnemyType.TeleportingMiniboss, 1, true);
                     waveTimer = 0;
+                    waveQueued[0] = true;
+                    currentWave = 1;
                 }
-                else if (currentWave === 1 && !waveQueued[1] && (game.getEnemies().length === 0 && game.getPendingEnemies().length === 0)) {
+                else if (currentWave === 1 && !waveQueued[1] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 1, true);
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 3, false);
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 5, false);
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 7, false);
+
+                    game.addEnemyToQueue(200, 100, EnemyType.Fast, 2, false);
+                    game.addEnemyToQueue(250, 75, EnemyType.Fast, 3, false);
+                    game.addEnemyToQueue(200, 100, EnemyType.Fast, 4, true);
+
+                    game.addEnemyToQueue(-25, 150, EnemyType.Tanky, 4, true);
+                    game.addEnemyToQueue(-25, 175, EnemyType.Tanky, 5, false);
                     waveTimer = 0;
+                    waveQueued[1] = true;
+                    currentWave = 2;
                 }
-                else if (currentWave === 6 && hasAllEnemiesDefeated()) {
+                else if (currentWave === 2 && !waveQueued[2] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(150, 125, EnemyType.Fast, 1, true);
+                    game.addEnemyToQueue(200, 100, EnemyType.Fast, 2, false);
+                    game.addEnemyToQueue(250, 75, EnemyType.Fast, 3, false);
+                    game.addEnemyToQueue(200, 100, EnemyType.Fast, 4, true);
+
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 5, false);
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 7, false);
+
+                    game.addEnemyToQueue(-25, 150, EnemyType.Tanky, 4, true);
+                    waveTimer = 0;
+                    waveQueued[2] = true;
+                    currentWave = 3;
+                }
+                else if (currentWave === 3 && !waveQueued[3] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(150, 125, EnemyType.Fast, 1, false);
+                    game.addEnemyToQueue(200, 100, EnemyType.Fast, 2, true);
+
+                    game.addEnemyToQueue(-20, 125, EnemyType.Tanky, 1, false);
+                    game.addEnemyToQueue(-25, 100, EnemyType.Tanky, 2, false);
+                    game.addEnemyToQueue(-25, 150, EnemyType.Tanky, 4, false);
+                    game.addEnemyToQueue(-25, 175, EnemyType.Tanky, 5, false);
+
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 5, false);
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 7, true);
+
+                    waveTimer = 0;
+                    waveQueued[3] = true;
+                    currentWave = 4;
+                }
+                else if (currentWave === 4 && !waveQueued[4] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 1, false);
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 3, false);
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 5, true);
+                    game.addEnemyToQueue(0, 75, EnemyType.Basic, 7, false);
+                    game.addEnemyToQueue(0, 50, EnemyType.Basic, 25, false);
+                    game.addEnemyToQueue(0, 50, EnemyType.Basic, 27, false);
+
+                    game.addEnemyToQueue(200, 125, EnemyType.SentryMiniboss, 10, true);
+
+                    game.addEnemyToQueue(150, 125, EnemyType.Fast, 1, false);
+                    game.addEnemyToQueue(200, 100, EnemyType.Fast, 2, false);
+                    game.addEnemyToQueue(250, 75, EnemyType.Fast, 3, true);
+                    game.addEnemyToQueue(200, 100, EnemyType.Fast, 4, false);
+                    game.addEnemyToQueue(175, 100, EnemyType.Fast, 15, false);
+                    game.addEnemyToQueue(225, 100, EnemyType.Fast, 20, false);
+
+                    game.addEnemyToQueue(-50, 200, EnemyType.Tanky, 3, false);
+                    game.addEnemyToQueue(-50, 200, EnemyType.Tanky, 5, false);
+                    game.addEnemyToQueue(-50, 200, EnemyType.Tanky, 7, true);
+                    game.addEnemyToQueue(-50, 200, EnemyType.Tanky, 9, false);
+                    game.addEnemyToQueue(-50, 200, EnemyType.Tanky, 11, false);
+
+
+
+                    waveTimer = 0;
+                    waveQueued[4] = true;
+                    currentWave = 5;
+                }
+                else if (currentWave === 5 && !waveQueued[5] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(100, 75, EnemyType.SentryMiniboss, 3, true);
+                    game.addEnemyToQueue(300, 75, EnemyType.SentryMiniboss, 3, false);
+                    game.addEnemyToQueue(-50, 200, EnemyType.TeleportingMiniboss, 3, true);
+
+                    waveTimer = 0;
+                    waveQueued[5] = true;
+                    currentWave = 6;
+                }
+                else if (currentWave === 6 && !waveQueued[6] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(-200, 100, EnemyType.TeleportingBoss, 3, false);
+
+                    waveTimer = 0;
+                    waveQueued[6] = true;
+                    currentWave = 7;
+                }
+                else if (currentWave === 7 && hasAllEnemiesDefeated()) {
                     game.levelClear();
                 }
             }, getWaveTimerPercent() {
