@@ -3,12 +3,15 @@ import { EnemyType } from "@/app/game/constants";
 import { Level } from "@/app/game/constants";
 import { Player } from "@/app/game/entities/player";
 import { TutorialOverlay, TutorialMessage } from "@/app/game/ui/tutorialOverlay";
+import {PlayerCharacter} from "@/app/game/constants";
 
 interface LevelController {
     update(dt: number): void;
     getWaveTimerPercent(): number;
     getTutorialOverlay?(): TutorialOverlay;
 }
+//change this to test different characters in campaign levels without going through character select screen
+const testCharacter = PlayerCharacter.Archer; 
 
 export function createLevel(game: Game, level: Level): LevelController {
     game.resetGame();
@@ -55,7 +58,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         maxWaveTime = TUTORIAL_WAVE_TIMES;
         waveQueued = [false, false, false, false];
 
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,PlayerCharacter.Archer, playerStats.maxHp, playerStats.startHp));
 
         //create tutorial messages
         const tutorialMessages: TutorialMessage[] = [
@@ -134,7 +137,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         playerStats.maxHp = 1;
         playerStats.startHp = 1;
 
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,testCharacter, playerStats.maxHp, playerStats.startHp));
         game.addEnemyToQueue(200, 100, EnemyType.SentryBoss, 3, false);
 
         return {
@@ -146,7 +149,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         };
     }
     if (level === Level.CampaignLevel1) {
-        game.addPlayer(new Player(game, game.getCanvas().width / 2, game.getCanvas().height - 50, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, game.getCanvas().width / 2, game.getCanvas().height - 50,testCharacter));
         currentWave = 0;
         waveQueued = [false, false, false, false, false];
         waveTimer = 0;
@@ -240,7 +243,7 @@ export function createLevel(game: Game, level: Level): LevelController {
     if (level === Level.BossLevel2) {
         playerStats.maxHp = 3;
         playerStats.startHp = 3;
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,testCharacter, playerStats.maxHp, playerStats.startHp));
         game.addEnemyToQueue(-300, 100, EnemyType.TeleportingBoss, 3, false);
         return {
             update(dt: number) {
@@ -251,15 +254,13 @@ export function createLevel(game: Game, level: Level): LevelController {
         }
     }
     if (level === Level.CampaignLevel2) {
-        playerStats.maxHp = 5;
-        playerStats.startHp = 2;
 
         currentWave = 0;
         waveQueued = [false, false, false, false, false, false, false];
         waveTimer = 0;
         maxWaveTime = [0, 37, 24, 45, 0, 0, 0];
 
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, testCharacter));
 
 
 

@@ -10,7 +10,7 @@ Boss levels have the following rules for player hp:
     +1 if boss has rng as a mechanic
 
 --------------------------------------------------------------------------------
-Blue Print for character descriptions:
+Blueprint for character descriptions:
 
 Character:
 
@@ -44,7 +44,7 @@ Average everything, no pros or cons considered the base line for character balan
     Attacks: 25 dps
         Focus shot: 
             shoots 5 bullets 
-            upside down V shape:  bottom 2 shots having a slight inward angle
+            upside down V shape
 
         Unfocused shot:
             5 bullets
@@ -80,7 +80,7 @@ Tanky Character:
 Tanky character with high hp and strong focus shot but slow movement speed
 
     Attacks
-        Focus shot: 35 dps
+        Focus shot: 28 dps
             7 Bullets tight spread 
                 3 aimed straight up, 
                 4 aimed inwards at slight angles
@@ -90,7 +90,7 @@ Tanky character with high hp and strong focus shot but slow movement speed
                 1 aimed straight up, 
                 2 at wide angles
 
-        firerate: 0.2 seconds
+        firerate: 0.25 seconds
 
     Stats:
         Max hp: 6
@@ -131,7 +131,7 @@ projectile is a lazer which x value is the same as the players
         Unfocused Speed: 165
     
     Special Mechanics:
-        teleports in the direction the player is travelling in when they press focus, x amount of seconds cooldown
+        teleports in the direction the player is travelling in when they unfocus, x amount of seconds cooldown
         bullet x value is the same as the player
 
     Pros:

@@ -42,7 +42,11 @@ export class Game {
         x: number;
         y: number;
         dirX?: number;
-        dirY?: number
+        dirY?: number;
+        speed?: number;
+        xRadius?: number;
+        yRadius?: number;
+        colour?: string;
     }[] = [];
 
     private pendingEnemyBullets: {
@@ -271,7 +275,7 @@ export class Game {
     spawnPendingPlayerBullets(now: number) {
         this.pendingPlayerBullets = this.pendingPlayerBullets.filter(pending => {
             if (now >= pending.spawnTime) {
-                this.playerBullets.push(new playerBullet(pending.x, pending.y, pending.dirX ?? 0, pending.dirY ?? -1));
+                this.playerBullets.push(new playerBullet(pending.x, pending.y, pending.dirX ?? 0, pending.dirY ?? -1, pending.speed, pending.xRadius, pending.yRadius, pending.colour));
                 return false; //remove from pending
             }
             return true;

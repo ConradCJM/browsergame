@@ -1,4 +1,4 @@
-
+import { Player } from "./player";
 export class playerBullet {
     private x: number;
     private y: number;
@@ -11,9 +11,14 @@ export class playerBullet {
     private transparency = 0.2;
     private outsideMapMargin = 50; //how far outside the map the bullet can go before being removed
 
-    constructor(startX: number, startY: number, directionX: number, directionY: number) {
+    constructor(startX: number, startY: number, directionX: number, directionY: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string) {
         this.x = startX;
         this.y = startY;
+
+        this.speed = speed??this.speed;
+        this.Xradius = xRadius??this.Xradius;
+        this.Yradius = yRadius??this.Yradius;
+        this.colour = colour??this.colour;
 
         //normalize direction
         const length = Math.sqrt(directionX ** 2 + directionY ** 2);
@@ -55,4 +60,7 @@ export class playerBullet {
             this.y + this.outsideMapMargin < 0 ||
             this.y - this.outsideMapMargin > canvasHeight;
     }
+}
+export class xFollowingPlayerBullet extends playerBullet {
+    private player: Player;
 }

@@ -30,7 +30,7 @@ export enum Level {
 
 
 export enum PlayerCharacter {
-    Basic,
-    Tank,
+    Archer,
+    Sentinel,
     Mage,
 }

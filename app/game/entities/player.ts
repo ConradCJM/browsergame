@@ -1,6 +1,7 @@
 import { Shockwave } from './shockwave';
 import { Game } from '../game';
-import {drawPolygon,drawEllipse,drawHollowEllipse} from "@/app/game/utils/drawingUtils";
+import { drawPolygon, drawEllipse, drawHollowEllipse } from "@/app/game/utils/drawingUtils";
+import { PlayerCharacter } from "@/app/game/constants";
 export class Player {
     private hp = 3;
     private maxHp = 5;
@@ -15,6 +16,13 @@ export class Player {
     private Yspeed = 165; //pixels per second
     private focusSpeed = 75; //slow when focus
 
+    private fireRate = 0.2; //time between shots in seconds
+
+    private focusTeleport?: boolean;
+    private focusTeleportDistance?: number = 75; //distance teleported when using focus teleport
+    private focusTeleportCooldown?: number = 1; //cooldown time for focus teleport in seconds
+    private focusTeleportTimer?: number = 0;
+
     private isFocused = false;
 
     private hitboxRadius = 2; //visual size of hitbox actual hitbox radius used in collision detection is half of this value
@@ -28,6 +36,8 @@ export class Player {
     private shockwaves: Shockwave[] = [];
 
     private game: Game;
+
+    private characterType: PlayerCharacter;
 
     getHp() {
         return this.hp;
@@ -73,10 +83,66 @@ export class Player {
 
 
     //conmstructor
-    constructor(game: Game, startX: number, startY: number, maxHp?: number, hp?: number) {
+    constructor(game: Game, startX: number, startY: number, playerCharacter: PlayerCharacter, maxHp?: number, hp?: number) {
         this.game = game;
         this.x = startX;
         this.y = startY;
+
+        this.characterType = playerCharacter;
+
+        //basic character
+        if (this.characterType === PlayerCharacter.Archer) {
+            this.focusTeleport = false;
+
+            this.maxHp = 5;
+            this.hp = 2;
+
+            this.fireRate = 0.2;
+
+            this.hitIframesDuration = 2;
+
+            this.Xspeed = 165;
+            this.Yspeed = 165;
+            this.focusSpeed = 75;
+
+            this.colour = '#67aeff';
+        }
+        else if (this.characterType === PlayerCharacter.Sentinel) {
+            this.focusTeleport = false;
+
+            this.maxHp = 6;
+            this.hp = 3;
+
+            this.fireRate = 0.25;
+
+            this.hitIframesDuration = 2;
+
+            this.Xspeed = 100;
+            this.Yspeed = 100;
+            this.focusSpeed = 45;
+
+            this.colour = '#5200bd';
+        }
+        else if (this.characterType === PlayerCharacter.Mage) {
+            this.focusTeleport = true;
+            this.focusTeleportDistance = 75;
+            this.focusTeleportCooldown = 1;
+
+            this.maxHp = 3;
+            this.hp = 1;
+
+            this.fireRate = 0.02;
+
+            this.hitIframesDuration = 2;
+
+            this.Xspeed = 165;
+            this.Yspeed = 165;
+            this.focusSpeed = 75;
+
+            this.colour = '#ff00ff';
+        }
+
+        //override for set hp values (boss levels and tutorial)
         this.maxHp = maxHp ?? this.maxHp;
         this.hp = hp ?? this.hp;
     }
@@ -121,7 +187,7 @@ export class Player {
         } else if (this.hp === 2) {
             drawEllipse(ctx, this.x, this.y, this.modelWidth, this.modelHeight, this.colour);
         } else {
-            drawPolygon(ctx, this.x, this.y, this.modelHeight, this.hp, -Math.PI/2, this.colour);
+            drawPolygon(ctx, this.x, this.y, this.modelHeight, this.hp, -Math.PI / 2, this.colour);
         }
 
         //circle hitbox
@@ -136,31 +202,73 @@ export class Player {
         this.shockwaves.forEach(sw => sw.draw(ctx));
     }
 
-    getBulletPattern(now: number, playerBulletDesync: number, playerBulletSpread: number) {
-        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number }[] = [];
-
+    getBulletPattern(now: number) {
         if (this.isFocused) {
-            //focused firing
-            bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1 });
-            bullets.push({ spawnTime: now + playerBulletDesync, x: this.x + playerBulletSpread, y: this.y, dirX: 0, dirY: -1 });
-            bullets.push({ spawnTime: now + playerBulletDesync, x: this.x - playerBulletSpread, y: this.y, dirX: 0, dirY: -1 });
-            bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x + playerBulletSpread * 2, y: this.y, dirX: 0, dirY: -1 });
-            bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x - playerBulletSpread * 2, y: this.y, dirX: 0, dirY: -1 });
-            bullets.push({ spawnTime: now + playerBulletDesync * 3, x: this.x + playerBulletSpread * 3, y: this.y, dirX: -Math.sin(Math.PI / 90), dirY: -Math.cos(Math.PI / 6) });
-            bullets.push({ spawnTime: now + playerBulletDesync * 3, x: this.x - playerBulletSpread * 3, y: this.y, dirX: Math.sin(Math.PI / 90), dirY: -Math.cos(Math.PI / 6) });
+            switch (this.characterType) {
+                case PlayerCharacter.Archer:
+                    return this.getArcherFocusedBulletPattern(now);
+                case PlayerCharacter.Sentinel:
+                    return this.getSentinelFocusedBulletPattern(now);
+            }
 
         } else {
-            //spread firing
-            bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1 });
-            bullets.push({ spawnTime: now + playerBulletDesync, x: this.x + playerBulletSpread, y: this.y, dirX: Math.sin(Math.PI / 9), dirY: -Math.cos(Math.PI / 9) });
-            bullets.push({ spawnTime: now + playerBulletDesync, x: this.x - playerBulletSpread, y: this.y, dirX: -Math.sin(Math.PI / 9), dirY: -Math.cos(Math.PI / 9) });
-            bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x + playerBulletSpread * 2, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6) });
-            bullets.push({ spawnTime: now + playerBulletDesync * 2, x: this.x - playerBulletSpread * 2, y: this.y, dirX: -Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6) });
-            bullets.push({ spawnTime: now + playerBulletDesync * 3, x: this.x + playerBulletSpread * 3, y: this.y, dirX: Math.sin(Math.PI / 18), dirY: -Math.cos(Math.PI / 6) });
-            bullets.push({ spawnTime: now + playerBulletDesync * 3, x: this.x - playerBulletSpread * 3, y: this.y, dirX: -Math.sin(Math.PI / 18), dirY: -Math.cos(Math.PI / 6) });
+            switch (this.characterType) {
+                case PlayerCharacter.Archer:
+                    return this.getArcherSpreadBulletPattern(now);
+            }
+
         }
+        return this.getArcherFocusedBulletPattern(now); //default pattern 
+    }
+
+    //archer bullet patterns
+    getArcherFocusedBulletPattern(now: number) {
+        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number,speed?: number, xRadius?: number, yRadius?:number }[] = [];
+
+
+        //arrow type shape
+        //head point
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed:600 });
+
+        //head wings/points
+        bullets.push({ spawnTime: now + 0.01, x: this.x + 5, y: this.y, dirX: 0, dirY: -1,speed:600, xRadius: 3, yRadius: 7 });
+        bullets.push({ spawnTime: now + 0.01, x: this.x - 5, y: this.y, dirX: 0, dirY: -1,speed:600, xRadius: 3, yRadius: 7  });
+
+        //tail
+        bullets.push({ spawnTime: now + 0.025, x: this.x, y: this.y, dirX: 0, dirY: -1,speed:600, xRadius: 2.5, yRadius: 9  });
+        bullets.push({ spawnTime: now + 0.045, x: this.x, y: this.y, dirX: 0, dirY: -1,speed:600, xRadius: 2.5, yRadius: 9  });
 
         return bullets;
     }
+    getArcherSpreadBulletPattern(now: number) {
+        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number,speed?: number, xRadius?: number, yRadius?:number }[] = [];
+
+        //spread firing
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1 });
+
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: Math.sin(Math.PI / 12), dirY: -Math.cos(Math.PI / 12) });
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: -Math.sin(Math.PI / 12), dirY: -Math.cos(Math.PI / 12) });
+
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6) });
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: -Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6) });
+
+        return bullets;
+    }
+
+    //sentinel bullet patterns
+    getSentinelFocusedBulletPattern(now: number) {
+        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number,speed?: number, xRadius?: number, yRadius?:number }[] = [];
+
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1 });
+        bullets.push({ spawnTime: now+0.015, x: this.x+5, y: this.y, dirX: 0, dirY: -1 });
+        bullets.push({ spawnTime: now+0.015, x: this.x-5, y: this.y, dirX: 0, dirY: -1 });
+
+
+        return bullets;
+    }
+
+
+
+
 
 }

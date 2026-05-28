@@ -65,11 +65,8 @@ export class GameScreen implements Screen {
         if (this.game.getInput().keys[' ']) {
             const now = performance.now() / 1000;
             if (now - this.game.getInput().lastShootTime >= this.game.getInput().shootCooldown) {
-                const playerBulletSpread = 6;
-                const playerBulletDesync = 0.05;
-
                 this.game.getInput().lastShootTime = now;
-                const bulletPattern = player.getBulletPattern(now, playerBulletDesync, playerBulletSpread);
+                const bulletPattern = player.getBulletPattern(now);
                 bulletPattern.forEach(pattern => this.game.queuePlayerBullet(pattern));
             }
         }
