@@ -5,7 +5,7 @@ export class Player {
     private hp = 3;
     private maxHp = 5;
 
-    private hitIframesDuration = 3; //duration of invulnerability in seconds
+    private hitIframesDuration = 2; //duration of invulnerability in seconds
     private isInHitIframes = false;
     private hitIframesTimer = 0;
 
