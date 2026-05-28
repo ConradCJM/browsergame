@@ -50,7 +50,7 @@ export function checkCollisions(
         enemies.forEach((enemy) => {
             if (isCollidingEllipse(bullet.getX(), bullet.getY(), bullet.getXRadius(), bullet.getYRadius(), enemy.getX(), enemy.getY(), enemy.getXRadius(), enemy.getYRadius())) {
                 enemy.takeDamage(1);
-                shockwaves.push(new Shockwave(bullet.getX(), bullet.getY(), 6, 0.3, '#41e9ff72'));
+                shockwaves.push(new Shockwave(bullet.getX(), bullet.getY(), 6, 0.3, bullet.getColour()));
                 bulletsToRemove.add(bullet);
             }
         });

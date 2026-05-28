@@ -19,11 +19,12 @@ export class Player {
     private fireRate = 0.2; //time between shots in seconds
 
     private focusTeleport?: boolean;
-    private focusTeleportDistance?: number = 75; //distance teleported when using focus teleport
-    private focusTeleportCooldown?: number = 1; //cooldown time for focus teleport in seconds
+    private focusTeleportDistance?: number = 100; //distance teleported when using focus teleport
+    private focusTeleportCooldown?: number = 0; //cooldown time for focus teleport in seconds
     private focusTeleportTimer?: number = 0;
 
     private isFocused = false;
+    private wasFocused = false;
 
     private hitboxRadius = 2; //visual size of hitbox actual hitbox radius used in collision detection is half of this value
     private hitboxColour = '#cef8ff';
@@ -68,13 +69,17 @@ export class Player {
         return this.y;
     }
 
+    getAttackCooldown() {
+        return this.fireRate;
+    }
+
     takeDamage(amount: number) {
         if (this.isInHitIframes) return; //ignore damage if in hit invulnerability frames
         this.isInHitIframes = true;
         this.hitIframesTimer = 0;
         this.hp -= amount;
         if (this.hp < 0) this.hp = 0;
-        this.shockwaves.push(new Shockwave(this.x, this.y, 500, 0.35, '#00c3ff56'));
+        this.shockwaves.push(new Shockwave(this.x, this.y, 500, 0.35, this.colour));
     }
 
     getHitboxRadius() {
@@ -125,19 +130,19 @@ export class Player {
         }
         else if (this.characterType === PlayerCharacter.Mage) {
             this.focusTeleport = true;
-            this.focusTeleportDistance = 75;
+            this.focusTeleportDistance = 100;
             this.focusTeleportCooldown = 1;
 
             this.maxHp = 3;
             this.hp = 1;
 
-            this.fireRate = 0.02;
+            this.fireRate = 0.025;
 
             this.hitIframesDuration = 2;
 
-            this.Xspeed = 165;
-            this.Yspeed = 165;
-            this.focusSpeed = 75;
+            this.Xspeed = 275;
+            this.Yspeed = 275;
+            this.focusSpeed = 125;
 
             this.colour = '#ff00ff';
         }
@@ -163,6 +168,37 @@ export class Player {
         if (keys['arrowleft'] || keys['a']) this.x -= Xspeed * dt;
         if (keys['arrowright'] || keys['d']) this.x += Xspeed * dt;
         this.isFocused = keys['shift'];
+        //update focus teleport cooldown
+        if (this.focusTeleportTimer! > 0) {
+            this.focusTeleportTimer! -= dt;
+        }
+
+        //teleport when unfocusing (shift released) if enabled and cooldown is ready
+        if (this.focusTeleport && this.wasFocused && !this.isFocused && this.focusTeleportTimer! <= 0) {
+            //calculate teleport direction based on held keys
+            let teleportDirX = 0;
+            let teleportDirY = 0;
+
+            if (keys['arrowup'] || keys['w']) teleportDirY = -1;
+            if (keys['arrowdown'] || keys['s']) teleportDirY = 1;
+            if (keys['arrowleft'] || keys['a']) teleportDirX = -1;
+            if (keys['arrowright'] || keys['d']) teleportDirX = 1;
+
+            //only teleport if a direction is held
+            if (teleportDirX !== 0 || teleportDirY !== 0) {
+
+                //normalize diagonal movement
+                const magnitude = Math.sqrt(teleportDirX * teleportDirX + teleportDirY * teleportDirY);
+                teleportDirX /= magnitude;
+                teleportDirY /= magnitude;
+
+                this.x += teleportDirX * this.focusTeleportDistance!;
+                this.y += teleportDirY * this.focusTeleportDistance!;
+                this.focusTeleportTimer = this.focusTeleportCooldown;
+            }
+        }
+
+        this.wasFocused = this.isFocused;
 
         //keep player in map
         const barWidth = this.game.getTimerBarWidth();
@@ -173,6 +209,8 @@ export class Player {
         //shockwave effect
         this.shockwaves = this.shockwaves.filter(sw => sw.update(dt));
     }
+
+
 
     //draw player
     draw(ctx: CanvasRenderingContext2D) {
@@ -203,6 +241,9 @@ export class Player {
     }
 
     getBulletPattern(now: number) {
+        if (this.characterType === PlayerCharacter.Mage) {
+            this.getMageBulletPattern(now);
+        }
         if (this.isFocused) {
             switch (this.characterType) {
                 case PlayerCharacter.Archer:
@@ -215,33 +256,38 @@ export class Player {
             switch (this.characterType) {
                 case PlayerCharacter.Archer:
                     return this.getArcherSpreadBulletPattern(now);
+                case PlayerCharacter.Sentinel:
+                    return this.getSentinelSpreadBulletPattern(now);
             }
 
         }
-        return this.getArcherFocusedBulletPattern(now); //default pattern 
+        return []; //empty 
     }
 
     //archer bullet patterns
     getArcherFocusedBulletPattern(now: number) {
-        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number,speed?: number, xRadius?: number, yRadius?:number }[] = [];
-
+        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
+        const bulletColour = 'rgba(103, 174, 255, 0.50)';
 
         //arrow type shape
         //head point
-        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed:600 });
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 600 });
 
         //head wings/points
-        bullets.push({ spawnTime: now + 0.01, x: this.x + 5, y: this.y, dirX: 0, dirY: -1,speed:600, xRadius: 3, yRadius: 7 });
-        bullets.push({ spawnTime: now + 0.01, x: this.x - 5, y: this.y, dirX: 0, dirY: -1,speed:600, xRadius: 3, yRadius: 7  });
+        bullets.push({ spawnTime: now + 0.01, x: this.x + 5, y: this.y, dirX: 0, dirY: -1, speed: 600, xRadius: 3, yRadius: 7 });
+        bullets.push({ spawnTime: now + 0.01, x: this.x - 5, y: this.y, dirX: 0, dirY: -1, speed: 600, xRadius: 3, yRadius: 7 });
 
         //tail
-        bullets.push({ spawnTime: now + 0.025, x: this.x, y: this.y, dirX: 0, dirY: -1,speed:600, xRadius: 2.5, yRadius: 9  });
-        bullets.push({ spawnTime: now + 0.045, x: this.x, y: this.y, dirX: 0, dirY: -1,speed:600, xRadius: 2.5, yRadius: 9  });
+        bullets.push({ spawnTime: now + 0.025, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 600, xRadius: 2.5, yRadius: 9 });
+        bullets.push({ spawnTime: now + 0.045, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 600, xRadius: 2.5, yRadius: 9 });
+
+        bullets.forEach(b => b.colour = bulletColour);
 
         return bullets;
     }
     getArcherSpreadBulletPattern(now: number) {
-        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number,speed?: number, xRadius?: number, yRadius?:number }[] = [];
+        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
+        const bulletColour = 'rgba(103, 174, 255, 0.50)';
 
         //spread firing
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1 });
@@ -252,19 +298,44 @@ export class Player {
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6) });
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: -Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6) });
 
+        bullets.forEach(b => b.colour = bulletColour);
+
         return bullets;
     }
 
     //sentinel bullet patterns
     getSentinelFocusedBulletPattern(now: number) {
-        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number,speed?: number, xRadius?: number, yRadius?:number }[] = [];
+        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
+        const bulletColour = 'rgba(82, 0, 189, 0.50)';
 
-        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1 });
-        bullets.push({ spawnTime: now+0.015, x: this.x+5, y: this.y, dirX: 0, dirY: -1 });
-        bullets.push({ spawnTime: now+0.015, x: this.x-5, y: this.y, dirX: 0, dirY: -1 });
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now + 0.01, x: this.x + 2, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now + 0.02, x: this.x - 2, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now + 0.03, x: this.x + 3, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now + 0.04, x: this.x - 3, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now + 0.05, x: this.x + 4, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now + 0.06, x: this.x - 4, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
 
+        bullets.forEach(b => b.colour = bulletColour);
 
         return bullets;
+    }
+    //sentinel bullet patterns
+    getSentinelSpreadBulletPattern(now: number) {
+        const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
+        const bulletColour = 'rgba(82, 0, 189, 0.50)';
+
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 450, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6), speed: 450, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: -Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6), speed: 450, xRadius: 3, yRadius: 3 });
+
+        bullets.forEach(b => b.colour = bulletColour);
+        return bullets;
+    }
+
+    //mage bullet pattern
+    getMageBulletPattern(now: number) {
+        this.game.spawnXFollowingPlayerBullet(this, this.x, this.y, 1500, 5, 20, 'rgb(255, 0, 255, 0.5)');
     }
 
 

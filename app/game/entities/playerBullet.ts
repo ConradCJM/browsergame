@@ -8,7 +8,6 @@ export class playerBullet {
     private Xradius = 3;
     private Yradius = 7;
     private colour = '#41e9ff';
-    private transparency = 0.2;
     private outsideMapMargin = 50; //how far outside the map the bullet can go before being removed
 
     constructor(startX: number, startY: number, directionX: number, directionY: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string) {
@@ -25,8 +24,15 @@ export class playerBullet {
         this.vx = (directionX / length) * this.speed;
         this.vy = (directionY / length) * this.speed;
     }
+
+    getColour() {
+        return this.colour;
+    }
     getX() {
         return this.x;
+    }
+    setX(x: number) {
+        this.x = x;
     }
     getY() {
         return this.y;
@@ -46,7 +52,7 @@ export class playerBullet {
 
     draw(ctx: CanvasRenderingContext2D) {
         const angle = Math.atan2(this.vy, this.vx) + Math.PI / 2;//rotate to match velocity direction
-        ctx.globalAlpha = this.transparency;
+        ctx.globalAlpha = 1
         ctx.fillStyle = this.colour;
         ctx.beginPath();
         ctx.ellipse(this.x, this.y, this.Xradius, this.Yradius, angle, 0, Math.PI * 2);
@@ -63,4 +69,14 @@ export class playerBullet {
 }
 export class xFollowingPlayerBullet extends playerBullet {
     private player: Player;
+
+    constructor(player: Player, startX: number, startY: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string) {
+        super(startX, startY, 0, -1, speed, xRadius, yRadius, colour);
+        this.player = player;
+    }
+
+    update(dt: number) {
+        super.update(dt);
+        this.setX(this.player.getX());
+    }
 }

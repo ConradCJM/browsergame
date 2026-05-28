@@ -11,7 +11,7 @@ interface LevelController {
     getTutorialOverlay?(): TutorialOverlay;
 }
 //change this to test different characters in campaign levels without going through character select screen
-const testCharacter = PlayerCharacter.Archer; 
+const testCharacter = PlayerCharacter.Mage; 
 
 export function createLevel(game: Game, level: Level): LevelController {
     game.resetGame();

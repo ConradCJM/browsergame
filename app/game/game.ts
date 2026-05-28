@@ -18,7 +18,10 @@ import { GameOverScreen } from '@/app/game/screens/gameOverScreen';
 import { LevelClearScreen } from '@/app/game/screens/levelClearScreen';
 import { LevelSelectScreen } from '@/app/game/screens/levelSelectScreen';
 import { PauseScreen } from '@/app/game/screens/pauseScreen';
-import { playerBullet } from '@/app/game/entities/playerBullet';
+import { playerBullet,xFollowingPlayerBullet } from '@/app/game/entities/playerBullet';
+
+
+import {PlayerCharacter} from '@/app/game/constants';
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -26,7 +29,7 @@ export class Game {
     private running = false;
     private lastTime = 0;
     private input: Input;
-    private player?: Player;
+    private player: Player = new Player(this, 0, 0, PlayerCharacter.Archer); //placeholder player until one is added by level controller
 
     private enemies: enemy[] = [];
     private pendingEnemies: { spawnTime: number; x: number; y: number; type: EnemyType, hasHealItem: boolean }[] = [];
@@ -272,6 +275,16 @@ export class Game {
         this.clearEntities();
         this.clearUiElements();
     }
+
+    spawnPlayerBullet(startX: number, startY: number, dirX: number, dirY: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string) {
+        this.playerBullets.push(new playerBullet(startX, startY, dirX, dirY, speed, xRadius, yRadius, colour));
+    }
+
+    //ignore bug since player will always be defined when this is called
+    spawnXFollowingPlayerBullet(player: Player, startX: number, startY: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string) {
+        this.playerBullets.push(new xFollowingPlayerBullet(this.player,startX, startY, speed, xRadius, yRadius, colour));
+    }
+
     spawnPendingPlayerBullets(now: number) {
         this.pendingPlayerBullets = this.pendingPlayerBullets.filter(pending => {
             if (now >= pending.spawnTime) {
