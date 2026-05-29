@@ -210,8 +210,6 @@ export class Player {
         this.shockwaves = this.shockwaves.filter(sw => sw.update(dt));
     }
 
-
-
     //draw player
     draw(ctx: CanvasRenderingContext2D) {
 
@@ -241,23 +239,25 @@ export class Player {
     }
 
     getBulletPattern(now: number) {
-        if (this.characterType === PlayerCharacter.Mage) {
-            this.getMageBulletPattern(now);
-        }
+
         if (this.isFocused) {
             switch (this.characterType) {
                 case PlayerCharacter.Archer:
-                    return this.getArcherFocusedBulletPattern(now);
+                    return this.getArcherFocusedBulletPattern(now); // 25 dps -> 1hp?: 29dps
                 case PlayerCharacter.Sentinel:
-                    return this.getSentinelFocusedBulletPattern(now);
+                    return this.getSentinelFocusedBulletPattern(now); //min: 28dps -> max: 31 dps
+                case PlayerCharacter.Mage:
+                    return this.getMageFocusBulletPattern(now); //1hp 40 dps: -> 2hp: 33 dps -> 3hp: 23 dps
             }
 
         } else {
             switch (this.characterType) {
                 case PlayerCharacter.Archer:
-                    return this.getArcherSpreadBulletPattern(now);
+                    return this.getArcherSpreadBulletPattern(now); // 25 dps (assuming all bullets hit)
                 case PlayerCharacter.Sentinel:
-                    return this.getSentinelSpreadBulletPattern(now);
+                    return this.getSentinelSpreadBulletPattern(now); // 12 dps (assuming all bullets hit)
+                case PlayerCharacter.Mage:
+                    return this.getMageSpreadBulletPattern(now); ////1hp 7 dps: -> 2hp: 15 dps -> 3hp: 22 dps
             }
 
         }
@@ -268,7 +268,7 @@ export class Player {
     getArcherFocusedBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
         const bulletColour = 'rgba(103, 174, 255, 0.50)';
-
+        this.fireRate = this.hp === 1? 0.275: 0.2;
         //arrow type shape
         //head point
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 600 });
@@ -276,6 +276,17 @@ export class Player {
         //head wings/points
         bullets.push({ spawnTime: now + 0.01, x: this.x + 5, y: this.y, dirX: 0, dirY: -1, speed: 600, xRadius: 3, yRadius: 7 });
         bullets.push({ spawnTime: now + 0.01, x: this.x - 5, y: this.y, dirX: 0, dirY: -1, speed: 600, xRadius: 3, yRadius: 7 });
+
+        //last stand mechanic: more damage slightly slower firerate
+        if (this.hp === 1) {
+            
+            // increase damage by 3 
+            bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 600 });
+
+            //head wings/points
+            bullets.push({ spawnTime: now + 0.01, x: this.x + 5, y: this.y, dirX: 0, dirY: -1, speed: 600, xRadius: 3, yRadius: 7 });
+            bullets.push({ spawnTime: now + 0.01, x: this.x - 5, y: this.y, dirX: 0, dirY: -1, speed: 600, xRadius: 3, yRadius: 7 });
+        }
 
         //tail
         bullets.push({ spawnTime: now + 0.025, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 600, xRadius: 2.5, yRadius: 9 });
@@ -286,6 +297,7 @@ export class Player {
         return bullets;
     }
     getArcherSpreadBulletPattern(now: number) {
+        this.fireRate = 0.2;
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
         const bulletColour = 'rgba(103, 174, 255, 0.50)';
 
@@ -307,6 +319,7 @@ export class Player {
     getSentinelFocusedBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
         const bulletColour = 'rgba(82, 0, 189, 0.50)';
+        this.fireRate = 0.25 - (0.005 * (this.hp-1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
 
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
         bullets.push({ spawnTime: now + 0.01, x: this.x + 2, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
@@ -324,18 +337,42 @@ export class Player {
     getSentinelSpreadBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
         const bulletColour = 'rgba(82, 0, 189, 0.50)';
+        this.fireRate = 0.25;
 
-        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 450, xRadius: 3, yRadius: 3 });
-        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6), speed: 450, xRadius: 3, yRadius: 3 });
-        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: -Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6), speed: 450, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6), speed: 700, xRadius: 3, yRadius: 3 });
+        bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: -Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6), speed: 700, xRadius: 3, yRadius: 3 });
 
         bullets.forEach(b => b.colour = bulletColour);
         return bullets;
     }
 
     //mage bullet pattern
-    getMageBulletPattern(now: number) {
-        this.game.spawnXFollowingPlayerBullet(this, this.x, this.y, 1500, 5, 20, 'rgb(255, 0, 255, 0.5)');
+    getMageFocusBulletPattern(now: number) {
+        if (this.hp === 1) {this.fireRate = 0.025;}
+        if (this.hp === 2) {this.fireRate = 0.03;}
+        if (this.hp === 3) {this.fireRate = 0.043;}
+
+        this.game.spawnXFollowingPlayerBullet(this, this.x, this.y, 0, -1, 0, 1500, 5, 20, 'rgb(255, 0, 255, 0.5)');
+
+        return [];
+    }
+
+    //mage bullet pattern
+    getMageSpreadBulletPattern(now: number) {
+        this.fireRate = 0.136;
+
+
+        //dynamic bullet pattern based on hp, more hp means more bullets
+        if (this.hp === 1 || this.hp >= 3) {
+            this.game.spawnXFollowingPlayerBullet(this, this.x, this.y, 0, -1, 0, 1500, 2.5, 20, 'rgb(255, 0, 255, 0.5)');
+        }
+
+        if (this.hp === 2 || this.hp >= 3) {
+            this.game.spawnXFollowingPlayerBullet(this, this.x, this.y, Math.sin(Math.PI / 25), -1, -10, 1500, 2.5, 20, 'rgb(255, 0, 255, 0.5)');
+            this.game.spawnXFollowingPlayerBullet(this, this.x, this.y, -Math.sin(Math.PI / 25), -1, 10, 1500, 2.5, 20, 'rgb(255, 0, 255, 0.5)');
+        }
+        return [];
     }
 
 

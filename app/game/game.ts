@@ -281,8 +281,8 @@ export class Game {
     }
 
     //ignore bug since player will always be defined when this is called
-    spawnXFollowingPlayerBullet(player: Player, startX: number, startY: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string) {
-        this.playerBullets.push(new xFollowingPlayerBullet(this.player,startX, startY, speed, xRadius, yRadius, colour));
+    spawnXFollowingPlayerBullet(player: Player, startX: number, startY: number,dirX:number,dirY:number,offset?:number, speed?: number, xRadius?: number, yRadius?: number, colour?: string) {
+        this.playerBullets.push(new xFollowingPlayerBullet(player,startX, startY,dirX,dirY, offset,speed, xRadius, yRadius, colour));
     }
 
     spawnPendingPlayerBullets(now: number) {

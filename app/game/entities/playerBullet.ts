@@ -14,10 +14,10 @@ export class playerBullet {
         this.x = startX;
         this.y = startY;
 
-        this.speed = speed??this.speed;
-        this.Xradius = xRadius??this.Xradius;
-        this.Yradius = yRadius??this.Yradius;
-        this.colour = colour??this.colour;
+        this.speed = speed ?? this.speed;
+        this.Xradius = xRadius ?? this.Xradius;
+        this.Yradius = yRadius ?? this.Yradius;
+        this.colour = colour ?? this.colour;
 
         //normalize direction
         const length = Math.sqrt(directionX ** 2 + directionY ** 2);
@@ -69,14 +69,29 @@ export class playerBullet {
 }
 export class xFollowingPlayerBullet extends playerBullet {
     private player: Player;
+    private xOffset: number = 0;
+    private previousPlayerX: number;
 
-    constructor(player: Player, startX: number, startY: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string) {
-        super(startX, startY, 0, -1, speed, xRadius, yRadius, colour);
+    constructor(player: Player, startX: number, startY: number, dirX: number, dirY: number, xOffset?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string) {
+        super(startX, startY, dirX, dirY, speed, xRadius, yRadius, colour);
         this.player = player;
+        this.xOffset = xOffset ?? 0;
+        // Apply offset to starting position
+        this.setX(startX + this.xOffset);
+        this.previousPlayerX = player.getX();
     }
 
     update(dt: number) {
         super.update(dt);
-        this.setX(this.player.getX());
+        
+        //calculate how much the player moved
+        const currentPlayerX = this.player.getX();
+        const playerDeltaX = currentPlayerX - this.previousPlayerX;
+        
+        //apply the same movement to the bullet
+        this.setX(this.getX() + playerDeltaX);
+        
+        //update for next frame
+        this.previousPlayerX = currentPlayerX;
     }
 }
