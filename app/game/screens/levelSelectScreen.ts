@@ -5,9 +5,10 @@ import { Level } from '@/app/game/constants';
 
 export class LevelSelectScreen implements Screen {
   private buttons: Button[] = [];
+  private onMainMenu?: () => void;
 
-  constructor(onLevelSelect?: (level: Level) => void) {
-    
+  constructor(onLevelSelect?: (level: Level) => void, onMainMenu?: () => void) {
+    this.onMainMenu = onMainMenu;
     this.setupButtons(onLevelSelect);
   }
 
@@ -47,6 +48,13 @@ export class LevelSelectScreen implements Screen {
   update(dt: number): void {}
 
   handleInput(input: Input): void {
+    //M key to return to main menu
+    if (input.keys['m']) {
+      input.keys['m'] = false;
+      this.onMainMenu?.();
+      return;
+    }
+
     //update hover state for all buttons
     this.buttons.forEach(button => {
       button.update(input.mouseX, input.mouseY);
@@ -71,5 +79,11 @@ export class LevelSelectScreen implements Screen {
 
     //draw all buttons
     this.buttons.forEach(button => button.draw(ctx));
+
+    // Draw key bindings
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '26px fantasy';
+        ctx.textAlign = 'center';
+        ctx.fillText('M: Main Menu', ctx.canvas.width / 2, 565);
   }
 }

@@ -172,6 +172,23 @@ export class enemy {
 
             this.hpDrain = this.maxHp / 240;// boss dies in 240 seconds if player doesnt attack
         }
+        else if (this.type === EnemyType.TestDummy) {
+            this.XRadius = 15;
+            this.YRadius = 15;
+            this.hp = 999999;
+            this.maxHp = 999999;
+            this.attackRate = 0.5;
+            this.hpDrain = -100; //negative drain heals instead of damages
+
+            this.bulletXSpeed = 50;
+            this.bulletYSpeed = 50;
+            this.bulletXRadius = 3;
+            this.bulletYRadius = 3;
+            this.bulletColour = '#ffffff80';
+
+            this.maxPhase = 0;
+            this.maxPhaseTime = 0;
+        }
 
         if (this.maxBossPhase >= 0) {
             this.bossHealthBar = new BossHealthBar(50, 12, 300, 8, this.hp, this.maxHp);
@@ -347,6 +364,10 @@ export class enemy {
             this.speed = 10;
             this.y += Math.sin(this.timeAlive) * this.speed * dt;
         }
+        else if (this.type === EnemyType.TestDummy) {
+            // TestDummy stays in one position (static)
+            // No movement
+        }
     }
 
     //draw enemy
@@ -366,6 +387,9 @@ export class enemy {
         else if (this.type === EnemyType.TeleportingBoss || this.type === EnemyType.TeleportingMiniboss) {
             this.enemyColour = '#ff050598';
             this.seondaryColour = 'rgb(0, 47, 255)';
+        }
+        else if (this.type === EnemyType.TestDummy) {
+            this.enemyColour = '#ffffff';
         }
 
 
@@ -421,6 +445,12 @@ export class enemy {
             const bulletColour = this.phase % 2 === 1 ? this.enemyColour : this.seondaryColour!;//for some dumbass reason this needs to be here or the colour is inverted (racecondition probably lol)
             this.bulletColour = bulletColour;
             drawEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, currentColour);
+        }
+        else if (this.type === EnemyType.TestDummy) {
+            ctx.beginPath();
+            ctx.fillStyle = this.enemyColour;
+            ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
+            ctx.fill();
         }
         //add outline
         ctx.strokeStyle = '#ffffff';
@@ -839,6 +869,15 @@ export class enemy {
                     spec.bulletYGrowth = 0.5;
                 })
             }
+        }
+        else if (this.type === EnemyType.TestDummy) {
+            // TestDummy shoots straight down at regular intervals
+            this.attackRate = 0.5;
+            specs.push({
+                dirX: 0,
+                dirY: 1,
+                delay: 0
+            });
         }
         specs.forEach(spec => {
             this.game.queueEnemyBullet({

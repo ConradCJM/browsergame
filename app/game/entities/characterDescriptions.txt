@@ -1,0 +1,144 @@
+NOTE: 
+these are just ideas for characters, not final stats or anything, 
+just a general idea of how the character should play and what their pros and cons are compared to the other characters. 
+Stats and mechanics can be tweaked as needed to balance the characters and make them fun to play.
+
+Character starting Hp and max hp are only for regular levels not boss levels,
+
+Boss levels have the following rules for player hp:
+    Base hp: 1 per boss stage
+    +1 if boss has rng as a mechanic
+
+--------------------------------------------------------------------------------
+Blueprint for character descriptions:
+
+Character:
+
+    Attacks:
+        Focus shot:
+
+        Unfocused shot:
+
+        Firerate:
+    
+    Stats:
+        Max Hp:
+        Starting Hp:
+
+        hitIframesDuration:
+
+        Focus Speed: 
+        Unfocused Speed:
+    
+    Special Mechanics:
+
+    Pros:
+
+    Cons:
+
+-----------------------------------------------------------------------------------------
+
+Basic starter character: 
+Average everything, no pros or cons considered the base line for character balance
+
+    Attacks: 25 dps
+        Focus shot: 
+            shoots 5 bullets 
+            upside down V shape
+
+        Unfocused shot:
+            5 bullets
+                1 straight up,
+                2 at slight angles,
+                2 at wider angles
+
+
+        Firerate: 0.2 seconds
+
+        
+
+    Stats:
+        Max hp: 5
+        Starting hp: 2
+
+        hitIframesDuration: 2 seconds
+
+        Focus Speed: 75 pixels per second
+        Unfocused Speed: 165 pixels per second
+
+    Special Mechanics:
+        None, basic character with no special mechanics
+
+    Pros:
+        None, Baseline for comparison with other characters
+    Cons:
+        None, Baseline for comparison with other characters
+
+--------------------------------------------------------------
+
+Tanky Character: 
+Tanky character with high hp and strong focus shot but slow movement speed
+
+    Attacks
+        Focus shot: 28 dps
+            7 Bullets tight spread 
+                3 aimed straight up, 
+                4 aimed inwards at slight angles
+
+        Unfocused shot: 
+            3 bullets, 
+                1 aimed straight up, 
+                2 at wide angles
+
+        firerate: 0.25 seconds
+
+    Stats:
+        Max hp: 6
+        Starting hp: 3
+        hitIframesDuration: 2 seconds
+
+        Focus Speed: 50 pixels per second
+        Unfocused Speed: 110 pixels per second
+
+    Special Mechanics:
+        None, straightforward character with high hp and strong focus shot but slow movement speed
+
+    Pros: high hp, strong focus shot with more projectiles and tighter spread than basic character
+
+    Cons: slow movement speed, unfocused shot has fewer projectiles than basic character
+
+---------------------------------------------------------------------------
+Mage Character:
+Same move speed as basic character, lower hp, has no focus fire instead focused and unfocused projectiles are the same 
+pressing focus teleports the player in the direction they are moving in
+projectile is a lazer which x value is the same as the players
+
+    Attacks:
+        Focus shot:
+            50 dps amount of shots, straight up, follow players x value
+
+        Unfocused shot:
+            50 dps amount of shots, straight up, follow players x value
+
+        Firerate: 50 dps (so 50 shots in a second doesnt matter how this is done)
+    Stats:
+        Max Hp: 4
+        Starting Hp: 1
+
+        hitIframesDuration: 2
+
+        Focus Speed: 75
+        Unfocused Speed: 165
+    
+    Special Mechanics:
+        teleports in the direction the player is travelling in when they unfocus, x amount of seconds cooldown
+        bullet x value is the same as the player
+
+    Pros:
+        highest dps of all characters
+        has the ability to teleport
+
+    Cons:
+        lowest hp of all characters
+        no spread shot
+
