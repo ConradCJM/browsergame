@@ -51,14 +51,14 @@ export class CharacterSelectScreen implements Screen {
             },
             [PlayerCharacter.Mage]: {
                 name: 'Mage',
-                description: 'A fast character with rapid fire but low HP.',
+                description: 'A fast character with a rapid firerate but low HP.',
                 focusedDps: 40,
                 unfocusedDps: 7,
                 baseSpeed: 275,
                 focusedSpeed: 125,
                 maxHp: 3,
                 startingHp: 1,
-                abilities: 'Focus Warp: Unfocus to telport a short distance (1s CD)\nMagic Shots: bullets follow horizontal movement\nPower Reserve: Focus shot weakens with Hp\n   Unfocused shot strengthens with Hp'
+                abilities: 'Focus Warp: Unfocus to telport a short distance (1s CD)\nMagic Shots: bullets follow horizontal movement\nPower Reserve: Focus shot weakens with Hp\n     Unfocused shot strengthens with Hp'
             }
         };
 
