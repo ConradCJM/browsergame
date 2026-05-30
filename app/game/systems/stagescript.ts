@@ -58,7 +58,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         maxWaveTime = TUTORIAL_WAVE_TIMES;
         waveQueued = [false, false, false, false];
 
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,PlayerCharacter.Archer, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, game.getSelectedCharacter(), playerStats.maxHp, playerStats.startHp));
 
         //create tutorial messages
         const tutorialMessages: TutorialMessage[] = [
@@ -149,7 +149,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         };
     }
     if (level === Level.CampaignLevel1) {
-        game.addPlayer(new Player(game, game.getCanvas().width / 2, game.getCanvas().height - 50,testCharacter));
+        game.addPlayer(new Player(game, game.getCanvas().width / 2, game.getCanvas().height - 50, game.getSelectedCharacter()));
         currentWave = 0;
         waveQueued = [false, false, false, false, false];
         waveTimer = 0;
@@ -243,7 +243,7 @@ export function createLevel(game: Game, level: Level): LevelController {
     if (level === Level.BossLevel2) {
         playerStats.maxHp = 3;
         playerStats.startHp = 3;
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,testCharacter, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, game.getSelectedCharacter(), playerStats.maxHp, playerStats.startHp));
         game.addEnemyToQueue(-300, 100, EnemyType.TeleportingBoss, 3, false);
         return {
             update(dt: number) {
@@ -260,7 +260,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         waveTimer = 0;
         maxWaveTime = [0, 37, 24, 45, 0, 0, 0];
 
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, testCharacter));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, game.getSelectedCharacter()));
 
 
 

@@ -34,6 +34,8 @@ export class Player {
     private colour = '#419aff';
     private focusTransparency = 0.2;
 
+    private minHpProtection = false; //if true, hp cannot drop below 1
+
     private shockwaves: Shockwave[] = [];
 
     private game: Game;
@@ -78,8 +80,13 @@ export class Player {
         this.isInHitIframes = true;
         this.hitIframesTimer = 0;
         this.hp -= amount;
-        if (this.hp < 0) this.hp = 0;
+        if (this.minHpProtection && this.hp < 1) this.hp = 1;
+        else if (this.hp < 0) this.hp = 0;
         this.shockwaves.push(new Shockwave(this.x, this.y, 500, 0.35, this.colour));
+    }
+
+    setMinHpProtection(value: boolean) {
+        this.minHpProtection = value;
     }
 
     getHitboxRadius() {

@@ -13,6 +13,8 @@ export enum EnemyType {
     SentryBoss,
     TeleportingBoss,
 
+    //test/debug
+    TestDummy,
 
 }
 //levels: 

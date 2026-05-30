@@ -5,19 +5,26 @@ import { Input } from '@/app/game/systems/input';
 export class MainMenuScreen implements Screen {
   private buttons: Button[] = [];
 
-  constructor(canvasWidth: number, canvasHeight: number, onPlayClick: () => void) {
-    this.setupButtons(canvasWidth, canvasHeight, onPlayClick);
+  constructor(canvasWidth: number, canvasHeight: number, onCharacterSelectClick: () => void, onLevelSelectClick?: () => void) {
+    this.setupButtons(canvasWidth, canvasHeight, onCharacterSelectClick, onLevelSelectClick);
   }
 
-  private setupButtons(canvasWidth: number, canvasHeight: number, onPlayClick: () => void) {
+  private setupButtons(canvasWidth: number, canvasHeight: number, onCharacterSelectClick: () => void, onLevelSelectClick?: () => void) {
     const buttonWidth = 200;
     const buttonHeight = 50;
     const buttonX = canvasWidth / 2 - buttonWidth / 2;
-    const buttonY = canvasHeight - 120;
+    const buttonY = canvasHeight - 150;
+    const spacing = 70;
 
     this.buttons.push(
-      new Button(buttonX, buttonY, buttonWidth, buttonHeight, 'Play Game', onPlayClick)
+      new Button(buttonX, buttonY, buttonWidth, buttonHeight, 'Character Select', onCharacterSelectClick)
     );
+
+    if (onLevelSelectClick) {
+      this.buttons.push(
+        new Button(buttonX, buttonY + spacing, buttonWidth, buttonHeight, 'Level Select', onLevelSelectClick)
+      );
+    }
   }
 
   update(dt: number): void {}

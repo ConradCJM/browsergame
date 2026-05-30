@@ -17,6 +17,7 @@ import { GameScreen } from '@/app/game/screens/gameScreen';
 import { GameOverScreen } from '@/app/game/screens/gameOverScreen';
 import { LevelClearScreen } from '@/app/game/screens/levelClearScreen';
 import { LevelSelectScreen } from '@/app/game/screens/levelSelectScreen';
+import { CharacterSelectScreen } from '@/app/game/screens/characterSelectScreen';
 import { PauseScreen } from '@/app/game/screens/pauseScreen';
 import { playerBullet,xFollowingPlayerBullet } from '@/app/game/entities/playerBullet';
 
@@ -29,6 +30,7 @@ export class Game {
     private running = false;
     private lastTime = 0;
     private input: Input;
+    private selectedCharacter: PlayerCharacter = PlayerCharacter.Archer;
     private player: Player = new Player(this, 0, 0, PlayerCharacter.Archer); //placeholder player until one is added by level controller
 
     private enemies: enemy[] = [];
@@ -83,7 +85,15 @@ export class Game {
         this.waveTimerBar = new WaveTimerBar(canvas.width, canvas.height);
 
         //initialize with main menu
-        this.currentScreen = new MainMenuScreen(canvas.width, canvas.height, () => this.goToLevelSelect());
+        this.currentScreen = new MainMenuScreen(canvas.width, canvas.height, () => this.goToCharacterSelect(), () => this.goToLevelSelect());
+    }
+
+    setSelectedCharacter(character: PlayerCharacter) {
+        this.selectedCharacter = character;
+    }
+
+    getSelectedCharacter(): PlayerCharacter {
+        return this.selectedCharacter;
     }
 
     private startGame() {
@@ -169,7 +179,21 @@ export class Game {
         this.currentScreen = new LevelSelectScreen((selectedLevel: Level) => {
             this.level = selectedLevel;  //set the selected level
             this.startGame();            //start the game with selected level
-        });
+        }, () => this.goToMainMenu());
+    }
+
+    private goToCharacterSelect() {
+        this.resetGame();
+        this.currentScreen = new CharacterSelectScreen(
+            this,
+            () => this.goToLevelSelect(),
+            () => this.goToMainMenu()
+        );
+    }
+
+    private goToMainMenu() {
+        this.resetGame();
+        this.currentScreen = new MainMenuScreen(this.canvas.width, this.canvas.height, () => this.goToCharacterSelect(), () => this.goToLevelSelect());
     }
 
     getCanvas() {
