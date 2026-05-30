@@ -326,7 +326,7 @@ export class Player {
     getSentinelFocusedBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
         const bulletColour = 'rgba(82, 0, 189, 0.50)';
-        this.fireRate = 0.25 - (0.005 * (this.hp-1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
+        this.fireRate = 0.25 - (0.01 * (this.hp-1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
 
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
         bullets.push({ spawnTime: now + 0.01, x: this.x + 2, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
@@ -344,7 +344,7 @@ export class Player {
     getSentinelSpreadBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
         const bulletColour = 'rgba(82, 0, 189, 0.50)';
-        this.fireRate = 0.25;
+        this.fireRate = 0.25 - (0.01 * (this.hp-1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
 
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6), speed: 700, xRadius: 3, yRadius: 3 });
