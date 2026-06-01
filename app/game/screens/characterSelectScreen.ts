@@ -69,7 +69,7 @@ export class CharacterSelectScreen implements Screen {
                 focusedSpeed: 100,
                 maxHp: 5,
                 startingHp: 2,
-                abilities: 'Sword Slash: Doesn\'t use projectiles\nAdaptation: Has a longer invincibility duration after getting hit',
+                abilities: 'Sword Slash: Attacks Pierce but have low range\nAdaptation: Has a longer invincibility duration after getting hit',
             }
         };
 

@@ -157,7 +157,7 @@ export class Player {
         else if (this.characterType === PlayerCharacter.Swordsman) {
             this.focusTeleport = false;
 
-            this.maxHp = 4;
+            this.maxHp = 5;
             this.hp = 2;
 
             this.fireRate = 1;
