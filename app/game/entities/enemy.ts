@@ -190,6 +190,32 @@ export class enemy {
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
         }
+        else if (this.type === EnemyType.Chaser) {
+            this.XRadius = 11;
+            this.YRadius = 11;
+            this.hp = 20;
+            this.maxHp = 20;
+
+            this.attackRate = 1000;
+
+            this.speed = 55;
+
+            this.maxPhase = 0;
+            this.maxPhaseTime = 0;
+        }
+        else if (this.type === EnemyType.MiniChaser) {
+            this.XRadius = 4;
+            this.YRadius = 4;
+            this.hp = 6;
+            this.maxHp = 6;
+
+            this.attackRate = 1000;
+
+            this.speed = 75;
+
+            this.maxPhase = 0;
+            this.maxPhaseTime = 0;
+        }
 
         if (this.maxBossPhase >= 0) {
             this.bossHealthBar = new BossHealthBar(50, 12, 300, 8, this.hp, this.maxHp);
@@ -264,6 +290,21 @@ export class enemy {
 
         this.x = move(this.x, targetX, maxMovement);
         this.y = move(this.y, targetY, maxMovement);
+    }
+    private moveToDirect(targetX: number, targetY: number, speed: number, dt: number) {
+        const dx = targetX - this.x;
+        const dy = targetY - this.y;
+        const distance = Math.hypot(dx, dy);
+
+        if (distance === 0) return;
+
+        const step = speed * dt;
+        const moveAmount = Math.min(step, distance);
+        const nx = dx / distance;
+        const ny = dy / distance;
+
+        this.x += nx * moveAmount;
+        this.y += ny * moveAmount;
     }
 
 
@@ -362,7 +403,7 @@ export class enemy {
         else if (this.type === EnemyType.SentryMiniboss) {
             this.speed = 10;
             this.y += Math.sin(this.timeAlive) * this.speed * dt;
-            
+
         }
         else if (this.type === EnemyType.TeleportingBoss || this.type === EnemyType.TeleportingMiniboss) {
             //custom movement in attack patterns, so no movement here except maybe a slight idle movement
@@ -372,6 +413,13 @@ export class enemy {
         else if (this.type === EnemyType.TestDummy) {
             // TestDummy stays in one position (static)
             // No movement
+        }
+        else if (this.type === EnemyType.Chaser || this.type === EnemyType.MiniChaser) {
+            const player = this.game.getPlayer();
+            if (!player) return;
+            const targetX = player.getX();
+            const targetY = player.getY();
+            this.moveToDirect(targetX, targetY, this.speed, dt);
         }
     }
 
@@ -395,6 +443,9 @@ export class enemy {
         }
         else if (this.type === EnemyType.TestDummy) {
             this.enemyColour = '#ffffff';
+        }
+        else if (this.type === EnemyType.Chaser) {
+            this.enemyColour = '#ff00ff';
         }
 
 
@@ -456,6 +507,9 @@ export class enemy {
             ctx.fillStyle = this.enemyColour;
             ctx.arc(this.x, this.y, this.XRadius, 0, Math.PI * 2);
             ctx.fill();
+        }
+        else if (this.type === EnemyType.Chaser || this.type=== EnemyType.MiniChaser) {
+            drawPolygon(ctx, this.x, this.y, this.XRadius, 3,this.currentAimAngle, this.enemyColour);
         }
         //add outline
         ctx.strokeStyle = '#ffffff';
@@ -724,7 +778,7 @@ export class enemy {
                     spec.bulletYSpeed = 200;
                     spec.bulletXRadius = 4;
                     spec.bulletYRadius = 16;
-                
+
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -749,7 +803,7 @@ export class enemy {
                     spec.bulletYSpeed = 275;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 10;
-                    
+
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -770,7 +824,7 @@ export class enemy {
                     spec.bulletYSpeed = 100;
                     spec.bulletXRadius = 1;
                     spec.bulletYRadius = 2;
-                    
+
                     spec.bulletXGrowth = 0.5;
                     spec.bulletYGrowth = 0.5;
                 })
@@ -829,7 +883,7 @@ export class enemy {
                     spec.bulletYSpeed = 225;
                     spec.bulletXRadius = 3;
                     spec.bulletYRadius = 10;
-                    
+
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -846,7 +900,7 @@ export class enemy {
                     spec.bulletYSpeed = 200;
                     spec.bulletXRadius = 4;
                     spec.bulletYRadius = 15;
-                    
+
                     spec.bulletXGrowth = 0;
                     spec.bulletYGrowth = 0;
                 })
@@ -869,7 +923,7 @@ export class enemy {
                     spec.bulletYSpeed = 100;
                     spec.bulletXRadius = 1;
                     spec.bulletYRadius = 2;
-                    
+
                     spec.bulletXGrowth = 0.5;
                     spec.bulletYGrowth = 0.5;
                 })
@@ -883,6 +937,14 @@ export class enemy {
                 dirY: 1,
                 delay: 0
             });
+        }
+        else if (this.type === EnemyType.Chaser) {
+            //spawns damage zones on the chaser to create a damaging aura around its current position that lingers to force player to be careful of their movement
+            //cross shape
+            //horizontal
+            this.spawnDamageZoneAttack(80, 10, 3, 'ellipse', 1, 1, '#ff00ff80');
+            //vertical
+            this.spawnDamageZoneAttack(10, 80, 3, 'ellipse', 1, 1, '#ff00ff80');
         }
         specs.forEach(spec => {
             this.game.queueEnemyBullet({
@@ -910,12 +972,13 @@ export class enemy {
         duration: number,
         shape: 'square' | 'ellipse' = 'ellipse',
         warningDuration: number = 0.5,
-        damage: number = 1
+        damage: number = 1,
+        colour: string = 'rgba(255, 0, 255, 0.5)',
     ) {
         const zone = shape === 'square'
-            ? DamageZone.createSquare(this.x, this.y,0,0, width, height, duration, 'enemy', damage)
-            : DamageZone.createEllipse(this.x, this.y,0,0, width / 2, height / 2, duration, 'enemy', damage);
-        
+            ? DamageZone.createSquare(this.x, this.y, 0, 0, width, height, duration, 'enemy', damage, colour)
+            : DamageZone.createEllipse(this.x, this.y, 0, 0, width / 2, height / 2, duration, 'enemy', damage, colour);
+
         this.game.queueDamageZone(zone, spawnTime, warningDuration);
     }
 
@@ -926,12 +989,13 @@ export class enemy {
         duration: number,
         shape: 'square' | 'ellipse' = 'ellipse',
         warningDuration: number = 0.5,
-        damage: number = 1
+        damage: number = 1,
+        colour: string = '#ff000080',
     ) {
         const zone = shape === 'square'
-            ? DamageZone.createSquare(this.x, this.y,0,0, width, height, duration, 'enemy', damage)
-            : DamageZone.createEllipse(this.x, this.y,0,0, width / 2, height / 2, duration, 'enemy', damage);
-        
+            ? DamageZone.createSquare(this.x, this.y, 0, 0, width, height, duration, 'enemy', damage, colour)
+            : DamageZone.createEllipse(this.x, this.y, 0, 0, width / 2, height / 2, duration, 'enemy', damage, colour);
+
         this.game.spawnDamageZone(zone, warningDuration);
     }
 }

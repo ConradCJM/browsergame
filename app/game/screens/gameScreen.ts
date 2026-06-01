@@ -137,82 +137,12 @@ export class GameScreen implements Screen {
 
         //damage zone warnings (semi-transparent preview)
         this.game.getWarningDamageZones().forEach(warning => {
-            const zone = warning.zone;
-            ctx.globalAlpha = 0.3;
-            ctx.fillStyle = '#ffff00'; // Yellow for warning
-            ctx.strokeStyle = '#ffff00';
-            ctx.lineWidth = 2;
-
-            if (zone.getShape() === 'square') {
-                ctx.fillRect(
-                    zone.getX() - zone.getWidth() / 2,
-                    zone.getY() - zone.getHeight() / 2,
-                    zone.getWidth(),
-                    zone.getHeight()
-                );
-                ctx.strokeRect(
-                    zone.getX() - zone.getWidth() / 2,
-                    zone.getY() - zone.getHeight() / 2,
-                    zone.getWidth(),
-                    zone.getHeight()
-                );
-            } else {
-                // Ellipse
-                ctx.beginPath();
-                ctx.ellipse(
-                    zone.getX(),
-                    zone.getY(),
-                    zone.getXRadius(),
-                    zone.getYRadius(),
-                    0,
-                    0,
-                    Math.PI * 2
-                );
-                ctx.fill();
-                ctx.stroke();
-            }
-            ctx.globalAlpha = 1;
+            warning.zone.drawWarning(ctx);
         });
 
         //active damage zones
         this.game.getDamageZones().forEach(zone => {
-            if (!zone.getIsActive()) return;
-
-            const colour = zone.getColour();
-            ctx.globalAlpha = 0.4;
-            ctx.fillStyle = colour;
-            ctx.strokeStyle = colour;
-            ctx.lineWidth = 2;
-
-            if (zone.getShape() === 'square') {
-                ctx.fillRect(
-                    zone.getX() - zone.getWidth() / 2,
-                    zone.getY() - zone.getHeight() / 2,
-                    zone.getWidth(),
-                    zone.getHeight()
-                );
-                ctx.strokeRect(
-                    zone.getX() - zone.getWidth() / 2,
-                    zone.getY() - zone.getHeight() / 2,
-                    zone.getWidth(),
-                    zone.getHeight()
-                );
-            } else {
-                // Ellipse
-                ctx.beginPath();
-                ctx.ellipse(
-                    zone.getX(),
-                    zone.getY(),
-                    zone.getXRadius(),
-                    zone.getYRadius(),
-                    0,
-                    0,
-                    Math.PI * 2
-                );
-                ctx.fill();
-                ctx.stroke();
-            }
-            ctx.globalAlpha = 1;
+            zone.draw(ctx);
         });
 
         //bullets

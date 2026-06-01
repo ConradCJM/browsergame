@@ -162,10 +162,10 @@ export class Player {
 
             this.fireRate = 1;
 
-            this.hitIframesDuration = 3.5;
+            this.hitIframesDuration = 4;
 
-            this.Xspeed = 225;
-            this.Yspeed = 225;
+            this.Xspeed = 165;
+            this.Yspeed = 165;
             this.focusSpeed = 100;
 
             this.colour = '#ffffff4b';
@@ -408,9 +408,9 @@ export class Player {
         this.fireRate = 1 / 3;
         const colour = this.colour;
 
-        this.spawnDamageZone(2.5, 82, 0, -82, 0.05, 'ellipse', 10, colour, true);//30
-        this.queueDamageZone(now + 1 / 9, 2.5, 74, 4, -74, 0.05, 'ellipse', 5, colour, true);//15
-        this.queueDamageZone(now + 1 / 3 / 2, 2.5, 67, -4, -67, 0.05, 'ellipse', 5, colour, true);//15
+        this.spawnDamageZone(2.5, 82, 0, -82, 0.05, 'ellipse', 5, colour, true);//15
+        this.queueDamageZone(now + 1 / 9, 2.5, 74, 4, -74, 0.05, 'ellipse', 9, colour, true);//27
+        this.queueDamageZone(now + 1 / 3 / 2, 2.5, 67, -4, -67, 0.05, 'ellipse', 13, colour, true);//39
 
         return [];
 

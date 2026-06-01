@@ -248,8 +248,11 @@ export class Game {
     spawnDamageZone(zone: DamageZone, warningDuration: number = 0) {
         if (warningDuration > 0) {
             this.warningDamageZones.push({ zone, elapsedTime: 0, warningDuration });
+            this.queueDamageZone(zone, performance.now() / 1000 + warningDuration);
+            return;
         }
         this.damageZones.push(zone);
+        
     }
 
     queueDamageZone(zone: DamageZone, spawnTime: number, warningDuration?: number) {

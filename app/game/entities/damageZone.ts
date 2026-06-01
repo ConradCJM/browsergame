@@ -3,7 +3,7 @@
  * Damage zones persist for a fixed duration and can hit multiple entities.
  * They track which entities they've already damaged to prevent duplicate hits per zone lifetime.
  */
-import {Player} from "./player";
+import { Player } from "./player";
 export class DamageZone {
     private x: number;
     private y: number;
@@ -196,5 +196,82 @@ export class DamageZone {
 
     getIsActive(): boolean {
         return this.isActive;
+    }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+        if (!this.getIsActive()) return;
+
+        const colour = this.getColour();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = colour;
+        ctx.strokeStyle = colour;
+        ctx.lineWidth = 2;
+
+        if (this.getShape() === 'square') {
+            ctx.fillRect(
+                this.getX() - this.getWidth() / 2,
+                this.getY() - this.getHeight() / 2,
+                this.getWidth(),
+                this.getHeight()
+            );
+            ctx.strokeRect(
+                this.getX() - this.getWidth() / 2,
+                this.getY() - this.getHeight() / 2,
+                this.getWidth(),
+                this.getHeight()
+            );
+        } else {
+            // Ellipse
+            ctx.beginPath();
+            ctx.ellipse(
+                this.getX(),
+                this.getY(),
+                this.getXRadius(),
+                this.getYRadius(),
+                0,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+    }
+    drawWarning(ctx: CanvasRenderingContext2D): void {
+        const colour = this.getColour();
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = colour;
+        ctx.strokeStyle = colour;
+        ctx.lineWidth = 2;
+
+        if (this.getShape() === 'square') {
+            ctx.fillRect(
+                this.getX() - this.getWidth() / 2,
+                this.getY() - this.getHeight() / 2,
+                this.getWidth(),
+                this.getHeight()
+            );
+            ctx.strokeRect(
+                this.getX() - this.getWidth() / 2,
+                this.getY() - this.getHeight() / 2,
+                this.getWidth(),
+                this.getHeight()
+            );
+        } else {
+            // Ellipse
+            ctx.beginPath();
+            ctx.ellipse(
+                this.getX(),
+                this.getY(),
+                this.getXRadius(),
+                this.getYRadius(),
+                0,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
     }
 }
