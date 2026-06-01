@@ -11,7 +11,7 @@ export class CharacterSelectScreen implements Screen {
     private onMainMenu?: () => void;
 
     private currentCharacterIndex: number = 0;
-    private characters: PlayerCharacter[] = [PlayerCharacter.Archer, PlayerCharacter.Sentinel, PlayerCharacter.Mage];
+    private characters: PlayerCharacter[] = [PlayerCharacter.Archer, PlayerCharacter.Sentinel, PlayerCharacter.Mage, PlayerCharacter.Swordsman];
 
     //character stats (hard-coded)
     private characterStats: {
@@ -59,6 +59,17 @@ export class CharacterSelectScreen implements Screen {
                 maxHp: 3,
                 startingHp: 1,
                 abilities: 'Focus Warp: Unfocus to telport a short distance (1s CD)\nMagic Shots: bullets follow horizontal movement\nPower Reserve: Focus shot weakens with Hp\n     Unfocused shot strengthens with Hp'
+            },
+            [PlayerCharacter.Swordsman]: {
+                name: 'Swordsman',
+                description: 'A fast character with high focus damage but low range.',
+                focusedDps: 60,
+                unfocusedDps: 6,
+                baseSpeed: 225,
+                focusedSpeed: 100,
+                maxHp: 5,
+                startingHp: 2,
+                abilities: 'Sword Slash: Doesn\'t use projectiles\nAdaptation: Has a longer invincibility duration after getting hit',
             }
         };
 

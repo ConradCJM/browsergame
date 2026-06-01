@@ -35,4 +35,5 @@ export enum PlayerCharacter {
     Archer,
     Sentinel,
     Mage,
+    Swordsman,
 }

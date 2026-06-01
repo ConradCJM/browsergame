@@ -75,12 +75,27 @@ export class GameScreen implements Screen {
         this.game.spawnPendingPlayerBullets(now);
         this.game.spawnPendingEnemyBullets(now);
         this.game.spawnPendingEnemies(now);
+        this.game.spawnPendingDamageZones(now);
+
+        //update damage zones
+        this.game.getDamageZones().forEach(zone => zone.update(dt));
+        this.game.getWarningDamageZones().forEach(w => w.elapsedTime += dt);
+
+        //remove expired damage zones
+        const validDamageZones = this.game.getDamageZones().filter(zone => zone.getElapsed() < zone.getDuration());
+        this.game.getDamageZones().length = 0;
+        this.game.getDamageZones().push(...validDamageZones);
+
+        //remove expired warning zones
+        const validWarnings = this.game.getWarningDamageZones().filter(w => w.elapsedTime < w.warningDuration);
+        this.game.getWarningDamageZones().length = 0;
+        this.game.getWarningDamageZones().push(...validWarnings);
 
         //update level controller
         this.game.updateLevelController(dt);
 
         //collision checks
-        checkCollisions(player, this.game.getEnemies(), this.game.getPlayerBullets(), this.game.getEnemyBullets(), this.game.getShockwaves(), this.game.getHealItems());
+        checkCollisions(player, this.game.getEnemies(), this.game.getPlayerBullets(), this.game.getEnemyBullets(), this.game.getShockwaves(), this.game.getHealItems(), this.game.getDamageZones());
 
         //remove dead enemies and create shockwaves
         this.game.removeDeadEnemiesAndCreateShockwaves();
@@ -119,6 +134,86 @@ export class GameScreen implements Screen {
 
         //shockwaves
         this.game.getShockwaves().forEach(sw => sw.draw(ctx));
+
+        //damage zone warnings (semi-transparent preview)
+        this.game.getWarningDamageZones().forEach(warning => {
+            const zone = warning.zone;
+            ctx.globalAlpha = 0.3;
+            ctx.fillStyle = '#ffff00'; // Yellow for warning
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 2;
+
+            if (zone.getShape() === 'square') {
+                ctx.fillRect(
+                    zone.getX() - zone.getWidth() / 2,
+                    zone.getY() - zone.getHeight() / 2,
+                    zone.getWidth(),
+                    zone.getHeight()
+                );
+                ctx.strokeRect(
+                    zone.getX() - zone.getWidth() / 2,
+                    zone.getY() - zone.getHeight() / 2,
+                    zone.getWidth(),
+                    zone.getHeight()
+                );
+            } else {
+                // Ellipse
+                ctx.beginPath();
+                ctx.ellipse(
+                    zone.getX(),
+                    zone.getY(),
+                    zone.getXRadius(),
+                    zone.getYRadius(),
+                    0,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+        });
+
+        //active damage zones
+        this.game.getDamageZones().forEach(zone => {
+            if (!zone.getIsActive()) return;
+
+            const colour = zone.getColour();
+            ctx.globalAlpha = 0.4;
+            ctx.fillStyle = colour;
+            ctx.strokeStyle = colour;
+            ctx.lineWidth = 2;
+
+            if (zone.getShape() === 'square') {
+                ctx.fillRect(
+                    zone.getX() - zone.getWidth() / 2,
+                    zone.getY() - zone.getHeight() / 2,
+                    zone.getWidth(),
+                    zone.getHeight()
+                );
+                ctx.strokeRect(
+                    zone.getX() - zone.getWidth() / 2,
+                    zone.getY() - zone.getHeight() / 2,
+                    zone.getWidth(),
+                    zone.getHeight()
+                );
+            } else {
+                // Ellipse
+                ctx.beginPath();
+                ctx.ellipse(
+                    zone.getX(),
+                    zone.getY(),
+                    zone.getXRadius(),
+                    zone.getYRadius(),
+                    0,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+        });
 
         //bullets
         this.game.getPlayerBullets().forEach(b => b.draw(ctx));

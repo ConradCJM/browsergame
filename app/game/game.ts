@@ -9,6 +9,7 @@ import { PlayerHpDisplay } from '@/app/game/ui/hpBar';
 import { healItem } from '@/app/game/entities/healItem';
 import { Level } from '@/app/game/constants';
 import { WaveTimerBar } from '@/app/game/ui/waveTimerBar';
+import { DamageZone } from '@/app/game/entities/damageZone';
 
 //import screens
 import { Screen } from '@/app/game/screens/screenInterface';
@@ -41,6 +42,8 @@ export class Game {
     private waveTimerBar?: WaveTimerBar;
     private healItems: healItem[] = [];
     private shockwaves: Shockwave[] = [];
+    private damageZones: DamageZone[] = [];
+    private warningDamageZones: { zone: DamageZone; elapsedTime: number; warningDuration: number }[] = [];
 
     private pendingPlayerBullets: {
         spawnTime: number;
@@ -67,6 +70,12 @@ export class Game {
         bulletColour: string;
         bulletXGrowth: number;
         bulletYGrowth: number;
+    }[] = [];
+
+    private pendingDamageZones: {
+        spawnTime: number;
+        zone: DamageZone;
+        warningDuration?: number; // duration to show warning before zone activates
     }[] = [];
 
     private levelController: { update(dt: number): void, getWaveTimerPercent(): number } | null = null;
@@ -236,6 +245,35 @@ export class Game {
         this.pendingEnemyBullets.push(spec);
     }
 
+    spawnDamageZone(zone: DamageZone, warningDuration: number = 0) {
+        if (warningDuration > 0) {
+            this.warningDamageZones.push({ zone, elapsedTime: 0, warningDuration });
+        }
+        this.damageZones.push(zone);
+    }
+
+    queueDamageZone(zone: DamageZone, spawnTime: number, warningDuration?: number) {
+        this.pendingDamageZones.push({ spawnTime, zone, warningDuration });
+    }
+
+    spawnPendingDamageZones(now: number) {
+        this.pendingDamageZones = this.pendingDamageZones.filter(pending => {
+            if (now >= pending.spawnTime) {
+                this.spawnDamageZone(pending.zone, pending.warningDuration || 0);
+                return false; // remove from pending
+            }
+            return true;
+        });
+    }
+
+    getDamageZones() {
+        return this.damageZones;
+    }
+
+    getWarningDamageZones() {
+        return this.warningDamageZones;
+    }
+
     updateLevelController(dt: number) {
         if (this.levelController) {
             this.levelController.update(dt);
@@ -390,6 +428,9 @@ export class Game {
         this.healItems = [];
         this.shockwaves = [];
         this.pendingPlayerBullets = [];
+        this.damageZones = [];
+        this.warningDamageZones = [];
+        this.pendingDamageZones = [];
         this.player = null as any;
     }
 

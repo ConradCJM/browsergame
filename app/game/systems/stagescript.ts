@@ -3,6 +3,7 @@ import { EnemyType } from "@/app/game/constants";
 import { Level } from "@/app/game/constants";
 import { Player } from "@/app/game/entities/player";
 import { TutorialOverlay, TutorialMessage } from "@/app/game/ui/tutorialOverlay";
+import {PlayerCharacter} from "@/app/game/constants";
 
 interface LevelController {
     update(dt: number): void;
@@ -10,7 +11,8 @@ interface LevelController {
     getTutorialOverlay?(): TutorialOverlay;
 }
 //change this to test different characters in campaign levels without going through character select screen
-// const testCharacter = PlayerCharacter.Mage; 
+const testCharacter = PlayerCharacter.Swordsman;
+const testCharEnabled = false;
 
 export function createLevel(game: Game, level: Level): LevelController {
     game.resetGame();
@@ -19,7 +21,7 @@ export function createLevel(game: Game, level: Level): LevelController {
     let waveQueued: boolean[] = [];
     let waveTimer = 0;
     let maxWaveTime: number[] = [];
-    const selectedCharacter = game.getSelectedCharacter();
+    const selectedCharacter = testCharEnabled? testCharacter: game.getSelectedCharacter();
     let playerStats = {
         maxHp: 6,
         startHp: 2,

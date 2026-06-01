@@ -2,6 +2,7 @@ import { Shockwave } from './shockwave';
 import { Game } from '../game';
 import { drawPolygon, drawEllipse, drawHollowEllipse } from "@/app/game/utils/drawingUtils";
 import { PlayerCharacter } from "@/app/game/constants";
+import { DamageZone } from '@/app/game/entities/damageZone';
 export class Player {
     private hp = 3;
     private maxHp = 5;
@@ -153,6 +154,22 @@ export class Player {
 
             this.colour = '#ff00ff';
         }
+        else if (this.characterType === PlayerCharacter.Swordsman) {
+            this.focusTeleport = false;
+
+            this.maxHp = 4;
+            this.hp = 2;
+
+            this.fireRate = 1;
+
+            this.hitIframesDuration = 3.5;
+
+            this.Xspeed = 225;
+            this.Yspeed = 225;
+            this.focusSpeed = 100;
+
+            this.colour = '#ffffff4b';
+        }
 
         //override for set hp values (boss levels and tutorial)
         this.maxHp = maxHp ?? this.maxHp;
@@ -255,6 +272,8 @@ export class Player {
                     return this.getSentinelFocusedBulletPattern(now); //min: 28dps -> max: 31 dps
                 case PlayerCharacter.Mage:
                     return this.getMageFocusBulletPattern(now); //1hp 40 dps: -> 2hp: 33 dps -> 3hp: 23 dps
+                case PlayerCharacter.Swordsman:
+                    return this.getSwordsmanFocusedBulletPattern(now);
             }
 
         } else {
@@ -265,6 +284,8 @@ export class Player {
                     return this.getSentinelSpreadBulletPattern(now); // 12 dps (assuming all bullets hit)
                 case PlayerCharacter.Mage:
                     return this.getMageSpreadBulletPattern(now); ////1hp 7 dps: -> 2hp: 15 dps -> 3hp: 22 dps
+                case PlayerCharacter.Swordsman:
+                    return this.getSwordsmanSpreadBulletPattern(now);
             }
 
         }
@@ -275,7 +296,7 @@ export class Player {
     getArcherFocusedBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
         const bulletColour = 'rgba(103, 174, 255, 0.50)';
-        this.fireRate = this.hp === 1? 0.275: 0.2;
+        this.fireRate = this.hp === 1 ? 0.275 : 0.2;
         //arrow type shape
         //head point
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 600 });
@@ -286,7 +307,7 @@ export class Player {
 
         //last stand mechanic: more damage slightly slower firerate
         if (this.hp === 1) {
-            
+
             // increase damage by 3 
             bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 600 });
 
@@ -326,7 +347,7 @@ export class Player {
     getSentinelFocusedBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
         const bulletColour = 'rgba(82, 0, 189, 0.50)';
-        this.fireRate = 0.25 - (0.01 * (this.hp-1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
+        this.fireRate = 0.25 - (0.01 * (this.hp - 1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
 
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
         bullets.push({ spawnTime: now + 0.01, x: this.x + 2, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
@@ -344,7 +365,7 @@ export class Player {
     getSentinelSpreadBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
         const bulletColour = 'rgba(82, 0, 189, 0.50)';
-        this.fireRate = 0.25 - (0.01 * (this.hp-1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
+        this.fireRate = 0.25 - (0.01 * (this.hp - 1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
 
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: Math.sin(Math.PI / 6), dirY: -Math.cos(Math.PI / 6), speed: 700, xRadius: 3, yRadius: 3 });
@@ -356,9 +377,9 @@ export class Player {
 
     //mage bullet pattern
     getMageFocusBulletPattern(now: number) {
-        if (this.hp === 1) {this.fireRate = 0.025;}
-        if (this.hp === 2) {this.fireRate = 0.03;}
-        if (this.hp === 3) {this.fireRate = 0.043;}
+        if (this.hp === 1) { this.fireRate = 0.025; }
+        if (this.hp === 2) { this.fireRate = 0.03; }
+        if (this.hp === 3) { this.fireRate = 0.043; }
 
         this.game.spawnXFollowingPlayerBullet(this, this.x, this.y, 0, -1, 0, 1500, 5, 20, 'rgb(255, 0, 255, 0.5)');
 
@@ -382,8 +403,56 @@ export class Player {
         return [];
     }
 
+    //swordsman forcus melee attack pattern (no bullets, just damage zones)
+    getSwordsmanFocusedBulletPattern(now: number) {
+        this.fireRate = 1 / 3;
+        const colour = this.colour;
+
+        this.spawnDamageZone(2.5, 82, 0, -82, 0.05, 'ellipse', 10, colour, true);//30
+        this.queueDamageZone(now + 1 / 9, 2.5, 74, 4, -74, 0.05, 'ellipse', 5, colour, true);//15
+        this.queueDamageZone(now + 1 / 3 / 2, 2.5, 67, -4, -67, 0.05, 'ellipse', 5, colour, true);//15
+
+        return [];
+
+
+    }
+
+    //swordsman forcus melee attack pattern (no bullets, just damage zones)
+    getSwordsmanSpreadBulletPattern(now: number) {
+        this.fireRate = 1;
+        const colour = this.colour;
+        const damage: number[] = [6, 6, 6, 6, 6];
+        const yPosOffsets: number[] = [-25, -55, -100, -150, -200, -250];
+        const yRange: number[] = [10, 10, 10, 10, 10, 10, 10];
+        const xRange: number[] = [33, 50, 67, 84, 100, 117];
+
+        this.spawnDamageZone(xRange[0], yRange[0], 0, yPosOffsets[0], 0.1, 'ellipse', damage[0], colour, true);
+        this.queueDamageZone(now + 0.1, xRange[1], yRange[1], 0, yPosOffsets[1], 0.1, 'ellipse', damage[1], colour, true);
+        this.queueDamageZone(now + 0.2, xRange[2], yRange[2], 0, yPosOffsets[2], 0.1, 'ellipse', damage[2], colour, true);
+        this.queueDamageZone(now + 0.3, xRange[3], yRange[3], 0, yPosOffsets[3], 0.1, 'ellipse', damage[3], colour, true);
+        this.queueDamageZone(now + 0.4, xRange[4], yRange[4], 0, yPosOffsets[4], 0.1, 'ellipse', damage[4], colour, true);
+        this.queueDamageZone(now + 0.5, xRange[5], yRange[5], 0, yPosOffsets[5], 0.1, 'ellipse', damage[6], colour, true);
+        return [];
+
+
+    }
 
 
 
+    //spawn melee damage zone immediately
+    spawnDamageZone(width: number, height: number, xOffset: number, yOffset: number, duration: number, shape: 'square' | 'ellipse' = 'ellipse', damage: number = 1, colour: string = 'rgba(255, 0, 0, 0.5)', followPlayer: boolean = false) {
+        const zone = shape === 'square'
+            ? DamageZone.createSquare(this.x, this.y, xOffset, yOffset, width, height, duration, 'player', damage, colour, followPlayer, this)
+            : DamageZone.createEllipse(this.x, this.y, xOffset, yOffset, width, height, duration, 'player', damage, colour, followPlayer, this);
+        this.game.spawnDamageZone(zone);
+    }
+
+    //queue melee damage zone
+    queueDamageZone(spawnTime: number, width: number, height: number, xOffset: number, yOffset: number, duration: number, shape: 'square' | 'ellipse' = 'ellipse', damage: number = 1, colour: string = 'rgba(255, 0, 0, 0.5)', followPlayer: boolean = false) {
+        const zone = shape === 'square'
+            ? DamageZone.createSquare(this.x, this.y, xOffset, yOffset, width, height, duration, 'player', damage, colour, followPlayer, this)
+            : DamageZone.createEllipse(this.x, this.y, xOffset, yOffset, width, height, duration, 'player', damage, colour, followPlayer, this);
+        this.game.queueDamageZone(zone, spawnTime);
+    }
 
 }
