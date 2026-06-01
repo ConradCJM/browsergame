@@ -43,6 +43,7 @@ export class LevelSelectScreen implements Screen {
     this.buttons.push(
       new Button(startX+ spacing * 4, startY , buttonWidth, buttonHeight, 'Boss 2', 
         () => onLevelSelect?.(Level.BossLevel2),buttonColour,hoverColour,textColour, font));
+    
   }
 
   update(dt: number): void {}

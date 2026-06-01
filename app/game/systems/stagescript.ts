@@ -136,8 +136,8 @@ export function createLevel(game: Game, level: Level): LevelController {
         };
     }
     if (level === Level.BossLevel1) {
-        playerStats.maxHp = 1;
-        playerStats.startHp = 1;
+        playerStats.maxHp = 2; //boss has 1 stage and has rng 
+        playerStats.startHp = 2;
 
         game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,selectedCharacter, playerStats.maxHp, playerStats.startHp));
         game.addEnemyToQueue(200, 100, EnemyType.SentryBoss, 3, false);

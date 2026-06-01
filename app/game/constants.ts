@@ -4,6 +4,8 @@ export enum EnemyType {
     Basic,
     Fast,
     Tanky,
+    Chaser,
+    MiniChaser,
 
     //minibosses
     SentryMiniboss,
@@ -27,6 +29,7 @@ export enum Level {
     BossLevel1,
     CampaignLevel2,
     BossLevel2,
+    CampaignLevel3,
 
 }
 
