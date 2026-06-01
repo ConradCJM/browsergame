@@ -33,6 +33,8 @@ export class enemy {
     private bulletXGrowth = 0;
     private bulletYGrowth = 0;
 
+    private rotationAngle = 0;//for making boss rotate in 3d
+
     //reference to game for adding bullets
     private game: Game;
 
@@ -235,13 +237,13 @@ export class enemy {
             this.hp = 200;
             this.maxHp = 200;
 
-            this.attackRate = 17;
+            this.attackRate = 13;
 
             this.speed = 0;
 
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
-            this.attackTimer = this.attackRate / 2;
+            this.attackTimer = this.attackRate - 2;
         }
         else if (this.type === EnemyType.SpawnerBoss) {
             this.XRadius = 30;
@@ -382,6 +384,12 @@ export class enemy {
         //shortest rotation path
         const shortestAngle = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
         this.currentAimAngle += shortestAngle * this.aimRotationSpeed * dt;
+
+        
+
+        
+        
+        
     }
 
     updateAttack(dt: number) {
@@ -414,6 +422,7 @@ export class enemy {
     }
 
     updatePosition(dt: number) {
+        this.rotationAngle += Math.PI/180* 40 *dt; //rotate 20 degrees per second, just for some visual flair for bosses
 
         if (this.type === EnemyType.Basic) {
             this.speed = 50;
@@ -535,7 +544,7 @@ export class enemy {
         ) {
             this.enemyColour = '#ff00ff';
             if (this.type === EnemyType.SpawnerBoss) {
-                this.seondaryColour = '#ff00ff8a';
+                this.seondaryColour = '#ff00ff60';
             }
         }
 
@@ -567,7 +576,7 @@ export class enemy {
         }
         else if (this.type === EnemyType.SentryBoss) {
             const bossSecondaryColour = this.seondaryColour!;
-            drawIsometricPolygon(ctx, this.x, this.y, this.XRadius, this.enemyColour, bossSecondaryColour, 6, 0.87, 1.5);
+            drawIsometricPolygon(ctx, this.x, this.y, this.XRadius, this.enemyColour, bossSecondaryColour, 6, 0.9, 1.5, this.rotationAngle);
         }
         else if (this.type === EnemyType.SentryMiniboss) {
             drawPolygon(ctx, this.x, this.y, this.XRadius, 6, 0, this.enemyColour);
@@ -585,7 +594,7 @@ export class enemy {
                 bossPrimaryColour = '#8c00ffb0';
             }
             this.bulletColour = bossPrimaryColour;
-            drawIsometricEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, bossPrimaryColour, bossSecondaryColour, 1, 1);
+            drawIsometricEllipse(ctx, this.x, this.y, this.XRadius, this.YRadius, bossPrimaryColour, bossSecondaryColour, 1, 1,32, this.rotationAngle);
 
         }
         else if (this.type === EnemyType.TeleportingMiniboss) {
@@ -613,7 +622,8 @@ export class enemy {
         else if (this.type === EnemyType.SpawnerBoss) {
             const primaryColour = this.enemyColour;
             const secondaryColour = this.seondaryColour;
-            drawIsometricPolygon(ctx, this.x, this.y, this.XRadius, primaryColour, secondaryColour!, 3, 1, 1);
+            drawIsometricPolygon(ctx, this.x, this.y, this.XRadius, primaryColour, secondaryColour!, 3, 1, 1, this.rotationAngle);
+            drawIsometricPolygon(ctx, this.x, this.y, this.XRadius, primaryColour, secondaryColour!, 3, 1, 1, Math.PI / 3 + this.rotationAngle);
             
         }
         //add outline

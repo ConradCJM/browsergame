@@ -568,6 +568,21 @@ export function createLevel(game: Game, level: Level): LevelController {
                 return Math.min(waveTimer / maxWaveTime[currentWave], 1);
             }
         }
+
+    }
+    if (level === Level.BossLevel3) {
+        playerStats.maxHp = 4; // 3 stages with some rng elements so give player extra hp to compensate
+        playerStats.startHp = 4;
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, selectedCharacter, playerStats.maxHp, playerStats.startHp));
+        game.addEnemyToQueue(200, 100, EnemyType.SpawnerBoss, 1.5, false);
+
+        return {
+            update(dt: number) {
+                if (hasAllEnemiesDefeated()) {
+                    game.levelClear();
+                }
+            }, getWaveTimerPercent() { return 1; }
+        }
     }
 
     return { update() { }, getWaveTimerPercent() { return 0; } };

@@ -33,6 +33,7 @@ export enum Level {
     CampaignLevel2,
     BossLevel2,
     CampaignLevel3,
+    BossLevel3,
 
 }
 

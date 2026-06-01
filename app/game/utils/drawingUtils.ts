@@ -34,18 +34,25 @@ export function drawIsometricPolygon(
     secondaryColour: string,
     sides: number = 6,
     scaleX: number = 1,
-    scaleY: number = 1
+    scaleY: number = 1,
+    rotation: number = 0,
 ) {
     const isoX = (px: number, py: number, pz: number) => x + (px - py) * Math.cos(Math.PI / 6) * scaleX;
     const isoY = (px: number, py: number, pz: number) => y + (px + py) * Math.sin(Math.PI / 6) * scaleY - pz;
 
-    // Draw front face
+    const rotatedPoint = (angle: number) => {
+        const localAngle = angle + rotation;
+        return {
+            px: size * Math.cos(localAngle),
+            py: size * Math.sin(localAngle),
+        };
+    };
+
     ctx.fillStyle = secondaryColour;
     ctx.beginPath();
     for (let i = 0; i < sides; i++) {
         const angle = (i * 2 * Math.PI) / sides;
-        const px = size * Math.cos(angle);
-        const py = size * Math.sin(angle);
+        const { px, py } = rotatedPoint(angle);
         const x2 = isoX(px, py, 0);
         const y2 = isoY(px, py, 0);
         if (i === 0) ctx.moveTo(x2, y2);
@@ -57,14 +64,12 @@ export function drawIsometricPolygon(
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Draw top face
     ctx.fillStyle = primaryColour;
     const depth = size * 0.5;
     ctx.beginPath();
     for (let i = 0; i < sides; i++) {
         const angle = (i * 2 * Math.PI) / sides;
-        const px = size * Math.cos(angle);
-        const py = size * Math.sin(angle);
+        const { px, py } = rotatedPoint(angle);
         const x2 = isoX(px, py, depth);
         const y2 = isoY(px, py, depth);
         if (i === 0) ctx.moveTo(x2, y2);
@@ -114,20 +119,26 @@ export function drawIsometricEllipse(
     secondaryColour: string,
     scaleX: number = 1,
     scaleY: number = 1,
-    segments: number = 32
+    segments: number = 32,
+    rotation: number = 0
 ) {
     const isoX = (px: number, py: number, pz: number) => x + (px - py) * Math.cos(Math.PI / 6) * scaleX;
     const isoY = (px: number, py: number, pz: number) => y + (px + py) * Math.sin(Math.PI / 6) * scaleY - pz;
 
-    // Draw front face (secondary colour)
+    const rotatePoint = (px: number, py: number) => ({
+        x: px * Math.cos(rotation) - py * Math.sin(rotation),
+        y: px * Math.sin(rotation) + py * Math.cos(rotation),
+    });
+
     ctx.fillStyle = secondaryColour;
     ctx.beginPath();
     for (let i = 0; i <= segments; i++) {
         const angle = (i / segments) * Math.PI * 2;
         const px = radiusX * Math.cos(angle);
         const py = radiusY * Math.sin(angle);
-        const x2 = isoX(px, py, 0);
-        const y2 = isoY(px, py, 0);
+        const rotated = rotatePoint(px, py);
+        const x2 = isoX(rotated.x, rotated.y, 0);
+        const y2 = isoY(rotated.x, rotated.y, 0);
         if (i === 0) ctx.moveTo(x2, y2);
         else ctx.lineTo(x2, y2);
     }
@@ -137,7 +148,6 @@ export function drawIsometricEllipse(
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Draw top face (primary colour)
     ctx.fillStyle = primaryColour;
     const depth = Math.max(radiusX, radiusY) * 0.5;
     ctx.beginPath();
@@ -145,8 +155,9 @@ export function drawIsometricEllipse(
         const angle = (i / segments) * Math.PI * 2;
         const px = radiusX * Math.cos(angle);
         const py = radiusY * Math.sin(angle);
-        const x2 = isoX(px, py, depth);
-        const y2 = isoY(px, py, depth);
+        const rotated = rotatePoint(px, py);
+        const x2 = isoX(rotated.x, rotated.y, depth);
+        const y2 = isoY(rotated.x, rotated.y, depth);
         if (i === 0) ctx.moveTo(x2, y2);
         else ctx.lineTo(x2, y2);
     }

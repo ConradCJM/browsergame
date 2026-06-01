@@ -20,7 +20,7 @@ export class LevelSelectScreen implements Screen {
     const buttonHeight = 55;
     const startX = 12.5;
     const startY = 150;
-    const spacing = canvasWidth/buttonsPerRow;
+    const spacing = canvasWidth / buttonsPerRow;
     const buttonColour = '#004902';
     const hoverColour = '#00ff00a0';
     const textColour = '#ffffff';
@@ -28,27 +28,30 @@ export class LevelSelectScreen implements Screen {
 
     // Create buttons for each level
     this.buttons.push(
-      new Button(startX, startY, buttonWidth, buttonHeight, 'Tutorial', 
-        () => onLevelSelect?.(Level.Tutorial),buttonColour,hoverColour,textColour, font)
+      new Button(startX, startY, buttonWidth, buttonHeight, 'Tutorial',
+        () => onLevelSelect?.(Level.Tutorial), buttonColour, hoverColour, textColour, font)
     );
     this.buttons.push(
-      new Button(startX+ spacing, startY , buttonWidth, buttonHeight, 'Level 1', 
-        () => onLevelSelect?.(Level.CampaignLevel1),buttonColour,hoverColour,textColour, font));
+      new Button(startX + spacing, startY, buttonWidth, buttonHeight, 'Level 1',
+        () => onLevelSelect?.(Level.CampaignLevel1), buttonColour, hoverColour, textColour, font));
     this.buttons.push(
-      new Button(startX+ spacing * 2, startY , buttonWidth, buttonHeight, 'Boss 1', 
-        () => onLevelSelect?.(Level.BossLevel1),buttonColour,hoverColour,textColour, font));
+      new Button(startX + spacing * 2, startY, buttonWidth, buttonHeight, 'Boss 1',
+        () => onLevelSelect?.(Level.BossLevel1), buttonColour, hoverColour, textColour, font));
     this.buttons.push(
-      new Button(startX+ spacing * 3, startY , buttonWidth, buttonHeight, 'Level 2', 
-        () => onLevelSelect?.(Level.CampaignLevel2),buttonColour,hoverColour,textColour, font));
+      new Button(startX + spacing * 3, startY, buttonWidth, buttonHeight, 'Level 2',
+        () => onLevelSelect?.(Level.CampaignLevel2), buttonColour, hoverColour, textColour, font));
     this.buttons.push(
-      new Button(startX+ spacing * 4, startY , buttonWidth, buttonHeight, 'Boss 2', 
-        () => onLevelSelect?.(Level.BossLevel2),buttonColour,hoverColour,textColour, font));
+      new Button(startX + spacing * 4, startY, buttonWidth, buttonHeight, 'Boss 2',
+        () => onLevelSelect?.(Level.BossLevel2), buttonColour, hoverColour, textColour, font));
     this.buttons.push(
-      new Button(startX, startY + spacing, buttonWidth, buttonHeight, 'Level 3', 
-        () => onLevelSelect?.(Level.CampaignLevel3),buttonColour,hoverColour,textColour, font));
+      new Button(startX, startY + spacing, buttonWidth, buttonHeight, 'Level 3',
+        () => onLevelSelect?.(Level.CampaignLevel3), buttonColour, hoverColour, textColour, font));
+    this.buttons.push(
+      new Button(startX + spacing, startY + spacing, buttonWidth, buttonHeight, 'Boss 3',
+        () => onLevelSelect?.(Level.BossLevel3), buttonColour, hoverColour, textColour, font));
   }
 
-  update(dt: number): void {}
+  update(dt: number): void { }
 
   handleInput(input: Input): void {
     //M key to return to main menu
@@ -84,9 +87,9 @@ export class LevelSelectScreen implements Screen {
     this.buttons.forEach(button => button.draw(ctx));
 
     // Draw key bindings
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '26px fantasy';
-        ctx.textAlign = 'center';
-        ctx.fillText('M: Main Menu', ctx.canvas.width / 2, 565);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '26px fantasy';
+    ctx.textAlign = 'center';
+    ctx.fillText('M: Main Menu', ctx.canvas.width / 2, 565);
   }
 }

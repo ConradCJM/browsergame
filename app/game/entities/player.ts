@@ -379,7 +379,7 @@ export class Player {
     getMageFocusBulletPattern(now: number) {
         if (this.hp === 1) { this.fireRate = 0.025; }
         if (this.hp === 2) { this.fireRate = 0.03; }
-        if (this.hp === 3) { this.fireRate = 0.043; }
+        if (this.hp >= 3) { this.fireRate = 0.043; }
 
         this.game.spawnXFollowingPlayerBullet(this, this.x, this.y, 0, -1, 0, 1500, 5, 20, 'rgb(255, 0, 255, 0.5)');
 
