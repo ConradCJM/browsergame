@@ -3,7 +3,7 @@ import { EnemyType } from "@/app/game/constants";
 import { Level } from "@/app/game/constants";
 import { Player } from "@/app/game/entities/player";
 import { TutorialOverlay, TutorialMessage } from "@/app/game/ui/tutorialOverlay";
-import {PlayerCharacter} from "@/app/game/constants";
+import { PlayerCharacter } from "@/app/game/constants";
 
 interface LevelController {
     update(dt: number): void;
@@ -21,7 +21,7 @@ export function createLevel(game: Game, level: Level): LevelController {
     let waveQueued: boolean[] = [];
     let waveTimer = 0;
     let maxWaveTime: number[] = [];
-    const selectedCharacter = testCharEnabled? testCharacter: game.getSelectedCharacter();
+    const selectedCharacter = testCharEnabled ? testCharacter : game.getSelectedCharacter();
     let playerStats = {
         maxHp: 6,
         startHp: 2,
@@ -60,7 +60,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         maxWaveTime = TUTORIAL_WAVE_TIMES;
         waveQueued = [false, false, false, false];
 
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,selectedCharacter, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, selectedCharacter, playerStats.maxHp, playerStats.startHp));
 
         //create tutorial messages
         const tutorialMessages: TutorialMessage[] = [
@@ -139,7 +139,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         playerStats.maxHp = 2; //boss has 1 stage and has rng 
         playerStats.startHp = 2;
 
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,selectedCharacter, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, selectedCharacter, playerStats.maxHp, playerStats.startHp));
         game.addEnemyToQueue(200, 100, EnemyType.SentryBoss, 3, false);
 
         return {
@@ -245,7 +245,7 @@ export function createLevel(game: Game, level: Level): LevelController {
     if (level === Level.BossLevel2) {
         playerStats.maxHp = 3;
         playerStats.startHp = 3;
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,selectedCharacter, playerStats.maxHp, playerStats.startHp));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, selectedCharacter, playerStats.maxHp, playerStats.startHp));
         game.addEnemyToQueue(-300, 100, EnemyType.TeleportingBoss, 3, false);
         return {
             update(dt: number) {
@@ -262,7 +262,7 @@ export function createLevel(game: Game, level: Level): LevelController {
         waveTimer = 0;
         maxWaveTime = [0, 37, 24, 45, 0, 0, 0];
 
-        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY,selectedCharacter));
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, selectedCharacter));
 
 
 
@@ -321,7 +321,7 @@ export function createLevel(game: Game, level: Level): LevelController {
                     currentWave = 4;
                 }
                 else if (currentWave === 4 && !waveQueued[4] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
-                    
+
                     game.addEnemyToQueue(0, 75, EnemyType.Basic, 1, false);
                     game.addEnemyToQueue(0, 75, EnemyType.Basic, 3, false);
                     game.addEnemyToQueue(0, 75, EnemyType.Basic, 5, true);
@@ -372,6 +372,200 @@ export function createLevel(game: Game, level: Level): LevelController {
             }, getWaveTimerPercent() {
                 if (currentWave === 0 || maxWaveTime[currentWave - 1] === 0) return 1;
                 return Math.min(waveTimer / maxWaveTime[currentWave - 1], 1);
+            }
+        }
+    }
+    if (level === Level.CampaignLevel3) {
+        /*number of waves: 6
+
+        wave 0: introduce chasers
+        wave 1: introduce mini chasers
+        wave 2: mix of chasers and mini chasers & introduce trapper chaser
+        wave 3: spawn mini chasers on sides of screen + chasers at the top of the screen
+        wave 4: introduce spawner miniboss that spawns chaser types
+        wave 5: all types of chasers spawn + spawner miniboss
+        wave 6: boss wave
+
+        */
+        currentWave = 0;
+        waveQueued = [false, false, false, false, false, false, false];
+        waveTimer = 0;
+        maxWaveTime = [10, 10, 10, 0, 0, 0, 0];
+
+        game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, selectedCharacter));
+
+
+
+        return {
+            update(dt: number) {
+                waveTimer += dt;
+                if (currentWave === 0 && !waveQueued[0] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(0, -10, EnemyType.Chaser, 5, false);
+                    game.addEnemyToQueue(50, -10, EnemyType.Chaser, 4, false);
+                    game.addEnemyToQueue(100, -10, EnemyType.Chaser, 3, false);
+                    game.addEnemyToQueue(150, -10, EnemyType.Chaser, 2, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.Chaser, 1, true);
+                    game.addEnemyToQueue(250, -10, EnemyType.Chaser, 2, false);
+                    game.addEnemyToQueue(300, -10, EnemyType.Chaser, 3, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.Chaser, 4, false);
+                    game.addEnemyToQueue(400, -10, EnemyType.Chaser, 5, false);
+
+                    waveTimer = 0;
+                    waveQueued[0] = true;
+                    currentWave = 1;
+                }
+                else if (currentWave === 1 && !waveQueued[1] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(0, -10, EnemyType.MiniChaser, 3, false);
+                    game.addEnemyToQueue(50, -10, EnemyType.MiniChaser, 2.5, false);
+                    game.addEnemyToQueue(100, -10, EnemyType.MiniChaser, 2, false);
+                    game.addEnemyToQueue(150, -10, EnemyType.MiniChaser, 1.5, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.MiniChaser, 1, true);
+                    game.addEnemyToQueue(250, -10, EnemyType.MiniChaser, 1.5, false);
+                    game.addEnemyToQueue(300, -10, EnemyType.MiniChaser, 2, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.MiniChaser, 2.5, false);
+                    game.addEnemyToQueue(400, -10, EnemyType.MiniChaser, 3, false);
+                    waveTimer = 0;
+                    waveQueued[1] = true;
+                    currentWave = 2;
+                }
+                else if (currentWave === 2 && !waveQueued[2] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(0, -10, EnemyType.Chaser, 1, false);
+                    game.addEnemyToQueue(50, -10, EnemyType.Chaser, 5, false);
+                    game.addEnemyToQueue(100, -10, EnemyType.Chaser, 1.5, false);
+                    game.addEnemyToQueue(150, -10, EnemyType.Chaser, 1, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.Chaser, 4, true);
+                    game.addEnemyToQueue(250, -10, EnemyType.Chaser, 2, false);
+                    game.addEnemyToQueue(300, -10, EnemyType.Chaser, 2, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.Chaser, 6, false);
+                    game.addEnemyToQueue(400, -10, EnemyType.Chaser, 1, false);
+
+                    game.addEnemyToQueue(50, -10, EnemyType.MiniChaser, 1.5, false);
+                    game.addEnemyToQueue(150, -10, EnemyType.MiniChaser, 1, false);
+                    game.addEnemyToQueue(250, -10, EnemyType.MiniChaser, 1.5, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.MiniChaser, 2, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.MiniChaser, 5, false);
+                    game.addEnemyToQueue(50, -10, EnemyType.MiniChaser, 3, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.MiniChaser, 1, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.MiniChaser, 5, false);
+
+                    game.addEnemyToQueue(100, -10, EnemyType.TrapperChaser, 2, false);
+                    game.addEnemyToQueue(300, -10, EnemyType.TrapperChaser, 2, false);
+
+
+
+                    waveTimer = 0;
+                    waveQueued[2] = true;
+                    currentWave = 3;
+
+                }
+                else if (currentWave === 3 && !waveQueued[3] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(0, -10, EnemyType.Chaser, 5, false);
+                    game.addEnemyToQueue(50, -10, EnemyType.Chaser, 4, false);
+                    game.addEnemyToQueue(100, -10, EnemyType.Chaser, 3, false);
+                    game.addEnemyToQueue(150, -10, EnemyType.Chaser, 2, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.Chaser, 1, false);
+                    game.addEnemyToQueue(250, -10, EnemyType.Chaser, 2, false);
+                    game.addEnemyToQueue(300, -10, EnemyType.Chaser, 3, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.Chaser, 4, false);
+                    game.addEnemyToQueue(400, -10, EnemyType.Chaser, 5, false);
+
+                    game.addEnemyToQueue(0, -10, EnemyType.Chaser, 15, false);
+                    game.addEnemyToQueue(50, -10, EnemyType.Chaser, 14, false);
+                    game.addEnemyToQueue(100, -10, EnemyType.Chaser, 13, false);
+                    game.addEnemyToQueue(150, -10, EnemyType.Chaser, 12, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.Chaser, 11, false);
+                    game.addEnemyToQueue(250, -10, EnemyType.Chaser, 12, false);
+                    game.addEnemyToQueue(300, -10, EnemyType.Chaser, 13, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.Chaser, 14, false);
+                    game.addEnemyToQueue(400, -10, EnemyType.Chaser, 15, false);
+
+                    game.addEnemyToQueue(-10, 0, EnemyType.MiniChaser, 1, false);
+                    game.addEnemyToQueue(-10, 100, EnemyType.MiniChaser, 1.5, false);
+                    game.addEnemyToQueue(-10, 200, EnemyType.MiniChaser, 2, false);
+                    game.addEnemyToQueue(-10, 300, EnemyType.MiniChaser, 2.5, false);
+                    game.addEnemyToQueue(-10, 400, EnemyType.MiniChaser, 3, false);
+                    game.addEnemyToQueue(-10, 500, EnemyType.MiniChaser, 3.5, false);
+                    game.addEnemyToQueue(-10, 600, EnemyType.MiniChaser, 4, false);
+
+                    game.addEnemyToQueue(410, 0, EnemyType.MiniChaser, 1, false);
+                    game.addEnemyToQueue(410, 100, EnemyType.MiniChaser, 1.5, false);
+                    game.addEnemyToQueue(410, 200, EnemyType.MiniChaser, 2, false);
+                    game.addEnemyToQueue(410, 300, EnemyType.MiniChaser, 2.5, false);
+                    game.addEnemyToQueue(410, 400, EnemyType.MiniChaser, 3, false);
+                    game.addEnemyToQueue(410, 500, EnemyType.MiniChaser, 3.5, false);
+                    game.addEnemyToQueue(410, 600, EnemyType.MiniChaser, 4, false);
+
+                    waveTimer = 0;
+                    waveQueued[3] = true;
+                    currentWave = 4;
+                }
+                else if (currentWave === 4 && !waveQueued[4] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(200, 100, EnemyType.SpawnerMiniboss, 1, true);
+
+                    waveQueued[4] = true;
+                    currentWave = 5;
+                    waveTimer = 0;
+                }
+                else if (currentWave === 5 && !waveQueued[5] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(100, 50, EnemyType.SpawnerMiniboss, 1, true);
+                    game.addEnemyToQueue(200, 50, EnemyType.SpawnerMiniboss, 1, true);
+                    game.addEnemyToQueue(300, 50, EnemyType.SpawnerMiniboss, 1, true);
+
+                    game.addEnemyToQueue(0, -10, EnemyType.Chaser, 5, false);
+                    game.addEnemyToQueue(50, -10, EnemyType.Chaser, 3, false);
+                    game.addEnemyToQueue(100, -10, EnemyType.Chaser, 1, false);
+
+                    game.addEnemyToQueue(150, -10, EnemyType.Chaser, 5, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.Chaser, 3, false);
+                    game.addEnemyToQueue(250, -10, EnemyType.Chaser, 1, false);
+
+                    game.addEnemyToQueue(300, -10, EnemyType.Chaser, 5, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.Chaser, 3, false);
+                    game.addEnemyToQueue(400, -10, EnemyType.Chaser, 1, false);
+
+
+                    game.addEnemyToQueue(0, -10, EnemyType.MiniChaser, 1, false);
+                    game.addEnemyToQueue(50, -10, EnemyType.MiniChaser, 3, false);
+                    game.addEnemyToQueue(100, -10, EnemyType.MiniChaser, 5, false);
+
+                    game.addEnemyToQueue(150, -10, EnemyType.MiniChaser, 1, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.MiniChaser, 3, false);
+                    game.addEnemyToQueue(250, -10, EnemyType.MiniChaser, 5, false);
+
+                    game.addEnemyToQueue(300, -10, EnemyType.MiniChaser, 1, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.MiniChaser, 3, false);
+                    game.addEnemyToQueue(400, -10, EnemyType.MiniChaser, 5, false);
+
+
+                    game.addEnemyToQueue(0, -10, EnemyType.TrapperChaser, 7, false);
+                    game.addEnemyToQueue(50, -10, EnemyType.TrapperChaser, 7, false);
+                    game.addEnemyToQueue(100, -10, EnemyType.TrapperChaser, 7, false);
+
+                    game.addEnemyToQueue(150, -10, EnemyType.TrapperChaser, 9, false);
+                    game.addEnemyToQueue(200, -10, EnemyType.TrapperChaser, 9, false);
+                    game.addEnemyToQueue(250, -10, EnemyType.TrapperChaser, 9, false);
+
+                    game.addEnemyToQueue(300, -10, EnemyType.TrapperChaser, 11, false);
+                    game.addEnemyToQueue(350, -10, EnemyType.TrapperChaser, 11, false);
+                    game.addEnemyToQueue(400, -10, EnemyType.TrapperChaser, 11, false);
+
+                    waveQueued[5] = true;
+                    currentWave = 6;
+                    waveTimer = 0;
+                }
+                else if (currentWave === 6 && !waveQueued[6] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
+                    game.addEnemyToQueue(200, 100, EnemyType.SpawnerBoss, 3, false);
+
+                    waveQueued[6] = true;
+                    currentWave = 7;
+                    waveTimer = 0;
+                }
+                else if (currentWave === 7 && hasAllEnemiesDefeated()) {
+                    game.levelClear();
+                }
+            }, getWaveTimerPercent() {
+                if (maxWaveTime[currentWave] === 0) return 1;
+                return Math.min(waveTimer / maxWaveTime[currentWave], 1);
             }
         }
     }

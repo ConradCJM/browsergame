@@ -64,7 +64,7 @@ export class CharacterSelectScreen implements Screen {
                 name: 'Swordsman',
                 description: 'A character with high focus damage but low range.',
                 focusedDps: 81,
-                unfocusedDps: 6,
+                unfocusedDps: 3,
                 baseSpeed: 165,
                 focusedSpeed: 100,
                 maxHp: 5,

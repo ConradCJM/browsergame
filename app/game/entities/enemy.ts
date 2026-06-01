@@ -216,6 +216,68 @@ export class enemy {
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
         }
+        else if (this.type === EnemyType.TrapperChaser) {
+            this.XRadius = 15;
+            this.YRadius = 15;
+            this.hp = 50;
+            this.maxHp = 50;
+
+            this.attackRate = 7;
+
+            this.speed = 35;
+
+            this.maxPhase = 0;
+            this.maxPhaseTime = 0;
+        }
+        else if (this.type === EnemyType.SpawnerMiniboss) {
+            this.XRadius = 21;
+            this.YRadius = 21;
+            this.hp = 200;
+            this.maxHp = 200;
+
+            this.attackRate = 17;
+
+            this.speed = 0;
+
+            this.maxPhase=0;
+            this.maxPhaseTime=0;
+            this.attackTimer = this.attackRate/2; 
+        }
+        else if (this.type === EnemyType.SpawnerBoss) {
+            this.XRadius = 30;
+            this.YRadius = 30;
+            this.hp = 750;
+            this.maxHp = 750;
+
+            this.attackRate = 6; //dynamic and will change during each phase
+
+            this.speed = 0;
+
+            this.maxPhase=7; 
+            /*
+            Phase 0: spawns mini, regular, and trapper chasers 
+            Phase 1: spawns 2 spawner mini bosses
+            Phase 2: damage zone pattern 1
+            Phase 3: fires projectiles in a ring pattern
+            Phase 4: damage zone pattern 2
+            Phase 5: fires projectiles in a spiral pattern
+            Phase 6: damage zone pattern 3
+            Phase 7: fires projectiles aimed at player with an offset pattern
+            */
+            this.maxPhaseTime=0;// this is dynamic and will change during each phase
+
+            this.attackTimer = this.attackRate/2; 
+
+            this.bossPhase = 0;
+            this.maxBossPhase = 2;
+            /*
+            Phase 0: Regular attacks 
+            Phase 1: Full heal but looses 9.5% of max hp every second
+                Spawns a bunch of damage zones and boss spawns a of chaser types
+            Phase 2: Boss stops spawning and justs focuses on complex patterns using damage zones and projectiles
+            */
+
+        }
 
         if (this.maxBossPhase >= 0) {
             this.bossHealthBar = new BossHealthBar(50, 12, 300, 8, this.hp, this.maxHp);
@@ -414,12 +476,22 @@ export class enemy {
             // TestDummy stays in one position (static)
             // No movement
         }
-        else if (this.type === EnemyType.Chaser || this.type === EnemyType.MiniChaser) {
+        else if (this.type === EnemyType.Chaser || this.type === EnemyType.MiniChaser || this.type === EnemyType.TrapperChaser) {
             const player = this.game.getPlayer();
             if (!player) return;
             const targetX = player.getX();
             const targetY = player.getY();
             this.moveToDirect(targetX, targetY, this.speed, dt);
+        }
+        else if (this.type === EnemyType.SpawnerMiniboss) {
+            //stationary, no movement
+            this.speed = 10;
+            this.y += Math.sin(this.timeAlive) * this.speed * dt;
+        }
+        else if (this.type === EnemyType.SpawnerBoss) {
+            //stationary, no movement
+            this.speed = 10;
+            this.y += Math.sin(this.timeAlive) * this.speed * dt;
         }
     }
 
@@ -444,9 +516,10 @@ export class enemy {
         else if (this.type === EnemyType.TestDummy) {
             this.enemyColour = '#ffffff';
         }
-        else if (this.type === EnemyType.Chaser) {
+        else if (this.type === EnemyType.TrapperChaser ||this.type === EnemyType.Chaser || this.type === EnemyType.MiniChaser || this.type === EnemyType.SpawnerMiniboss) {
             this.enemyColour = '#ff00ff';
         }
+        
 
 
         if (this.bossHealthBar) {
@@ -510,6 +583,13 @@ export class enemy {
         }
         else if (this.type === EnemyType.Chaser || this.type=== EnemyType.MiniChaser) {
             drawPolygon(ctx, this.x, this.y, this.XRadius, 3,this.currentAimAngle, this.enemyColour);
+        }
+        else if (this.type === EnemyType.TrapperChaser){
+            drawPolygon(ctx, this.x, this.y, this.XRadius, 5, this.currentAimAngle, this.enemyColour);
+        }
+        else if (this.type === EnemyType.SpawnerMiniboss){
+            drawPolygon(ctx,this.x,this.y,this.XRadius,3,Math.PI/2,this.enemyColour);
+            drawPolygon(ctx,this.x,this.y,this.XRadius,3,-Math.PI/2,this.enemyColour);
         }
         //add outline
         ctx.strokeStyle = '#ffffff';
@@ -938,13 +1018,23 @@ export class enemy {
                 delay: 0
             });
         }
-        else if (this.type === EnemyType.Chaser) {
+        else if (this.type === EnemyType.TrapperChaser) {
             //spawns damage zones on the chaser to create a damaging aura around its current position that lingers to force player to be careful of their movement
-            //cross shape
             //horizontal
-            this.spawnDamageZoneAttack(80, 10, 3, 'ellipse', 1, 1, '#ff00ff80');
-            //vertical
-            this.spawnDamageZoneAttack(10, 80, 3, 'ellipse', 1, 1, '#ff00ff80');
+            this.spawnDamageZoneAttack(55, 55, 10, 'ellipse', 1, 1, '#ff00ff80');
+            
+        }
+        else if (this.type === EnemyType.SpawnerMiniboss) {
+            //spawns 2 chasers and 4 mini chasers & 1 trapper chaser
+
+            this.game.addEnemyToQueue(this.x+this.XRadius, this.y-2.5, EnemyType.MiniChaser, 1, false);
+            this.game.addEnemyToQueue(this.x-this.XRadius, this.y-2.5, EnemyType.MiniChaser, 1, false);
+            this.game.addEnemyToQueue(this.x-this.XRadius*2, this.y, EnemyType.MiniChaser, 1, false);
+            this.game.addEnemyToQueue(this.x+this.XRadius*2, this.y, EnemyType.MiniChaser, 1, false);
+            this.game.addEnemyToQueue(this.x+this.XRadius/2, this.y-5, EnemyType.Chaser, 1, false);
+            this.game.addEnemyToQueue(this.x-this.XRadius/2, this.y-5, EnemyType.Chaser, 1, false);
+            this.game.addEnemyToQueue(this.x, this.y, EnemyType.TrapperChaser, 1, false);
+            
         }
         specs.forEach(spec => {
             this.game.queueEnemyBullet({
@@ -962,6 +1052,7 @@ export class enemy {
                 bulletYGrowth: spec.bulletYGrowth ?? this.bulletYGrowth
             });
         });
+        
     }
 
     //queue damage zone

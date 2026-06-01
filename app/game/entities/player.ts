@@ -421,7 +421,7 @@ export class Player {
     getSwordsmanSpreadBulletPattern(now: number) {
         this.fireRate = 1;
         const colour = this.colour;
-        const damage: number[] = [6, 6, 6, 6, 6];
+        const damage: number[] = [3, 3, 3, 3, 3];
         const yPosOffsets: number[] = [-25, -55, -100, -150, -200, -250];
         const yRange: number[] = [10, 10, 10, 10, 10, 10, 10];
         const xRange: number[] = [33, 50, 67, 84, 100, 117];

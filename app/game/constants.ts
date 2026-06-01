@@ -6,14 +6,17 @@ export enum EnemyType {
     Tanky,
     Chaser,
     MiniChaser,
+    TrapperChaser,
 
     //minibosses
     SentryMiniboss,
     TeleportingMiniboss,
+    SpawnerMiniboss,
 
     //bosses
     SentryBoss,
     TeleportingBoss,
+    SpawnerBoss,
 
     //test/debug
     TestDummy,
