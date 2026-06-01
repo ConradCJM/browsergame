@@ -3,6 +3,7 @@ import { Game } from '@/app/game/game';
 import { aimedSpreadToDirection, aimedSpreadToPlayer, spiralPattern, ringPattern } from '@/app/game/patterns';
 import { BossHealthBar } from '@/app/game/ui/hpBar';
 import { drawIsometricEllipse, drawIsometricPolygon, drawPolygon, drawEllipse } from '@/app/game/utils/drawingUtils';
+import { DamageZone } from '@/app/game/entities/damageZone';
 export class enemy {
     private hp: number;
     private maxHp: number;
@@ -227,6 +228,10 @@ export class enemy {
 
     getHp() {
         return this.hp;
+    }
+
+    getIsInvincible(): boolean {
+        return this.isInvincible;
     }
 
     isDead(): boolean {
@@ -871,7 +876,7 @@ export class enemy {
             }
         }
         else if (this.type === EnemyType.TestDummy) {
-            // TestDummy shoots straight down at regular intervals
+            //testDummy shoots straight down at regular intervals
             this.attackRate = 0.5;
             specs.push({
                 dirX: 0,
@@ -895,5 +900,38 @@ export class enemy {
                 bulletYGrowth: spec.bulletYGrowth ?? this.bulletYGrowth
             });
         });
+    }
+
+    //queue damage zone
+    queueDamageZoneAttack(
+        spawnTime: number,
+        width: number,
+        height: number,
+        duration: number,
+        shape: 'square' | 'ellipse' = 'ellipse',
+        warningDuration: number = 0.5,
+        damage: number = 1
+    ) {
+        const zone = shape === 'square'
+            ? DamageZone.createSquare(this.x, this.y,0,0, width, height, duration, 'enemy', damage)
+            : DamageZone.createEllipse(this.x, this.y,0,0, width / 2, height / 2, duration, 'enemy', damage);
+        
+        this.game.queueDamageZone(zone, spawnTime, warningDuration);
+    }
+
+    //spawn damage zone no queue
+    spawnDamageZoneAttack(
+        width: number,
+        height: number,
+        duration: number,
+        shape: 'square' | 'ellipse' = 'ellipse',
+        warningDuration: number = 0.5,
+        damage: number = 1
+    ) {
+        const zone = shape === 'square'
+            ? DamageZone.createSquare(this.x, this.y,0,0, width, height, duration, 'enemy', damage)
+            : DamageZone.createEllipse(this.x, this.y,0,0, width / 2, height / 2, duration, 'enemy', damage);
+        
+        this.game.spawnDamageZone(zone, warningDuration);
     }
 }
