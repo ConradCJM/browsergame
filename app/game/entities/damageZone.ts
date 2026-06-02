@@ -32,6 +32,7 @@ export class DamageZone {
         width: number,
         height: number,
         duration: number,
+        warningDuration: number,
         shape: 'square' | 'ellipse',
         ownerType: 'player' | 'enemy',
         damage: number = 1,
@@ -48,6 +49,7 @@ export class DamageZone {
         this.xRadius = width / 2;
         this.yRadius = height / 2;
         this.duration = duration;
+        this.elapsed = -warningDuration; // start with negative elapsed to represent warning phase
         this.shape = shape;
         this.ownerType = ownerType;
         this.damage = damage;
@@ -66,13 +68,14 @@ export class DamageZone {
         width: number,
         height: number,
         duration: number,
+        warningDuration: number,
         ownerType: 'player' | 'enemy',
         damage?: number,
         colour: string = 'rgba(255, 0, 0, 0.5)',
         followPlayer: boolean = false,
         player?: any
     ): DamageZone {
-        return new DamageZone(x, y, xOffset, yOffset, width, height, duration, 'square', ownerType, damage, colour, followPlayer, player);
+        return new DamageZone(x, y, xOffset, yOffset, width, height, duration,warningDuration, 'square', ownerType, damage, colour, followPlayer, player);
     }
 
 
@@ -85,13 +88,14 @@ export class DamageZone {
         xRadius: number,
         yRadius: number,
         duration: number,
+        warningDuration: number,
         ownerType: 'player' | 'enemy',
         damage?: number,
         colour: string = 'rgba(255, 0, 0, 0.5)',
         followPlayer: boolean = false,
         player?: any
     ): DamageZone {
-        const zone = new DamageZone(x, y, xOffset, yOffset, xRadius * 2, yRadius * 2, duration, 'ellipse', ownerType, damage, colour, followPlayer, player);
+        const zone = new DamageZone(x, y, xOffset, yOffset, xRadius * 2, yRadius * 2, duration,warningDuration, 'ellipse', ownerType, damage, colour, followPlayer, player);
         zone.xRadius = xRadius;
         zone.yRadius = yRadius;
         return zone;
@@ -117,6 +121,15 @@ export class DamageZone {
 
     hasAlreadyDamagedEntity(entity: any): boolean {
         return this.damagedEntities.has(entity);
+    }
+
+    resetElapsed(): void {
+        this.elapsed = 0;
+        this.isActive = true;
+    }
+
+    isWarningCircle(): boolean {
+        return this.elapsed < 0;
     }
 
 
@@ -195,26 +208,20 @@ export class DamageZone {
     }
 
     getIsActive(): boolean {
-        return this.isActive;
+        
+        return this.elapsed >= 0 && this.isActive;
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
-        if (!this.getIsActive()) return;
 
         const colour = this.getColour();
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = this.isWarningCircle()? 0.2:1;
         ctx.fillStyle = colour;
         ctx.strokeStyle = colour;
         ctx.lineWidth = 2;
 
         if (this.getShape() === 'square') {
             ctx.fillRect(
-                this.getX() - this.getWidth() / 2,
-                this.getY() - this.getHeight() / 2,
-                this.getWidth(),
-                this.getHeight()
-            );
-            ctx.strokeRect(
                 this.getX() - this.getWidth() / 2,
                 this.getY() - this.getHeight() / 2,
                 this.getWidth(),
@@ -233,44 +240,7 @@ export class DamageZone {
                 Math.PI * 2
             );
             ctx.fill();
-            ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
-    }
-    drawWarning(ctx: CanvasRenderingContext2D): void {
-        const colour = this.getColour();
-        ctx.globalAlpha = 0.2;
-        ctx.fillStyle = colour;
-        ctx.strokeStyle = colour;
-        ctx.lineWidth = 2;
-
-        if (this.getShape() === 'square') {
-            ctx.fillRect(
-                this.getX() - this.getWidth() / 2,
-                this.getY() - this.getHeight() / 2,
-                this.getWidth(),
-                this.getHeight()
-            );
-            ctx.strokeRect(
-                this.getX() - this.getWidth() / 2,
-                this.getY() - this.getHeight() / 2,
-                this.getWidth(),
-                this.getHeight()
-            );
-        } else {
-            // Ellipse
-            ctx.beginPath();
-            ctx.ellipse(
-                this.getX(),
-                this.getY(),
-                this.getXRadius(),
-                this.getYRadius(),
-                0,
-                0,
-                Math.PI * 2
-            );
-            ctx.fill();
-            ctx.stroke();
+            
         }
         ctx.globalAlpha = 1;
     }

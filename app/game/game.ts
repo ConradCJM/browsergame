@@ -43,7 +43,6 @@ export class Game {
     private healItems: healItem[] = [];
     private shockwaves: Shockwave[] = [];
     private damageZones: DamageZone[] = [];
-    private warningDamageZones: { zone: DamageZone; elapsedTime: number; warningDuration: number }[] = [];
 
     private pendingPlayerBullets: {
         spawnTime: number;
@@ -245,24 +244,19 @@ export class Game {
         this.pendingEnemyBullets.push(spec);
     }
 
-    spawnDamageZone(zone: DamageZone, warningDuration: number = 0) {
-        if (warningDuration > 0) {
-            this.warningDamageZones.push({ zone, elapsedTime: 0, warningDuration });
-            this.queueDamageZone(zone, performance.now() / 1000 + warningDuration);
-            return;
-        }
+    spawnDamageZone(zone: DamageZone) {
         this.damageZones.push(zone);
         
     }
 
-    queueDamageZone(zone: DamageZone, spawnTime: number, warningDuration?: number) {
-        this.pendingDamageZones.push({ spawnTime, zone, warningDuration });
+    queueDamageZone(zone: DamageZone, spawnTime: number) {
+        this.pendingDamageZones.push({ spawnTime, zone,});
     }
 
     spawnPendingDamageZones(now: number) {
         this.pendingDamageZones = this.pendingDamageZones.filter(pending => {
             if (now >= pending.spawnTime) {
-                this.spawnDamageZone(pending.zone, pending.warningDuration || 0);
+                this.damageZones.push(pending.zone);
                 return false; // remove from pending
             }
             return true;
@@ -271,10 +265,6 @@ export class Game {
 
     getDamageZones() {
         return this.damageZones;
-    }
-
-    getWarningDamageZones() {
-        return this.warningDamageZones;
     }
 
     updateLevelController(dt: number) {
@@ -432,7 +422,6 @@ export class Game {
         this.shockwaves = [];
         this.pendingPlayerBullets = [];
         this.damageZones = [];
-        this.warningDamageZones = [];
         this.pendingDamageZones = [];
         this.player = null as any;
     }

@@ -163,10 +163,10 @@ export function checkCollisions(
         if (zone.getOwnerType() === 'enemy' && player.isInvincible() && player.getHp() > 0) return;
         
         // Check collision with player
-        if (!zone.hasAlreadyDamagedEntity(player) && isCollidingWithDamageZone(player.getX(), player.getY(), player.getHitboxRadius(), player.getHitboxRadius(), zone)) {
+        if (isCollidingWithDamageZone(player.getX(), player.getY(), player.getHitboxRadius(), player.getHitboxRadius(), zone)) {
             if (zone.getOwnerType() === 'player') return; // Player zones don't hit the player
             player.takeDamage(zone.getDamage());
-            zone.markEntityAsDamaged(player);
+            
         }
     });
 

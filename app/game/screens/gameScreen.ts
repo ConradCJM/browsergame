@@ -79,17 +79,12 @@ export class GameScreen implements Screen {
 
         //update damage zones
         this.game.getDamageZones().forEach(zone => zone.update(dt));
-        this.game.getWarningDamageZones().forEach(w => w.elapsedTime += dt);
 
         //remove expired damage zones
         const validDamageZones = this.game.getDamageZones().filter(zone => zone.getElapsed() < zone.getDuration());
         this.game.getDamageZones().length = 0;
         this.game.getDamageZones().push(...validDamageZones);
 
-        //remove expired warning zones
-        const validWarnings = this.game.getWarningDamageZones().filter(w => w.elapsedTime < w.warningDuration);
-        this.game.getWarningDamageZones().length = 0;
-        this.game.getWarningDamageZones().push(...validWarnings);
 
         //update level controller
         this.game.updateLevelController(dt);
@@ -134,11 +129,6 @@ export class GameScreen implements Screen {
 
         //shockwaves
         this.game.getShockwaves().forEach(sw => sw.draw(ctx));
-
-        //damage zone warnings (semi-transparent preview)
-        this.game.getWarningDamageZones().forEach(warning => {
-            warning.zone.drawWarning(ctx);
-        });
 
         //active damage zones
         this.game.getDamageZones().forEach(zone => {
