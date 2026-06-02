@@ -508,8 +508,8 @@ export function createLevel(game: Game, level: Level): LevelController {
                 }
                 else if (currentWave === 5 && !waveQueued[5] && (hasAllEnemiesDefeated() || waveTimeExceeded())) {
                     game.addEnemyToQueue(100, 50, EnemyType.SpawnerMiniboss, 1, true);
-                    game.addEnemyToQueue(200, 50, EnemyType.SpawnerMiniboss, 1, true);
-                    game.addEnemyToQueue(300, 50, EnemyType.SpawnerMiniboss, 1, true);
+                    game.addEnemyToQueue(200, 50, EnemyType.SpawnerMiniboss, 7, true);
+                    game.addEnemyToQueue(300, 50, EnemyType.SpawnerMiniboss, 14, true);
 
                     game.addEnemyToQueue(0, -10, EnemyType.Chaser, 5, false);
                     game.addEnemyToQueue(50, -10, EnemyType.Chaser, 3, false);
