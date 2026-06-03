@@ -1102,7 +1102,6 @@ export class enemy {
                 this.game.addEnemyToQueue(-10, 0, EnemyType.MiniChaser, 1, false);
                 this.game.addEnemyToQueue(-10, 200, EnemyType.MiniChaser, 2, false);
                 this.game.addEnemyToQueue(-10, 400, EnemyType.MiniChaser, 3, false);
-                this.game.addEnemyToQueue(-10, 600, EnemyType.MiniChaser, 4, false);
 
                 this.game.addEnemyToQueue(410, 100, EnemyType.MiniChaser, 1.5, false);
                 this.game.addEnemyToQueue(410, 300, EnemyType.MiniChaser, 2.5, false);
@@ -1113,7 +1112,7 @@ export class enemy {
                 this.game.addEnemyToQueue(200, -10, EnemyType.Chaser, 2, false);
 
 
-                this.game.addEnemyToQueue(200, -10, EnemyType.TrapperChaser, 2.5, false);
+                
                 this.game.addEnemyToQueue(-10, 300, EnemyType.TrapperChaser, 3, false);
                 this.game.addEnemyToQueue(410, 300, EnemyType.TrapperChaser, 3, false);
             }
