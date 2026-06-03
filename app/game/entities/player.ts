@@ -228,7 +228,7 @@ export class Player {
         const barWidth = this.game.getTimerBarWidth();
         const playerHpBarHeight = this.game.getPlayerHpBarHeight();
         this.x = Math.max(barWidth + (this.hitboxRadius / 2), Math.min(this.x, canvasWidth - barWidth - (this.hitboxRadius / 2)));
-        this.y = Math.max((this.hitboxRadius / 2), Math.min(this.y, canvasHeight - playerHpBarHeight - 3 - (this.hitboxRadius / 2)));
+        this.y = Math.max((this.hitboxRadius / 2), Math.min(this.y, canvasHeight  - (playerHpBarHeight/2) - (this.hitboxRadius / 2)));
 
         //shockwave effect
         this.shockwaves = this.shockwaves.filter(sw => sw.update(dt));
@@ -408,9 +408,9 @@ export class Player {
         this.fireRate = 1 / 3;
         const colour = this.colour;
 
-        this.spawnDamageZone(2.5, 82, 0, -82, 0.05, 'ellipse', 5, colour, true);//15
-        this.queueDamageZone(now + 1 / 9, 2.5, 74, 4, -74, 0.05, 'ellipse', 9, colour, true);//27
-        this.queueDamageZone(now + 1 / 3 / 2, 2.5, 67, -4, -67, 0.05, 'ellipse', 13, colour, true);//39
+        this.spawnDamageZone(2.5, 82, 0, -82, 0.05,0.01, 'ellipse', 5, colour, true);//15
+        this.queueDamageZone(now + 1 / 9, 2.5, 74, 4, -74, 0.05,0.01, 'ellipse', 9, colour, true);//27
+        this.queueDamageZone(now + 1 / 3 / 2, 2.5, 67, -4, -67, 0.05,0.01, 'ellipse', 13, colour, true);//39
 
         return [];
 
@@ -426,12 +426,12 @@ export class Player {
         const yRange: number[] = [10, 10, 10, 10, 10, 10, 10];
         const xRange: number[] = [33, 50, 67, 84, 100, 117];
 
-        this.spawnDamageZone(xRange[0], yRange[0], 0, yPosOffsets[0], 0.1, 'ellipse', damage[0], colour, true);
-        this.queueDamageZone(now + 0.1, xRange[1], yRange[1], 0, yPosOffsets[1], 0.1, 'ellipse', damage[1], colour, true);
-        this.queueDamageZone(now + 0.2, xRange[2], yRange[2], 0, yPosOffsets[2], 0.1, 'ellipse', damage[2], colour, true);
-        this.queueDamageZone(now + 0.3, xRange[3], yRange[3], 0, yPosOffsets[3], 0.1, 'ellipse', damage[3], colour, true);
-        this.queueDamageZone(now + 0.4, xRange[4], yRange[4], 0, yPosOffsets[4], 0.1, 'ellipse', damage[4], colour, true);
-        this.queueDamageZone(now + 0.5, xRange[5], yRange[5], 0, yPosOffsets[5], 0.1, 'ellipse', damage[6], colour, true);
+        this.spawnDamageZone(xRange[0], yRange[0], 0, yPosOffsets[0], 0.1,0.1, 'ellipse', damage[0], colour, true);
+        this.queueDamageZone(now + 0.1, xRange[1], yRange[1], 0, yPosOffsets[1], 0.1,0.1, 'ellipse', damage[1], colour, true);
+        this.queueDamageZone(now + 0.2, xRange[2], yRange[2], 0, yPosOffsets[2], 0.1,0.1, 'ellipse', damage[2], colour, true);
+        this.queueDamageZone(now + 0.3, xRange[3], yRange[3], 0, yPosOffsets[3], 0.1,0.1, 'ellipse', damage[3], colour, true);
+        this.queueDamageZone(now + 0.4, xRange[4], yRange[4], 0, yPosOffsets[4], 0.1,0.1, 'ellipse', damage[4], colour, true);
+        this.queueDamageZone(now + 0.5, xRange[5], yRange[5], 0, yPosOffsets[5], 0.1,0.1, 'ellipse', damage[6], colour, true);
         return [];
 
 
@@ -440,18 +440,18 @@ export class Player {
 
 
     //spawn melee damage zone immediately
-    spawnDamageZone(width: number, height: number, xOffset: number, yOffset: number, duration: number, shape: 'square' | 'ellipse' = 'ellipse', damage: number = 1, colour: string = 'rgba(255, 0, 0, 0.5)', followPlayer: boolean = false) {
+    spawnDamageZone(width: number, height: number, xOffset: number, yOffset: number, duration: number,warningDuration:number, shape: 'square' | 'ellipse' = 'ellipse', damage: number = 1, colour: string = 'rgba(255, 0, 0, 0.5)', followPlayer: boolean = false) {
         const zone = shape === 'square'
-            ? DamageZone.createSquare(this.x, this.y, xOffset, yOffset, width, height, duration, 'player', damage, colour, followPlayer, this)
-            : DamageZone.createEllipse(this.x, this.y, xOffset, yOffset, width, height, duration, 'player', damage, colour, followPlayer, this);
+            ? DamageZone.createSquare(this.x, this.y, xOffset, yOffset, width, height, duration,warningDuration, 'player', damage, colour, followPlayer, this)
+            : DamageZone.createEllipse(this.x, this.y, xOffset, yOffset, width, height, duration,warningDuration, 'player', damage, colour, followPlayer, this);
         this.game.spawnDamageZone(zone);
     }
 
     //queue melee damage zone
-    queueDamageZone(spawnTime: number, width: number, height: number, xOffset: number, yOffset: number, duration: number, shape: 'square' | 'ellipse' = 'ellipse', damage: number = 1, colour: string = 'rgba(255, 0, 0, 0.5)', followPlayer: boolean = false) {
+    queueDamageZone(spawnTime: number, width: number, height: number, xOffset: number, yOffset: number, duration: number,warningDuration:number, shape: 'square' | 'ellipse' = 'ellipse', damage: number = 1, colour: string = 'rgba(255, 0, 0, 0.5)', followPlayer: boolean = false) {
         const zone = shape === 'square'
-            ? DamageZone.createSquare(this.x, this.y, xOffset, yOffset, width, height, duration, 'player', damage, colour, followPlayer, this)
-            : DamageZone.createEllipse(this.x, this.y, xOffset, yOffset, width, height, duration, 'player', damage, colour, followPlayer, this);
+            ? DamageZone.createSquare(this.x, this.y, xOffset, yOffset, width, height, duration,warningDuration, 'player', damage, colour, followPlayer, this)
+            : DamageZone.createEllipse(this.x, this.y, xOffset, yOffset, width, height, duration,warningDuration, 'player', damage, colour, followPlayer, this);
         this.game.queueDamageZone(zone, spawnTime);
     }
 

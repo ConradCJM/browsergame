@@ -215,7 +215,7 @@ export class DamageZone {
     draw(ctx: CanvasRenderingContext2D): void {
 
         const colour = this.getColour();
-        ctx.globalAlpha = this.isWarningCircle()? 0.2:1;
+        ctx.globalAlpha = this.isWarningCircle()? 0.45:1;
         ctx.fillStyle = colour;
         ctx.strokeStyle = colour;
         ctx.lineWidth = 2;

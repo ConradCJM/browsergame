@@ -364,6 +364,9 @@ export class Game {
             return true;
         });
     }
+    spawnEnemyBullet(bullet: enemyBullet) {
+        this.enemyBullets.push(bullet);
+    }
 
     spawnPendingEnemyBullets(now: number) {
         this.pendingEnemyBullets = this.pendingEnemyBullets.filter(pending => {

@@ -4,6 +4,7 @@ import { aimedSpreadToDirection, aimedSpreadToPlayer, spiralPattern, ringPattern
 import { BossHealthBar } from '@/app/game/ui/hpBar';
 import { drawIsometricEllipse, drawIsometricPolygon, drawPolygon, drawEllipse } from '@/app/game/utils/drawingUtils';
 import { DamageZone } from '@/app/game/entities/damageZone';
+import { momentumChangingEnemyBullet } from '@/app/game/entities/enemyBullets';
 export class enemy {
     private hp: number;
     private maxHp: number;
@@ -204,6 +205,7 @@ export class enemy {
 
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
+            this.hpDrain = this.maxHp / 30;// enemy dies in 30 seconds if player doesnt attack
         }
         else if (this.type === EnemyType.MiniChaser) {
             this.XRadius = 4;
@@ -217,6 +219,7 @@ export class enemy {
 
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
+            this.hpDrain = this.maxHp / 20;// enemy dies in 20 seconds if player doesnt attack
         }
         else if (this.type === EnemyType.TrapperChaser) {
             this.XRadius = 15;
@@ -230,6 +233,7 @@ export class enemy {
 
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
+            this.hpDrain = this.maxHp / 49;// enemy dies in 49 seconds if player doesnt attack
         }
         else if (this.type === EnemyType.SpawnerMiniboss) {
             this.XRadius = 21;
@@ -258,7 +262,7 @@ export class enemy {
 
             this.speed = 0;
 
-            this.phase = 2;
+            this.phase = 0;
             this.maxPhase = 7;
             /*
             Phase 0: spawns mini, regular, and trapper chasers 
@@ -1105,11 +1109,9 @@ export class enemy {
                 this.game.addEnemyToQueue(100, -10, EnemyType.Chaser, 1, false);
                 this.game.addEnemyToQueue(300, -10, EnemyType.Chaser, 1, false);
                 this.game.addEnemyToQueue(200, -10, EnemyType.Chaser, 2, false);
-                this.game.addEnemyToQueue(300, 610, EnemyType.Chaser, 3, false);
-                this.game.addEnemyToQueue(100, 610, EnemyType.Chaser, 3, false);
+
 
                 this.game.addEnemyToQueue(200, -10, EnemyType.TrapperChaser, 2.5, false);
-                this.game.addEnemyToQueue(200, 610, EnemyType.TrapperChaser, 2.5, false);
                 this.game.addEnemyToQueue(-10, 300, EnemyType.TrapperChaser, 3, false);
                 this.game.addEnemyToQueue(410, 300, EnemyType.TrapperChaser, 3, false);
             }
@@ -1127,20 +1129,132 @@ export class enemy {
                 this.maxPhaseTime = 10;
                 this.attackTimer = 0;
                 this.attackRate = 10;
+                this.phaseCoolDown = 10;
 
-                this.spawnDamageZoneAt(200, 300, 20, 600, 20, 'square', 3, 1, '#ff00ff80');
-                this.spawnDamageZoneAt(200, 300, 400, 20, 20, 'square', 3, 1, '#ff00ff80');
-                
-                const maxCircles = 100; 
+
+                this.spawnDamageZoneAt(100, 300, 100, 10, 25, 'square', 3, 1, '#ff00ff80');
+                this.spawnDamageZoneAt(300, 300, 100, 10, 25, 'square', 3, 1, '#ff00ff80');
+                this.spawnDamageZoneAt(200, 150, 10, 200, 25, 'square', 3, 1, '#ff00ff80');
+                this.spawnDamageZoneAt(200, 450, 10, 200, 25, 'square', 3, 1, '#ff00ff80');
+                this.spawnDamageZoneAt(200, 300, 40, 10, 25, 'square', 3, 1, '#ff00ff80');
+                this.spawnDamageZoneAt(200, 300, 10, 40, 25, 'square', 3, 1, '#ff00ff80');
+
+                this.spawnDamageZoneAt(200, 300, 400, 10, 3, 'square', 3, 1, '#ff00ff80');
+                this.spawnDamageZoneAt(200, 300, 10, 600, 3, 'square', 3, 1, '#ff00ff80');
+
+                const maxCircles = this.bossPhase > 0 ? 100 : 50;
 
                 for (let i = 0; i < maxCircles; i++) {
-                    const delay = i * 0.05 + 3; //delay each circle spawn to create a wave effect
-                    this.queueDamageZoneAt(Math.random() * 400, Math.random() * 600,now + delay, 20, 20,1, 'ellipse',1, 1, '#ff00ff80');
+                    const delay = i * 0.25 + 3; //delay each circle spawn to create a wave effect
+                    const size = Math.random() * 15 + 15; //random size for each circle
+                    const warningDuration = 3;
+                    this.queueDamageZoneAt(Math.random() * 400, Math.random() * 600, now + delay, size, size, 0.1, 'ellipse', warningDuration, 1, '#ff00ff80');
                     // this.spawnDamageZoneAt(Math.random() * 400, Math.random() * 600, 20, 20,1, 'ellipse', delay, 1, '#ff00ff80');
                 }
             }
-            // Phase 3: fires projectiles in a ring pattern
-            // Phase 4: damage zone pattern 2
+            // Phase 3: fires falling projectiles and ring pattern
+            if (this.phase === 3) {
+                this.maxPhaseTime = 11.5;
+                this.attackRate = 1.5;
+                this.phaseCoolDown = 15;
+
+
+                //momentum changing bullets
+                const bullets: momentumChangingEnemyBullet[] = [];
+                const delayVariation = Math.random() / 3; //random variation to delay to make it less uniform
+                const delay = 0.3;
+                const newDx = 0;
+                const newDy = 1;
+                for (let i = 1; i <= 12; i++) {
+                    bullets.push(new momentumChangingEnemyBullet(this.x, this.y, 1, 0, 55, 200, [{ time: delay * i + delayVariation, newDx, newDy }], 3, 20, '#ff00ff'));
+                    bullets.push(new momentumChangingEnemyBullet(this.x, this.y, -1, 0, 55, 200, [{ time: delay * i + delayVariation, newDx, newDy }], 3, 20, '#ff00ff'));
+                }
+
+                for (const momentumBullet of bullets) {
+                    this.game.spawnEnemyBullet(momentumBullet);
+                }
+
+                //ring pattern
+                const burstCount = 1;
+                const burstInterval = 0.1;
+                const spreadAngle = Math.PI / 16;
+                const angleOffset = [0]; //offset each burst to create a denser pattern
+                const startAngle = Math.random() * Math.PI * 2; //randomize start angle each time to make it less predictable
+
+                specs = ringPattern(burstCount, burstInterval, spreadAngle, angleOffset, startAngle);
+
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 50;
+                    spec.bulletYSpeed = 50;
+                    spec.bulletXRadius = 35;
+                    spec.bulletYRadius = 35;
+                    spec.bulletColour = '#ff00ff7a';
+                    spec.bulletXGrowth = -0.0625;
+                    spec.bulletYGrowth = -0.0625;
+                });
+
+            }
+            // Phase 4: damage zone pattern 2 + more bullets
+            if (this.phase === 4) {
+                this.maxPhaseTime = 15;
+                this.attackRate = 15;
+
+
+                //force player move to left side of screen
+                const zoneWidth = 30;
+                const zoneHeight = 600;
+                const duration = 5;
+                const warningDuration = 3;
+                const shape = 'square';
+                const damage = 1;
+                const colour = '#ff00ffa4';
+                const delay = 0.2;
+
+                //left to right
+                for (let i = 0; i < 330 / zoneWidth; i += 1) {
+                    this.queueDamageZoneAt(i * zoneWidth, 300, now + i * delay, zoneWidth, zoneHeight, duration - i * delay, shape, warningDuration, damage, colour);
+                }
+
+                const waitingTime = 9;
+
+                //right to left
+                for (let i = 0; i < 330 / zoneWidth; i += 1) {
+                    this.queueDamageZoneAt(400 - i * zoneWidth, 300, now + i * delay + waitingTime, zoneWidth, zoneHeight, duration - i * delay, shape, warningDuration, damage, colour);
+                }
+                const zoneWidth2 = 400;
+                const zoneHeight2 = 20;
+
+                //up to middle
+                for (let i = 0; i < 260 / zoneHeight2; i += 1) {
+                    this.queueDamageZoneAt(200, i * zoneHeight2, now + i * delay + waitingTime * 2, zoneWidth2, zoneHeight2, duration - i * delay, shape, warningDuration, damage, colour);
+                }
+
+                //bottom to middle
+                for (let i = 0; i < 260 / zoneHeight2; i += 1) {
+                    this.queueDamageZoneAt(200,600 - i * zoneHeight2, now + i * delay + waitingTime * 2, zoneWidth2, zoneHeight2, duration - i * delay, shape, warningDuration, damage, colour);
+                }
+
+
+                //ring pattern
+                const burstCount = 10;
+                const burstInterval = 3;
+                const spreadAngle = Math.PI / 16;
+                const angleOffset = Math.random;
+                const startAngle = Math.random() * Math.PI * 2; //randomize start angle each time to make it less predictable
+
+                specs = ringPattern(burstCount, burstInterval, spreadAngle, angleOffset, startAngle);
+
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 50;
+                    spec.bulletYSpeed = 50;
+                    spec.bulletXRadius = 35;
+                    spec.bulletYRadius = 35;
+                    spec.bulletColour = '#ff00ff7a';
+                    spec.bulletXGrowth = -0.0625;
+                    spec.bulletYGrowth = -0.0625;
+                });
+
+            }
             // Phase 5: fires projectiles in a spiral pattern
             // Phase 6: damage zone pattern 3
             // Phase 7: fires projectiles aimed at player with an offset pattern
@@ -1176,8 +1290,8 @@ export class enemy {
         colour: string = '#ff000080',
     ) {
         const zone = shape === 'square'
-            ? DamageZone.createSquare(x, y, 0, 0, width, height, duration,warningDuration, 'enemy', damage, colour)
-            : DamageZone.createEllipse(x, y, 0, 0, width / 2, height / 2, duration,warningDuration, 'enemy', damage, colour);
+            ? DamageZone.createSquare(x, y, 0, 0, width, height, duration, warningDuration, 'enemy', damage, colour)
+            : DamageZone.createEllipse(x, y, 0, 0, width / 2, height / 2, duration, warningDuration, 'enemy', damage, colour);
 
         this.game.spawnDamageZone(zone);
     }
@@ -1195,8 +1309,8 @@ export class enemy {
         colour: string = 'rgba(255, 0, 255, 0.5)',
     ) {
         const zone = shape === 'square'
-            ? DamageZone.createSquare(x, y, 0, 0, width, height, duration,warningDuration, 'enemy', damage, colour)
-            : DamageZone.createEllipse(x, y, 0, 0, width / 2, height / 2, duration,warningDuration, 'enemy', damage, colour);
+            ? DamageZone.createSquare(x, y, 0, 0, width, height, duration, warningDuration, 'enemy', damage, colour)
+            : DamageZone.createEllipse(x, y, 0, 0, width / 2, height / 2, duration, warningDuration, 'enemy', damage, colour);
 
         this.game.queueDamageZone(zone, spawnTime);
     }
@@ -1212,8 +1326,8 @@ export class enemy {
         colour: string = 'rgba(255, 0, 255, 0.5)',
     ) {
         const zone = shape === 'square'
-            ? DamageZone.createSquare(this.x, this.y, 0, 0, width, height, duration,warningDuration, 'enemy', damage, colour)
-            : DamageZone.createEllipse(this.x, this.y, 0, 0, width / 2, height / 2, duration,warningDuration, 'enemy', damage, colour);
+            ? DamageZone.createSquare(this.x, this.y, 0, 0, width, height, duration, warningDuration, 'enemy', damage, colour)
+            : DamageZone.createEllipse(this.x, this.y, 0, 0, width / 2, height / 2, duration, warningDuration, 'enemy', damage, colour);
 
         this.game.queueDamageZone(zone, spawnTime);
     }
@@ -1229,8 +1343,8 @@ export class enemy {
         colour: string = '#ff000080',
     ) {
         const zone = shape === 'square'
-            ? DamageZone.createSquare(this.x, this.y, 0, 0, width, height, duration,warningDuration, 'enemy', damage, colour)
-            : DamageZone.createEllipse(this.x, this.y, 0, 0, width / 2, height / 2, duration,warningDuration, 'enemy', damage, colour);
+            ? DamageZone.createSquare(this.x, this.y, 0, 0, width, height, duration, warningDuration, 'enemy', damage, colour)
+            : DamageZone.createEllipse(this.x, this.y, 0, 0, width / 2, height / 2, duration, warningDuration, 'enemy', damage, colour);
 
         this.game.spawnDamageZone(zone);
     }

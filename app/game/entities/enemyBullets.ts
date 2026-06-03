@@ -45,8 +45,31 @@ export class enemyBullet {
     getX() {
         return this.x;
     }
+    setX(x: number) {
+        this.x = x;
+    }
+    setY(y: number) {
+        this.y = y;
+    }
     getY() {
         return this.y;
+    }
+    getVx() {
+        return this.vx;
+    }
+    getVy() {
+        return this.vy;
+    }
+    setVx(vx: number) {
+        this.vx = vx;
+    }
+    setVy(vy: number) {
+        this.vy = vy;
+    }
+    setDirection(directionX: number, directionY: number) {
+        const length = Math.sqrt(directionX ** 2 + directionY ** 2);
+        this.vx = (directionX / length) * this.Xspeed;
+        this.vy = (directionY / length) * this.Yspeed;
     }
     getXRadius() {
         return this.Xradius;
@@ -78,4 +101,43 @@ export class enemyBullet {
             (this.y - this.Yradius > canvasHeight);
     }
 
+}//placeholder for now
+export class redirectingEnemyBullet extends enemyBullet {}
+
+//placeholder for now
+export class homingEnemyBullet extends enemyBullet {}
+
+
+export class momentumChangingEnemyBullet extends enemyBullet {
+    private changes: { time: number, newDx: number, newDy: number }[];
+    private timer: number = 0;
+
+    constructor(startX: number,
+        startY: number,
+        directionX: number,
+        directionY: number,
+        Xspeed: number,
+        YSpeed: number,
+        changes: { time: number, newDx: number, newDy: number }[],
+        Xradius?: number,
+        Yradius?: number,
+        colour?: string,
+        bulletXGrowth?: number,
+        bulletYGrowth?: number,
+        rotation?: number,
+    ) {
+        super(startX, startY, directionX, directionY, Xspeed, YSpeed, Xradius, Yradius, colour, bulletXGrowth, bulletYGrowth, rotation);
+        this.changes = changes;
+    }
+
+    update(dt: number) {
+        super.update(dt);
+        this.timer += dt;
+
+        //check if it's time to change momentum
+        while (this.changes.length > 0 && this.timer >= this.changes[0].time) {
+            const change = this.changes.shift()!;
+            this.setDirection(change.newDx, change.newDy);
+        }
+    }
 }
