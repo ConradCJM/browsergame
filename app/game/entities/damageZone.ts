@@ -217,7 +217,7 @@ export class DamageZone {
         const colour = this.getColour();
         ctx.globalAlpha = this.isWarningCircle()? 0.45:1;
         ctx.fillStyle = colour;
-        ctx.strokeStyle = colour;
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
 
         if (this.getShape() === 'square') {
@@ -227,6 +227,13 @@ export class DamageZone {
                 this.getWidth(),
                 this.getHeight()
             );
+            ctx.strokeRect(
+                this.getX() - this.getWidth() / 2,
+                this.getY() - this.getHeight() / 2,
+                this.getWidth(),
+                this.getHeight()
+            );
+            ctx.stroke();
         } else {
             // Ellipse
             ctx.beginPath();
@@ -242,6 +249,7 @@ export class DamageZone {
             ctx.fill();
             
         }
+        ctx.stroke();
         ctx.globalAlpha = 1;
     }
 }

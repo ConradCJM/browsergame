@@ -241,16 +241,16 @@ export class enemy {
             this.hp = 200;
             this.maxHp = 200;
 
-            this.attackRate = 13;
+            this.attackRate = 17;
 
             this.speed = 10;
 
             this.maxPhase = 4;
             this.maxPhaseTime = 7;
             this.phaseTimer = 0;
-            this.attackTimer = this.attackRate - 2;
+            this.attackTimer = this.attackRate;
 
-            this.hpDrain = this.maxHp / 67;
+            this.hpDrain = this.maxHp / 24;// enemy dies in 24 seconds if player doesnt attack
         }
         else if (this.type === EnemyType.SpawnerBoss) {
             this.XRadius = 30;
@@ -262,7 +262,6 @@ export class enemy {
 
             this.speed = 0;
 
-            this.phase = 0;
             this.maxPhase = 7;
             /*
             Phase 0: spawns mini, regular, and trapper chasers 
@@ -1077,6 +1076,8 @@ export class enemy {
         }
         else if (this.type === EnemyType.SpawnerMiniboss) {
             //spawns 2 chasers and 4 mini chasers & 1 trapper chaser
+            this.phaseCoolDown = this.attackTimer;
+            this.hp = Math.ceil(this.hp / 2); //halve hp to make it more manageable since its spawning more enemies
 
             this.game.addEnemyToQueue(this.x + this.XRadius, this.y - 2.5, EnemyType.MiniChaser, 1, false);
             this.game.addEnemyToQueue(this.x - this.XRadius, this.y - 2.5, EnemyType.MiniChaser, 1, false);
@@ -1198,6 +1199,7 @@ export class enemy {
             if (this.phase === 4) {
                 this.maxPhaseTime = 15;
                 this.attackRate = 15;
+                this.phaseCoolDown = 20;
 
 
                 //force player move to left side of screen
@@ -1223,15 +1225,16 @@ export class enemy {
                 }
                 const zoneWidth2 = 400;
                 const zoneHeight2 = 20;
+                const duration2 = 20;
 
                 //up to middle
                 for (let i = 0; i < 260 / zoneHeight2; i += 1) {
-                    this.queueDamageZoneAt(200, i * zoneHeight2, now + i * delay + waitingTime * 2, zoneWidth2, zoneHeight2, duration - i * delay, shape, warningDuration, damage, colour);
+                    this.queueDamageZoneAt(200, i * zoneHeight2, now + i * delay + waitingTime * 2, zoneWidth2, zoneHeight2, duration2 - i * delay, shape, warningDuration, damage, colour);
                 }
 
                 //bottom to middle
                 for (let i = 0; i < 260 / zoneHeight2; i += 1) {
-                    this.queueDamageZoneAt(200,600 - i * zoneHeight2, now + i * delay + waitingTime * 2, zoneWidth2, zoneHeight2, duration - i * delay, shape, warningDuration, damage, colour);
+                    this.queueDamageZoneAt(200,600 - i * zoneHeight2, now + i * delay + waitingTime * 2, zoneWidth2, zoneHeight2, duration2 - i * delay, shape, warningDuration, damage, colour);
                 }
 
 
@@ -1255,9 +1258,95 @@ export class enemy {
                 });
 
             }
-            // Phase 5: fires projectiles in a spiral pattern
-            // Phase 6: damage zone pattern 3
-            // Phase 7: fires projectiles aimed at player with an offset pattern
+            // Phase 5: fires projectiles in a spiral pattern + falling projectiles
+            if (this.phase === 5) {
+                this.attackRate = 3;
+                this.maxPhaseTime = 15;
+                this.phaseCoolDown = 20;
+                
+                const burstCount = 1;
+                const burstInterval = 0.25;
+                const bulletCount = 36;
+                const bulletInterval = 0.05;
+                const spreadAngle = Math.PI / 24;
+                const angleOffset = 0;
+                const startAngle = Math.random() * Math.PI * 2; //randomize start angle each time to make it less predictable
+                const clockwise = true;
+
+                specs = spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, angleOffset, startAngle, clockwise);
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, angleOffset, startAngle + Math.PI/2, clockwise));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, angleOffset, startAngle + Math.PI, clockwise));
+                specs.push(...spiralPattern(burstCount, burstInterval, bulletCount, bulletInterval, spreadAngle, angleOffset, startAngle - Math.PI/2, clockwise));
+
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 75;
+                    spec.bulletYSpeed = 75;
+                    spec.bulletXRadius = 3;
+                    spec.bulletYRadius = 10;
+                    spec.bulletColour = '#ff00ff7a';
+                });
+
+                //momentum changing bullets
+                const bullets: momentumChangingEnemyBullet[] = [];
+                const delayVariation = Math.random() / 3; //random variation to delay to make it less uniform
+                const delay = 0.3;
+                const newDx = 0;
+                const newDy = 1;
+                for (let i = 1; i <= 12; i++) {
+                    bullets.push(new momentumChangingEnemyBullet(this.x, this.y, 1, 0, 55, 200, [{ time: delay * i + delayVariation, newDx, newDy }], 3, 20, '#ff00ff'));
+                    bullets.push(new momentumChangingEnemyBullet(this.x, this.y, -1, 0, 55, 200, [{ time: delay * i + delayVariation, newDx, newDy }], 3, 20, '#ff00ff'));
+                }
+
+                for (const momentumBullet of bullets) {
+                    this.game.spawnEnemyBullet(momentumBullet);
+                }
+            }
+            // Phase 6: damage zone pattern 3 
+            if (this.phase === 6) {
+                this.maxPhaseTime = 10;
+                this.attackRate = 2;
+                this.phaseCoolDown = 25;
+
+                const zoneWidth = 40;
+                const zoneHeight = 600;
+                const duration = 0.5;
+                const warningDuration = 2;
+                const delay = 1;
+
+                for (let i = 0; i < 400 / zoneWidth; i += 2) {
+                    this.spawnDamageZoneAt(i * zoneWidth + 20, 300, zoneWidth, zoneHeight, duration, 'square', warningDuration, 1, '#ff00ff80');
+                    this.queueDamageZoneAt(i * zoneWidth + 60, 300, now + delay, zoneWidth, zoneHeight, duration, 'square', warningDuration, 1, '#ff00ff80');
+                }
+
+
+            }
+            // Phase 7: fires projectiles aimed at player with an offset pattern + do damage zone pattern
+            if (this.phase === 7) {
+                this.attackRate = 1.5;
+                this.maxPhaseTime = 15;
+                this.phaseCoolDown = 30;
+                
+                specs = aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!,2,0.5, Math.ceil(Math.random()*6+6), Math.PI / 18, this.aimOffset);
+
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 125;
+                    spec.bulletYSpeed = 125;
+                    spec.bulletXRadius = 15;
+                    spec.bulletYRadius = 15;
+                    spec.bulletColour = '#ff00ff7a';
+                });
+
+                const zoneWidth = 400;
+                const zoneHeight = 20;
+                const duration = 0.05;
+                const warningDuration = 1.425;
+                const delay = 0.025;
+                const yOffset = Math.random() * 40;
+                const zoneSpread = 25;
+                for (let i = 0; i < 600 / zoneHeight; i += 2) {
+                    this.queueDamageZoneAt(200, i * zoneSpread + yOffset, now + delay + i * delay, zoneWidth, zoneHeight, duration, 'square', warningDuration, 1, '#ff00ff80');
+                }
+            }    
 
         }
         specs.forEach(spec => {
