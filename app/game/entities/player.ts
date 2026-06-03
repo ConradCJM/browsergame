@@ -162,7 +162,7 @@ export class Player {
 
             this.fireRate = 1;
 
-            this.hitIframesDuration = 4;
+            this.hitIframesDuration = 3;
 
             this.Xspeed = 165;
             this.Yspeed = 165;
@@ -346,7 +346,7 @@ export class Player {
     //sentinel bullet patterns
     getSentinelFocusedBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
-        const bulletColour = 'rgba(82, 0, 189, 0.50)';
+        const bulletColour = 'rgba(82, 0, 189, 0.8)';
         this.fireRate = 0.25 - (0.01 * (this.hp - 1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
 
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
@@ -364,7 +364,7 @@ export class Player {
     //sentinel bullet patterns
     getSentinelSpreadBulletPattern(now: number) {
         const bullets: { spawnTime: number; x: number; y: number; dirX?: number; dirY?: number, speed?: number, xRadius?: number, yRadius?: number, colour?: string }[] = [];
-        const bulletColour = 'rgba(82, 0, 189, 0.50)';
+        const bulletColour = 'rgba(82, 0, 189, 0.8)';
         this.fireRate = 0.25 - (0.01 * (this.hp - 1)); //overscaling wont be an issue since boss fights will probably not have more than the sentinel's max hp of 6
 
         bullets.push({ spawnTime: now, x: this.x, y: this.y, dirX: 0, dirY: -1, speed: 700, xRadius: 3, yRadius: 3 });
@@ -409,8 +409,8 @@ export class Player {
         const colour = this.colour;
 
         this.spawnDamageZone(2.5, 82, 0, -82, 0.05,0.01, 'ellipse', 5, colour, true);//15
-        this.queueDamageZone(now + 1 / 9, 2.5, 74, 4, -74, 0.05,0.01, 'ellipse', 9, colour, true);//27
-        this.queueDamageZone(now + 1 / 3 / 2, 2.5, 67, -4, -67, 0.05,0.01, 'ellipse', 13, colour, true);//39
+        this.queueDamageZone(now + 1 / 9, 2.5, 54, 4, -54, 0.05,0.01, 'ellipse', 7, colour, true);//21 + 15 = 36
+        this.queueDamageZone(now + 1 / 3 / 2, 2.5, 37, -4, -37, 0.05,0.01, 'ellipse', 11, colour, true);//33 + 36 = 69
 
         return [];
 
@@ -421,7 +421,7 @@ export class Player {
     getSwordsmanSpreadBulletPattern(now: number) {
         this.fireRate = 1;
         const colour = this.colour;
-        const damage: number[] = [3, 3, 3, 3, 3];
+        const damage: number[] = [10, 5, 5, 6, 8];
         const yPosOffsets: number[] = [-25, -55, -100, -150, -200, -250];
         const yRange: number[] = [10, 10, 10, 10, 10, 10, 10];
         const xRange: number[] = [33, 50, 67, 84, 100, 117];

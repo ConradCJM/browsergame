@@ -224,16 +224,16 @@ export class enemy {
         else if (this.type === EnemyType.TrapperChaser) {
             this.XRadius = 15;
             this.YRadius = 15;
-            this.hp = 50;
-            this.maxHp = 50;
+            this.hp = 40;
+            this.maxHp = 40;
 
             this.attackRate = 7;
 
-            this.speed = 35;
+            this.speed = 25;
 
             this.maxPhase = 0;
             this.maxPhaseTime = 0;
-            this.hpDrain = this.maxHp / 49;// enemy dies in 49 seconds if player doesnt attack
+            this.hpDrain = this.maxHp / 30;// enemy dies in 49 seconds if player doesnt attack
         }
         else if (this.type === EnemyType.SpawnerMiniboss) {
             this.XRadius = 21;
@@ -255,14 +255,15 @@ export class enemy {
         else if (this.type === EnemyType.SpawnerBoss) {
             this.XRadius = 30;
             this.YRadius = 30;
-            this.hp = 750;
-            this.maxHp = 750;
+            this.hp = 1000;
+            this.maxHp = 1000;
 
             this.attackRate = 10; //dynamic and will change during each phase
 
             this.speed = 0;
 
             this.maxPhase = 7;
+            this.hpDrain = this.maxHp / 60;// enemy dies in 75 seconds if player doesnt attack
             /*
             Phase 0: spawns mini, regular, and trapper chasers 
             Phase 1: spawns 2 spawner mini bosses
