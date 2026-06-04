@@ -47,7 +47,7 @@ export class MainMenuScreen implements Screen {
     ctx.fillStyle = '#ffffff';
     ctx.font = '48px fantasy';
     ctx.textAlign = 'center';
-    ctx.fillText('Game', ctx.canvas.width / 2, 100);
+    ctx.fillText('Shape Chaos', ctx.canvas.width / 2, 100);
 
     this.buttons.forEach(button => button.draw(ctx));
   }
