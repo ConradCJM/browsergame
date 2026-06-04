@@ -249,14 +249,12 @@ export class enemy {
             this.maxPhaseTime = 7;
             this.phaseTimer = 0;
             this.attackTimer = this.attackRate;
-
-            this.hpDrain = this.maxHp / 24;// enemy dies in 24 seconds if player doesnt attack
         }
         else if (this.type === EnemyType.SpawnerBoss) {
             this.XRadius = 30;
             this.YRadius = 30;
-            this.hp = 1000;
-            this.maxHp = 1000;
+            this.hp = 1067;
+            this.maxHp = 1067;
 
             this.attackRate = 10; //dynamic and will change during each phase
 
@@ -282,9 +280,8 @@ export class enemy {
             this.maxBossPhase = 2;
             /*
             Phase 0: Regular attacks 
-            Phase 1: Full heal but looses 9.5% of max hp every second
-                Spawns a bunch of damage zones and boss spawns a of chaser types
-            Phase 2: Boss stops spawning and justs focuses on complex patterns using damage zones and projectiles
+            Phase 1: 
+           
             */
 
         }
@@ -298,7 +295,7 @@ export class enemy {
             this.maxPhaseTime = 0;
 
             this.speed = 10;
-            this.hpDrain = this.maxHp / 180; 
+            this.hpDrain = this.maxHp / 167;
             this.XRadius = 30;
             this.YRadius = 30;
         }
@@ -429,6 +426,16 @@ export class enemy {
         if (this.hp <= 0 && this.bossPhase < this.maxBossPhase) { //if boss has multiple phases and is currently "dead", move to next phase instead of dying
             this.bossPhase += 1;
             this.takeDamage(-this.maxHp); //restore boss hp on phase change
+            this.phaseCoolDown = 100; //give player 5 seconds to prepare for next phase
+            this.phaseTimer = 100;
+
+            //custom behavior on boss phase change
+            if (this.type === EnemyType.SpawnerBoss) {
+                //summons balls
+                this.game.addEnemyToQueue(60, -60, EnemyType.Ball, 0, true);
+                this.game.addEnemyToQueue(60, -60, EnemyType.Ball, 1, true);
+
+            }
         }
 
         if (this.maxPhaseTime === 0 || this.maxPhase === 0) return; //no phases, skip
@@ -544,11 +551,15 @@ export class enemy {
             }
         }
         else if (this.type === EnemyType.Ball) {
-            const targetX = this.game.getEnemies().find(enemy => enemy.getType() === EnemyType.SpawnerBoss)?.getX()|| 200;
-            const targetY = this.game.getEnemies().find(enemy => enemy.getType() === EnemyType.SpawnerBoss)?.getY()|| 300;
-            this.moveAroundEnemy(targetX,targetY,100, this.speed, dt);
+            const targetX = this.game.getEnemies().find(enemy => enemy.getType() === EnemyType.SpawnerBoss)?.getX() || null;
+            const targetY = this.game.getEnemies().find(enemy => enemy.getType() === EnemyType.SpawnerBoss)?.getY() || null;
+            if (targetX === null || targetY === null) {
+                this.y += Math.sin(this.timeAlive) * this.speed * dt; //float in place if no target (should only happen if spawner boss is dead)
+                return;
+            }; //when boss dies balls stop moving, just stay in last position
+            this.moveAroundEnemy(targetX, targetY, 100, this.speed, dt);
 
-            
+
         }
     }
 
@@ -583,7 +594,7 @@ export class enemy {
             this.type === EnemyType.Chaser ||
             this.type === EnemyType.MiniChaser ||
             this.type === EnemyType.SpawnerMiniboss ||
-            this.type === EnemyType.SpawnerBoss || 
+            this.type === EnemyType.SpawnerBoss ||
             this.type === EnemyType.Ball
         ) {
             this.enemyColour = '#ff00ff';
@@ -1111,7 +1122,7 @@ export class enemy {
         else if (this.type === EnemyType.SpawnerMiniboss) {
             //spawns 2 chasers and 4 mini chasers & 1 trapper chaser
             this.phaseCoolDown = this.attackTimer;
-            this.hp = Math.ceil(this.hp / 2); //halve hp to make it more manageable since its spawning more enemies
+            this.hp = Math.ceil(this.hp / 3); //halve hp to make it more manageable since its spawning more enemies
 
             this.game.addEnemyToQueue(this.x + this.XRadius, this.y - 2.5, EnemyType.MiniChaser, 1, false);
             this.game.addEnemyToQueue(this.x - this.XRadius, this.y - 2.5, EnemyType.MiniChaser, 1, false);
@@ -1126,11 +1137,91 @@ export class enemy {
         }
         else if (this.type === EnemyType.SpawnerBoss) {
 
+            //last stand
+            if (this.bossPhase === 2) {
+                this.hpDrain = this.maxHp / 45;
+                this.attackRate = 1.5;
+                this.maxPhaseTime = 99999;
+                this.phaseCoolDown = 99999;
+
+                //momentum changing bullets
+                const bullets: momentumChangingEnemyBullet[] = [];
+                const delayVariation = Math.random() / 3; //random variation to delay to make it less uniform
+                const MBdelay = 0.3; //Momentum Bullet delay 
+                const newDx = 0;
+                const newDy = 1;
+                for (let i = 1; i <= 12; i++) {
+                    bullets.push(new momentumChangingEnemyBullet(this.x, this.y, 1, 0, 55, 200, [{ time: MBdelay * i + delayVariation, newDx, newDy }], 3, 20, '#ff00ff'));
+                    bullets.push(new momentumChangingEnemyBullet(this.x, this.y, -1, 0, 55, 200, [{ time: MBdelay * i + delayVariation, newDx, newDy }], 3, 20, '#ff00ff'));
+                }
+
+                for (const momentumBullet of bullets) {
+                    this.game.spawnEnemyBullet(momentumBullet);
+                }
+
+                //ring pattern
+                let burstCount = 1;
+                let burstInterval = 0.1;
+                const spreadAngle = Math.PI / 16;
+                const angleOffset = [0]; //offset each burst to create a denser pattern
+                const startAngle = Math.random() * Math.PI * 2; //randomize start angle each time to make it less predictable
+
+                specs.push(...ringPattern(burstCount, burstInterval, spreadAngle, angleOffset, startAngle));
+                specs.forEach(spec => {
+                    spec.bulletXSpeed = 50;
+                    spec.bulletYSpeed = 50;
+                    spec.bulletXRadius = 35;
+                    spec.bulletYRadius = 35;
+                    spec.bulletColour = '#ff00ff7a';
+                    spec.bulletXGrowth = -0.0625;
+                    spec.bulletYGrowth = -0.0625;
+                });
+
+
+                burstCount = 1;
+                burstInterval = 0.5;
+                const bulletCount = 12;
+
+                specs.push(...aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!, burstCount, burstInterval, bulletCount, Math.PI / 18, this.aimOffset));
+
+                specs
+                .filter(spec => spec.bulletXGrowth === undefined)
+                .forEach(spec => {
+                    spec.bulletXSpeed = 60;
+                    spec.bulletYSpeed = 60;
+                    spec.bulletXRadius = 15;
+                    spec.bulletYRadius = 15;
+                    spec.bulletColour = '#ff00ff7a';
+                });
+
+                const fixedDelay = 3;
+                let zoneWidth = 400;
+                let zoneHeight = 20;
+                const duration = 0.1;
+                const warningDuration = 1.425;
+                const delay = 0.025;
+                const yOffset = Math.random() * 40;
+                const zoneSpread = 30;
+                for (let i = 0; i < 600 / zoneHeight; i += 2) {
+                    this.queueDamageZoneAt(200, i * zoneSpread + yOffset, now + delay + i * delay + fixedDelay, zoneWidth, zoneHeight, duration, 'square', warningDuration, 1, '#ff00ff80');
+                }
+
+                zoneWidth = 20;
+                zoneHeight = 600;
+                const xOffset = Math.random() * 40;
+
+                for (let i = 0; i < 400 / zoneWidth; i += 2) {
+                    this.queueDamageZoneAt(i * zoneSpread + xOffset, 300, now + delay + i * delay + fixedDelay, zoneWidth, zoneHeight, duration, 'square', warningDuration, 1, '#ff00ff80');
+                }
+
+            }
+
             // Phase 0: spawns mini, regular, and trapper chasers 
-            if (this.phase === 0) {
-                if (this.bossPhase > 0) {
+            else if (this.phase === 0) {
+                for (let i = 0; i < this.bossPhase; i++) {
                     //summons a ball
-                    this.game.addEnemyToQueue(60, -60, EnemyType.Ball, 1, true);
+                    this.game.addEnemyToQueue(60, -60, EnemyType.Ball, i, true);
+                    this.game.addEnemyToQueue(60, -60, EnemyType.Ball, i * 1.5 + 1, true);
                 }
 
                 this.maxPhaseTime = 6;
@@ -1155,10 +1246,24 @@ export class enemy {
                 this.game.addEnemyToQueue(410, 300, EnemyType.TrapperChaser, 3, false);
             }
             // Phase 1: spawns 2 spawner mini bosses
-            if (this.phase === 1) {
+            else if (this.phase === 1) {
                 if (this.bossPhase > 0) {
-                    this.game.addEnemyToQueue(460, 540, EnemyType.Ball, 1, true);
+                    const burstCount = 1;
+                    const burstInterval = 0.1;
+                    const bulletCount = 1;
+                    const spreadAngle = 0;
+                    specs.push(...aimedSpreadToPlayer(this.x, this.y, player, burstCount, burstInterval, bulletCount, spreadAngle));
+
+                    specs.forEach(spec => {
+                        spec.bulletXSpeed = 30;
+                        spec.bulletYSpeed = 30;
+                        spec.bulletXRadius = 60;
+                        spec.bulletYRadius = 60;
+                        spec.bulletColour = '#ff00ff';
+                    });
                 }
+
+
                 this.maxPhaseTime = 5;
                 this.attackTimer = 0;
                 this.attackRate = 5; //only attack once in this phase to spawn the mini bosses
@@ -1167,7 +1272,7 @@ export class enemy {
                 this.game.addEnemyToQueue(350, -10, EnemyType.SpawnerMiniboss, 1, false);
             }
             // Phase 2: damage zone pattern 1
-            if (this.phase === 2) {
+            else if (this.phase === 2) {
                 this.maxPhaseTime = 10;
                 this.attackTimer = 0;
                 this.attackRate = 10;
@@ -1195,7 +1300,7 @@ export class enemy {
                 }
             }
             // Phase 3: fires falling projectiles and ring pattern
-            if (this.phase === 3) {
+            else if (this.phase === 3) {
                 this.maxPhaseTime = 11.5;
                 this.attackRate = 1.5;
                 this.phaseCoolDown = 15;
@@ -1237,7 +1342,12 @@ export class enemy {
 
             }
             // Phase 4: damage zone pattern 2 + more bullets
-            if (this.phase === 4) {
+            else if (this.phase === 4) {
+                for (let i = 0; i < this.bossPhase; i++) {
+                    //summons a ball
+                    this.game.addEnemyToQueue(60, -60, EnemyType.Ball, i, true);
+                    this.game.addEnemyToQueue(60, -60, EnemyType.Ball, i * 1.5 + 1, true);
+                }
                 this.maxPhaseTime = 15;
                 this.attackRate = 15;
                 this.phaseCoolDown = 20;
@@ -1300,7 +1410,7 @@ export class enemy {
 
             }
             // Phase 5: fires projectiles in a spiral pattern + falling projectiles
-            if (this.phase === 5) {
+            else if (this.phase === 5) {
                 this.attackRate = 3;
                 this.maxPhaseTime = 15;
                 this.phaseCoolDown = 20;
@@ -1343,7 +1453,7 @@ export class enemy {
                 }
             }
             // Phase 6: damage zone pattern 3 
-            if (this.phase === 6) {
+            else if (this.phase === 6) {
                 this.maxPhaseTime = 10;
                 this.attackRate = 2;
                 this.phaseCoolDown = 25;
@@ -1362,7 +1472,7 @@ export class enemy {
 
             }
             // Phase 7: fires projectiles aimed at player with an offset pattern + do damage zone pattern
-            if (this.phase === 7) {
+            else if (this.phase === 7) {
                 this.attackRate = 1.5;
                 this.maxPhaseTime = 15;
                 this.phaseCoolDown = 30;

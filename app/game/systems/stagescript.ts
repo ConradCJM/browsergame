@@ -572,7 +572,7 @@ export function createLevel(game: Game, level: Level): LevelController {
     }
     if (level === Level.BossLevel3) {
         playerStats.maxHp = 5; // 3 stages with some rng elements so give player extra hp to compensate + difficulty compensation
-        playerStats.startHp = 5;// 3 + rng() + difficulty compensation
+        playerStats.startHp = 5;// 3 + rng() + 1difficulty compensation
         game.addPlayer(new Player(game, playerStats.startX, playerStats.startY, selectedCharacter, playerStats.maxHp, playerStats.startHp));
         game.addEnemyToQueue(200, 100, EnemyType.SpawnerBoss, 1.5, false);
 
