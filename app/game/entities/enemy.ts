@@ -1122,15 +1122,23 @@ export class enemy {
         else if (this.type === EnemyType.SpawnerMiniboss) {
             //spawns 2 chasers and 4 mini chasers & 1 trapper chaser
             this.phaseCoolDown = this.attackTimer;
-            this.hp = Math.ceil(this.hp / 3); //halve hp to make it more manageable since its spawning more enemies
+            this.hp = Math.floor(this.hp * 0.67); //reduce hp by 25% each time it spawns to prevent infinite spawning if player is bad at dodging
+
+            if (this.hp > this.maxHp / 2) {
+                this.game.addEnemyToQueue(this.x, this.y, EnemyType.TrapperChaser, 1, false);
+            }
+
+            if (this.hp > this.maxHp / 3) {
+                this.game.addEnemyToQueue(this.x + this.XRadius / 2, this.y - 5, EnemyType.Chaser, 1, false);
+                this.game.addEnemyToQueue(this.x - this.XRadius / 2, this.y - 5, EnemyType.Chaser, 1, false);
+            }
 
             this.game.addEnemyToQueue(this.x + this.XRadius, this.y - 2.5, EnemyType.MiniChaser, 1, false);
             this.game.addEnemyToQueue(this.x - this.XRadius, this.y - 2.5, EnemyType.MiniChaser, 1, false);
             this.game.addEnemyToQueue(this.x - this.XRadius * 2, this.y, EnemyType.MiniChaser, 1, false);
             this.game.addEnemyToQueue(this.x + this.XRadius * 2, this.y, EnemyType.MiniChaser, 1, false);
-            this.game.addEnemyToQueue(this.x + this.XRadius / 2, this.y - 5, EnemyType.Chaser, 1, false);
-            this.game.addEnemyToQueue(this.x - this.XRadius / 2, this.y - 5, EnemyType.Chaser, 1, false);
-            this.game.addEnemyToQueue(this.x, this.y, EnemyType.TrapperChaser, 1, false);
+
+
 
 
 
@@ -1185,14 +1193,14 @@ export class enemy {
                 specs.push(...aimedSpreadToPlayer(this.x, this.y, this.game.getPlayer()!, burstCount, burstInterval, bulletCount, Math.PI / 18, this.aimOffset));
 
                 specs
-                .filter(spec => spec.bulletXGrowth === undefined)
-                .forEach(spec => {
-                    spec.bulletXSpeed = 60;
-                    spec.bulletYSpeed = 60;
-                    spec.bulletXRadius = 15;
-                    spec.bulletYRadius = 15;
-                    spec.bulletColour = '#ff00ff7a';
-                });
+                    .filter(spec => spec.bulletXGrowth === undefined)
+                    .forEach(spec => {
+                        spec.bulletXSpeed = 60;
+                        spec.bulletYSpeed = 60;
+                        spec.bulletXRadius = 15;
+                        spec.bulletYRadius = 15;
+                        spec.bulletColour = '#ff00ff7a';
+                    });
 
                 const fixedDelay = 3;
                 let zoneWidth = 400;
@@ -1268,8 +1276,8 @@ export class enemy {
                 this.attackTimer = 0;
                 this.attackRate = 5; //only attack once in this phase to spawn the mini bosses
 
-                this.game.addEnemyToQueue(50, -10, EnemyType.SpawnerMiniboss, 4, false);
-                this.game.addEnemyToQueue(350, -10, EnemyType.SpawnerMiniboss, 1, false);
+                this.game.addEnemyToQueue(50, -10, EnemyType.SpawnerMiniboss, 4, true);
+                this.game.addEnemyToQueue(350, -10, EnemyType.SpawnerMiniboss, 1, true);
             }
             // Phase 2: damage zone pattern 1
             else if (this.phase === 2) {
