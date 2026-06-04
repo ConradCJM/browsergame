@@ -217,8 +217,8 @@ export class DamageZone {
         const colour = this.getColour();
         ctx.globalAlpha = this.isWarningCircle()? 0.45:1;
         ctx.fillStyle = colour;
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle ='#ffffff';
+        ctx.lineWidth = this.isWarningCircle()? 0.5 :2;
 
         if (this.getShape() === 'square') {
             ctx.fillRect(
