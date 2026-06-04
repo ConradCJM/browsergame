@@ -95,10 +95,10 @@ export class enemyBullet {
     }
 
     isOffScreen(canvasWidth: number, canvasHeight: number): boolean {
-        return (this.x + this.Xradius < 0) ||
+        return ((this.x + this.Xradius < 0) ||
             (this.x - this.Xradius > canvasWidth) ||
             (this.y + this.Yradius < 0) ||
-            (this.y - this.Yradius > canvasHeight);
+            (this.y - this.Yradius > canvasHeight)) || (this.Xradius <= 0) || (this.Yradius <= 0); //also consider bullets with no size as offscreen to prevent invisible bullets that can still damage the player
     }
 
 }//placeholder for now
