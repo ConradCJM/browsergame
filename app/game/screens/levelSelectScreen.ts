@@ -23,32 +23,39 @@ export class LevelSelectScreen implements Screen {
     const spacing = canvasWidth / buttonsPerRow;
     const buttonColour = '#004902';
     const hoverColour = '#00ff00a0';
+
+    const buttonColourBoss = '#490000';
+    const hoverColourBoss = '#ff0000a0';
+
+    const tutorialButtonColour = '#000049';
+    const tutorialHoverColour = '#0000ff90';
+
     const textColour = '#ffffff';
     const font = '18px fantasy';
 
     // Create buttons for each level
     this.buttons.push(
-      new Button(startX, startY, buttonWidth, buttonHeight, 'Tutorial',
-        () => onLevelSelect?.(Level.Tutorial), buttonColour, hoverColour, textColour, font)
+      new Button(200- buttonWidth/2, 75, buttonWidth, buttonHeight, 'Tutorial',
+        () => onLevelSelect?.(Level.Tutorial), tutorialButtonColour, tutorialHoverColour, textColour, font)
     );
     this.buttons.push(
-      new Button(startX + spacing, startY, buttonWidth, buttonHeight, 'Level 1',
+      new Button(startX, startY, buttonWidth, buttonHeight, 'Level 1',
         () => onLevelSelect?.(Level.CampaignLevel1), buttonColour, hoverColour, textColour, font));
     this.buttons.push(
-      new Button(startX + spacing * 2, startY, buttonWidth, buttonHeight, 'Boss 1',
-        () => onLevelSelect?.(Level.BossLevel1), buttonColour, hoverColour, textColour, font));
+      new Button(startX + spacing * 3, startY, buttonWidth, buttonHeight, 'Boss 1',
+        () => onLevelSelect?.(Level.BossLevel1), buttonColourBoss, hoverColourBoss, textColour, font));
     this.buttons.push(
-      new Button(startX + spacing * 3, startY, buttonWidth, buttonHeight, 'Level 2',
+      new Button(startX + spacing, startY, buttonWidth, buttonHeight, 'Level 2',
         () => onLevelSelect?.(Level.CampaignLevel2), buttonColour, hoverColour, textColour, font));
     this.buttons.push(
       new Button(startX + spacing * 4, startY, buttonWidth, buttonHeight, 'Boss 2',
-        () => onLevelSelect?.(Level.BossLevel2), buttonColour, hoverColour, textColour, font));
+        () => onLevelSelect?.(Level.BossLevel2), buttonColourBoss, hoverColourBoss, textColour, font));
     this.buttons.push(
       new Button(startX, startY + spacing, buttonWidth, buttonHeight, 'Level 3',
         () => onLevelSelect?.(Level.CampaignLevel3), buttonColour, hoverColour, textColour, font));
     this.buttons.push(
-      new Button(startX + spacing, startY + spacing, buttonWidth, buttonHeight, 'Boss 3',
-        () => onLevelSelect?.(Level.BossLevel3), buttonColour, hoverColour, textColour, font));
+      new Button(startX + spacing * 3, startY + spacing, buttonWidth, buttonHeight, 'Boss 3',
+        () => onLevelSelect?.(Level.BossLevel3), buttonColourBoss, hoverColourBoss, textColour, font));
   }
 
   update(dt: number): void { }
